@@ -1,0 +1,153 @@
+---
+title: "Building a Smart Knowledge Assistant"
+description: "How to construct a company knowledge bot capable of document ingestion, semantic retrieval, and contextual user interaction—demonstrating best practices for integrating the knowledge base, configuring retrieval, and delivering trustworthy responses."
+---
+
+# Building a Smart Knowledge Assistant
+
+This guide explains how to build a company-level smart knowledge assistant bot using Magic. It covers the step-by-step practical approach to ingesting documents into the knowledge base, configuring semantic retrieval for precise Q&A, and designing contextual, user-focused interactions for trustworthy, relevant responses.
+
+---
+
+## 1. Understanding the Knowledge Assistant Workflow
+
+### What You Will Accomplish
+Learn how to construct a knowledge assistant that:
+- Collects and organizes company knowledge into searchable bases
+- Uses semantic search for retrieving relevant content based on user queries
+- Integrates retrieved knowledge into AI responses for accurate, up-to-date answers
+- Handles user context to personalize and refine interactions
+
+### Prerequisites
+- Access to Magic platform with permissions to create knowledge bases and bots
+- Prepared company or team documents, Q&A pairs, or data sources
+- Basic familiarity with Magic’s workflow nodes and AI agent configuration
+
+### Expected Outcome
+A functional AI assistant capable of answering employee queries by dynamically retrieving and using internal company knowledge, reducing manual workload and improving knowledge accessibility.
+
+### Time Estimate
+Building the assistant typically takes 2-4 hours depending on knowledge base volume and complexity.
+
+### Difficulty Level
+Intermediate — requires knowledge base setup plus workflow and prompt configuration.
+
+---
+
+## 2. Step-by-Step Guide to Building the Knowledge Assistant
+
+### Step 1: Data Collection and Preparation
+
+Gather relevant knowledge sources that employees commonly inquire about, such as:
+- Company policies
+- Product manuals and system documentation
+- Historical support tickets and resolutions
+- Internal FAQs and process guidelines
+
+Organize data into clear categories (e.g., HR, IT Support, Finance) to form the basis for knowledge base folders.
+
+> **Tip:** Use Q&A pairs for content entry when possible, as they yield higher retrieval accuracy.
+
+### Step 2: Create and Populate a Knowledge Base
+
+1. Log into the Magic platform.
+2. Navigate to the Knowledge Base section.
+3. Create a new knowledge base, e.g., "Company Knowledge Base".
+4. Create organizational folders matching your data categories.
+5. Import or manually add documents and Q&A content into respective folders.
+
+> **Best Practice:** Maintain and routinely update knowledge bases for accuracy and freshness.
+
+### Step 3: Configure Semantic Retrieval with Knowledge Retrieval Node
+
+The Knowledge Retrieval Node performs vector similarity-based search to find relevant knowledge fragments.
+
+Configure the node as follows:
+- **Select Knowledge Base(s):** Choose one or more bases relevant to expected user queries.
+- **Define Search Keywords/Input:** Map it to user question variables (static text or dynamic inputs).
+- **Set Minimum Match Score:** Typically 0.4-0.7 depending on precision vs recall needs.
+- **Set Maximum Return Count:** Usually 3-5 to balance completeness and efficiency.
+
+> Example: Set minimum match score to 0.6 for precise answers, maximum results to 5.
+
+### Step 4: Build the AI Assistant Workflow
+
+1. Create a new AI Assistant bot in Magic.
+2. Design a workflow that:
+   - Captures user messages.
+   - Uses a Code Execution node to identify user context (e.g., internal/external staff).
+   - Calls the Knowledge Retrieval Node to fetch relevant knowledge fragments.
+   - Passes retrieved fragments to a Large Model Call Node for final response generation.
+   - Includes conditional branching to handle cases with/without retrieval results.
+   - Logs interactions optionally for feedback and iteration.
+
+> Refer to the "Building a Store Knowledge Assistant" example for a detailed similar workflow.
+
+### Step 5: Craft and Refine the Prompt
+
+Define the assistant’s behavior with components:
+- **Role Setting:** Describe assistant personality and language style.
+- **Context Section:** Inject current time, user info, conversation history.
+- **Skill Description:** Specify areas the assistant specializes in.
+- **Constraints:** Limit outputs to reliable content, disallow hallucinations.
+
+> Use variables from upstream nodes (e.g., user department, conversation ID) in prompts for personalized responses.
+
+### Step 6: Test and Debug
+
+- Use the "Test Run" feature in Magic to simulate typical queries.
+- Observe the knowledge fragments retrieved and final AI responses.
+- Refine similarity thresholds, max result count, and prompt wording for improved accuracy.
+
+### Step 7: Publish and Deploy
+
+- Once satisfied with testing, click "Publish" to make the assistant available.
+- Optionally, integrate with third-party IM platforms (e.g., DingTalk) for broader access.
+
+---
+
+## 3. Practical Tips and Best Practices
+
+- **Optimize Retrieval Precision:** Use clear, specific user queries and higher similarity thresholds.
+- **Improve Coverage:** Search multiple knowledge bases with moderate thresholds.
+- **Handle Repeat Questions Carefully:** Always query the knowledge base instead of reusing context to ensure freshness.
+- **Leverage User Context:** Adjust retrieval scope and answers based on user role and location information.
+
+---
+
+## 4. Troubleshooting Common Issues
+
+### No Relevant Content Found
+- Lower similarity threshold.
+- Check if the knowledge base contains related info.
+- Expand search to additional knowledge bases.
+
+### Too Many Irrelevant Results
+- Increase similarity threshold.
+- Narrow knowledge base scope.
+- Use more precise search keywords.
+
+### Knowledge Base Returns Outdated Info
+- Update and maintain knowledge bases regularly.
+- Remove or archive obsolete documents.
+
+### Performance Lag in Retrieval
+- Limit maximum return count.
+- Pre-select relevant knowledge bases to avoid extraneous searches.
+- Cache frequent queries if supported.
+
+---
+
+## 5. Additional Resources and Next Steps
+
+- **Knowledge Retrieval Node Documentation:** [Knowledge Retrieval Node Guide](https://docs.letsmagic.cn/tutorial/basic/node/Knowledge-retrieval)
+- **Store Knowledge Assistant Case Study:** [Building a Store Knowledge Assistant](https://docs.letsmagic.cn/best-practice/build-a-store-knowledge-assistant)
+- **Creating Your First AI Agent:** Provides foundational steps for AI assistant creation.
+- **Workflow Orchestration Guide:** For advanced workflow design and automation with Magic Flow.
+- **Third-Party Integrations:** To publish bots on platforms like DingTalk, WeCom, Feishu.
+
+---
+
+By following this guide, you can rapidly build a robust knowledge assistant customized to your company’s internal knowledge and workflows, bringing stellar improvements in employee support and operational efficiency.
+
+---
