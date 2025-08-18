@@ -1,0 +1,131 @@
+---
+title: "Key Terminology"
+description: "A glossary-format page defining Magic’s unique technical terms (e.g., Agent, Node, Tool, Flow, Workspace, Knowledge Base) to ensure clarity across documentation and during implementation."
+---
+
+# Key Terminology
+
+Welcome to the Magic platform's Key Terminology page. This glossary is your compass to understand the unique technical terms that form the foundation of Magic's architecture and user experience. Clarity here ensures smooth navigation throughout the entire documentation and seamless implementation of solutions.
+
+---
+
+## Core Terms and Their Significance
+
+### Agent
+An _Agent_ is an AI assistant or bot empowered to perform specific tasks within Magic. Agents can communicate, make decisions, invoke tools, and operate autonomously or as part of a workflow.
+
+**Why it matters:** Agents embody AI capability in Magic, enabling intelligent task execution without constant user intervention.
+
+---
+
+### Node
+A _Node_ represents a fundamental building block within a Magic workflow. Each node encapsulates a discrete function or operation, such as sending a message, running code, querying knowledge, or invoking an AI model.
+
+**Why it matters:** Nodes let you visually and logically orchestrate complex sequences, making automation intuitive and manageable.
+
+---
+
+### Tool
+A _Tool_ is a reusable process or utility that encapsulates specific functionality, often called by agents or nodes. Tools improve modularity by delegating certain tasks outside a workflow's main path.
+
+**Why it matters:** Tools enable code reuse and specialization, reducing redundancy and boosting flow reliability.
+
+---
+
+### Flow (Workflow)
+A _Flow_ (sometimes called _workflow_) is a complete automation or orchestration sequence composed of interconnected nodes. Flows represent business logic or AI capabilities constructed through graphical design.
+
+**Why it matters:** Flows allow users to create complex, multi-step automations that drive real-world AI-powered processes.
+
+---
+
+### Workspace
+A _Workspace_ is a collaborative environment or container for organizing flows, knowledge bases, agents, and other resources related to a project or domain.
+
+**Why it matters:** Workspaces isolate work contexts, helping teams manage permissions, versions, and resources efficiently.
+
+---
+
+### Knowledge Base
+The _Knowledge Base_ holds professional domain knowledge or company-specific data that Magic’s AI can retrieve and reason over. It enhances AI responses’ accuracy and relevance beyond generic large models.
+
+**Why it matters:** Enables Magic to provide context-aware, specialized answers and automations, elevating user experience.
+
+---
+
+### Access Token
+An _Access Token_ is a security credential used when calling Magic's APIs or SDKs. It authenticates users and authorizes access with fine-grained permissions.
+
+**Why it matters:** Ensures secure, controlled interaction with Magic’s platform services.
+
+---
+
+### Token
+In the context of large language models, a _Token_ is a basic unit of text—such as words, subwords, or characters—that the model processes.
+
+**Why it matters:** Understanding tokens helps in managing input limits and optimizing prompt design.
+
+---
+
+### Prompt
+A _Prompt_ is a natural language instruction or context given to AI models to guide output generation.
+
+**Why it matters:** Crafting clear prompts is crucial to get meaningful, targeted AI responses.
+
+---
+
+### Memory
+_Memory_ refers to Magic's capability to store, retrieve, and utilize information over the course of conversations or workflows, via variables, databases, or long-term records.
+
+**Why it matters:** Memory enables personalized, context-rich AI interactions and more powerful automations.
+
+---
+
+## Node Categories and Common Nodes
+
+| Category         | Node Name               | Description                                                                                      |
+|------------------|-------------------------|------------------------------------------------------------------------------------------------|
+| Basic            | Start Node              | Entry point where a workflow begins executing upon trigger events.                              |
+| Basic            | Message Reply           | Sends a specified message or content to the user.                                              |
+| Basic            | End Node                | Terminates flow execution and returns result information.                                      |
+| Basic            | Wait                    | Pauses flow waiting for user input before continuing.                                          |
+| Large Model      | Large Model Call        | Invokes large language models using variables and prompts to generate responses.               |
+| Large Model      | Intent Recognition      | Uses AI to identify user intent from input content.                                            |
+| Operations       | Selector                | Conditional routing node to select among multiple branches based on set conditions.            |
+| Operations       | Code Execution          | Runs custom code to process data and compute outputs.                                          |
+| Operations       | HTTP Request            | Sends HTTP requests to external services and processes responses.                              |
+| Operations       | Sub-process             | Embeds another flow as a subroutine to avoid main flow complexity.                             |
+| Operations       | Tool                    | Executes reusable tool flows for delegated functionality.                                      |
+| Operations       | Personnel Retrieval     | Searches relevant person data visible to the conversation.                                    |
+| Operations       | Loop                    | Executes repetitive tasks with defined counting or condition logic.                           |
+| Data Processing  | Historical Message Query| Queries past messages based on filters.                                                        |
+| Vector Knowledge | Vector Storage          | Persists text fragments into vector knowledge stores.                                         |
+| Vector Knowledge | Vector Search           | Matches and retrieves closest vector fragments from multiple knowledge bases.                  |
+| Persistent DB    | Data Storage            | Saves permanent data keyed by identifiers.                                                    |
+| Variables        | Variable Save           | Updates or adds workflow variables during execution.                                          |
+| File Related     | Document Parsing        | Extracts text content from uploaded files for further use.                                    |
+| Text Related     | Text Splitting          | Breaks down long texts into segments based on customizable strategies.                         |
+
+---
+
+## Practical Insights and Tips
+
+- Always define clear _Prompts_ to guide AI behavior as expected.
+- Use _Memory_ nodes to maintain context across conversations.
+- Leverage _Flows_ to encapsulate repeatable business logic for easy reuse.
+- Organize your work in _Workspaces_ for team collaboration and resource management.
+- Manage _Access Tokens_ securely to maintain platform integrity.
+- Consider _Vector Knowledge Bases_ to boost AI accuracy with domain-specific knowledge.
+
+---
+
+## Related Documentation
+
+- [Core Concepts](https://magic/docs/overview/key-concepts-and-terminology/core-concepts) — Foundational ideas behind Magic’s platform.
+- [Conceptual Workflow](https://magic/docs/overview/key-concepts-and-terminology/conceptual-workflow) — How Magic orchestrates AI tasks.
+- [Feature Summary](https://magic/docs/overview/feature-highlights/features-overview) — Overview of key Magic features.
+- [Getting Started](https://magic/docs/guides/getting-started/quickstart-workspace) — Steps to begin your Magic journey.
+
+---
+
+Understanding these terms unlocks the full potential of Magic, empowering you to build sophisticated AI-powered workflows efficiently and effectively.
