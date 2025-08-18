@@ -1,0 +1,200 @@
+---
+title: "Installation Guide"
+description: "Follow step-by-step instructions to install Magic using Docker, including repository cloning, starting services in foreground/background, and accessing the system. This page covers both first-time installation and basic operational commands to manage your Magic instance."
+---
+
+# Installation Guide
+
+Welcome to the Magic Installation Guide. This page helps you get your Magic AI productivity platform up and running quickly using Docker. Follow the step-by-step instructions to clone the repository, start the services, and access the system for the first time.
+
+---
+
+## 1. Prerequisites & System Preparation
+
+### System Requirements
+- Operating System: Linux, macOS, or Windows (with Docker support)
+- Docker: Install the latest stable [Docker](https://docs.docker.com/get-docker/) engine
+- Docker Compose: Ensure Docker Compose is installed ([Docker Compose Installation Guide](https://docs.docker.com/compose/install/))
+- Minimum Hardware:
+  - CPU: 4 cores recommended
+  - Memory: At least 8 GB RAM
+  - Disk Space: Minimum 10 GB free
+
+### Network & Permissions
+- Ensure Docker has permission to bind required ports (default ports used by Magic)
+- Allow outbound internet access for package downloads
+- No special firewall rules needed initially for local testing
+
+<Tip>
+It is highly recommended to review the full [System Requirements](/getting-started/prerequisites-installation/system-requirements) page before proceeding to guarantee a smooth installation.
+</Tip>
+
+---
+
+## 2. Installation Instructions
+
+This installation uses Docker for quick deployment and easier service management.
+
+### Step 1: Clone the Magic GitHub Repository
+
+Open a terminal and run:
+
+```bash
+git clone https://github.com/dtyq/magic.git
+cd magic
+```
+
+You will have the latest Magic source code locally.
+
+### Step 2: Pull Required Docker Images
+
+Run the following to download and assemble necessary images:
+
+```bash
+docker-compose pull
+```
+
+### Step 3: Start Magic Services in Foreground
+
+To run Magic interactively (stop with Ctrl+C):
+
+```bash
+docker-compose up
+```
+
+This launches the backend API, database, and web UI.
+
+### Step 4: Running as Background Service
+
+For long-running deployments, start services detached:
+
+```bash
+docker-compose up -d
+```
+
+To stop the services:
+
+```bash
+docker-compose down
+```
+
+### Step 5: Verify Services Are Running
+
+Check running containers:
+
+```bash
+docker-compose ps
+```
+
+Expected services:
+- magic-api
+- magic-web
+- magic-db
+
+Successful output should indicate all services are 'Up'.
+
+<Tip>
+If containers fail to start, inspect logs with
+
+```bash
+docker-compose logs -f
+```
+
+and resolve any errors.
+</Tip>
+
+---
+
+## 3. Accessing Magic
+
+### Step 1: Open the Web UI
+
+In your web browser, navigate to:
+
+```
+http://localhost:8080
+```
+
+You should see the Magic login screen.
+
+### Step 2: First Login
+
+- Use a Magic-provided or configured admin account to login
+- For Cloud or Community editions, please refer to the respective login or onboarding flows
+
+<Tip>
+Refer to the [First Start & Accessing Magic](/getting-started/configuration-initial-setup/first-start-and-login) guide for detailed user onboarding.
+</Tip>
+
+---
+
+## 4. Basic Operational Commands
+
+Once installed, you will commonly need to manage the Magic services. Here are essential Docker Compose commands:
+
+| Command                     | Purpose                            |
+|-----------------------------|----------------------------------|
+| `docker-compose up -d`       | Start all services in the background |
+| `docker-compose down`        | Stop and remove containers       |
+| `docker-compose restart`     | Restart all services              |
+| `docker-compose logs -f`     | View real-time logs               |
+
+<Tip>
+Running services in detached mode (`-d`) helps keep your terminal free while Magic runs as a background service.
+</Tip>
+
+---
+
+## 5. Troubleshooting Common Issues
+
+### Problem: Containers do not start
+- **Check logs:** Run `docker-compose logs -f` to identify errors.
+- **Port conflicts:** Ensure ports 8080 (web UI) and related are free on the host.
+- **Resource constraints:** Verify your system meets minimum CPU/memory requirements.
+
+### Problem: Unable to access the UI
+- Confirm that Docker containers are running.
+- Check if your firewall blocks port 8080.
+- If running on a remote server, confirm port forwarding or proxy configuration.
+
+### Problem: Repository clone is slow or fails
+- Use a stable internet connection.
+- For faster cloning, consider using a mirror or shallow clone:
+
+```bash
+git clone --depth 1 https://github.com/dtyq/magic.git
+```
+
+<Tip>
+For detailed troubleshooting advice, see the [Troubleshooting Common Setup Issues](/getting-started/validation-troubleshooting/common-setup-issues) page.
+</Tip>
+
+---
+
+## 6. Next Steps & Further Configuration
+
+After installation, consider:
+
+- Setting up environment variables and initial configuration via the [Environment Variables](/getting-started/configuration-initial-setup/environment-variables) guide.
+- Creating your first AI assistant or workflow by following the [Quickstart: From Zero to Magic Productivity](/guides/getting-started/quickstart-workspace).
+- Exploring integration options to connect Magic with enterprise systems.
+
+<Tip>
+Remember, the installation is just your first step to unlocking Magic's powerful AI productivity features.
+</Tip>
+
+---
+
+## 7. Additional Resources & Help
+
+- **Official GitHub repository:** [https://github.com/dtyq/magic](https://github.com/dtyq/magic)
+- **Community support:** Check forums and collaboration channels linked at [Getting Help & Additional Resources](/getting-started/validation-troubleshooting/resources-and-support)
+- **Comprehensive platform overview:** [Product Overview](/overview/product-intro-and-value/product-overview)
+
+
+---
+
+Thank you for choosing Magic. This guide empowers you to easily install and launch your AI productivity platform locally, paving the way to harness its full capabilities.
+
+
+---
