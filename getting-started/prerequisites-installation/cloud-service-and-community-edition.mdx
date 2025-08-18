@@ -1,0 +1,118 @@
+---
+title: "Cloud Service vs Community Edition"
+description: "Learn about the difference between using the official Magic cloud services and self-hosting the open-source community edition. This overview helps users decide which deployment mode best fits their needs, and points to getting started for each."
+---
+
+# Cloud Service vs Community Edition
+
+Magic empowers users with two distinct deployment options: the official Magic Cloud Service and the self-hosted open-source Community Edition. Understanding their differences will help you pick the best approach aligned with your technical capacity, control needs, and operational goals.
+
+---
+
+## 1. Overview: Choosing Your Deployment Mode
+
+Magic's **Cloud Service** offers a managed, streamlined experience with minimal setup, automatic updates, and integrated support. The **Community Edition** is fully open-source, allowing complete control over customization, deployment, and data sovereignty at the cost of managing infrastructure yourself.
+
+This page guides you through the key distinctions, benefits, and onboarding paths for each.
+
+---
+
+## 2. Magic Cloud Service
+
+### What You Get
+- Fully managed hosting of Magic’s core AI productivity platform.
+- Automated updates and security patches without user intervention.
+- Scalable infrastructure optimized for performance and reliability.
+- Pre-configured integrations with popular enterprise messaging and AI services.
+- Official support channels and SLA guarantees.
+
+### Who It’s For
+- Teams that want instant access without infrastructure overhead.
+- Organizations prioritizing easy scalability and hands-off maintenance.
+- Users who prefer built-in security and compliance managed by the Magic service team.
+
+### Getting Started
+Follow the [Quickstart: From Zero to Magic Productivity](/guides/getting-started/quickstart-workspace) to connect with the Magic Cloud Service instantly, including account setup and initial configuration.
+
+---
+
+## 3. Community Edition (Self-Hosted)
+
+### What You Get
+- Open-source full platform source code from Magic’s GitHub repository.
+- Freedom to customize, extend, or integrate deeply with your internal systems.
+- Control over data storage, network boundaries, and security policies.
+- Full visibility into the platform’s inner workings to audit and optimize.
+
+### Who It’s For
+- Developers and IT teams with infrastructure capabilities.
+- Organizations with strict data privacy or compliance requirements.
+- Users who need full customization or to contribute back to the project.
+
+### Getting Started
+You’ll need to clone the repository and deploy the platform yourself, typically using Docker for ease. Start with the [Installation Guide](/getting-started/prerequisites-installation/installation-guide) that walks you step-by-step through cloning, configuring, and running your own Magic instance.
+
+---
+
+## 4. Key Differences at a Glance
+
+| Feature                    | Magic Cloud Service                      | Community Edition (Self-Hosted)       |
+|----------------------------|-----------------------------------------|--------------------------------------|
+| **Infrastructure**         | Managed by Magic                        | Managed by your team                  |
+| **Setup Complexity**       | Minimal; instant access                 | Requires technical setup             |
+| **Customization**          | Limited to supported integrations      | Full codebase available              |
+| **Updates**                | Automatic                             | Manual (via updates/patches)          |
+| **Support**                | Official support & SLA                  | Community support & self-managed     |
+| **Security Control**       | Managed by service provider             | Full control within your environment |
+| **Compliance**             | Covers common compliance needs          | Complete control, customizable       |
+
+---
+
+## 5. Assessing Which Fits Your Needs
+
+**Choose Magic Cloud Service if:**
+- You want to start quickly with minimal infrastructure work.
+- You value operational simplicity and official support.
+- Your use case fits well within the standard feature set.
+
+**Choose Community Edition if:**
+- Your team has the expertise to manage deployments.
+- You require full control over your environment and data.
+- You want to customize or contribute to the platform’s capabilities.
+
+---
+
+## 6. Next Steps & Resources
+
+### For Magic Cloud Service Users
+- Follow the [Quickstart: From Zero to Magic Productivity](/guides/getting-started/quickstart-workspace) to immediately begin using Magic.
+- Review [Environment Variables](/getting-started/configuration-initial-setup/environment-variables) for customization options.
+
+### For Community Edition Users
+- Start with cloning the official repository:
+
+```bash
+git clone https://github.com/dtyq/magic.git
+cd magic
+```
+
+- Refer to the [Installation Guide](/getting-started/prerequisites-installation/installation-guide) for detailed deployment steps using Docker.
+- Review system requirements in [System Requirements](/getting-started/prerequisites-installation/system-requirements) to prepare your environment.
+
+### Common Resources
+- Browse the [Product Overview](/overview/product-intro-and-value/product-overview) to understand core capabilities.
+- Check out [Integration Capabilities](/overview/architecture-glance/integration-points) to plan connecting Magic with existing tools.
+- For any setup issues, visit [Troubleshooting Common Setup Issues](/getting-started/validation-troubleshooting/common-setup-issues).
+
+---
+
+## 7. Practical Tips
+
+- **Trial First**: Consider testing Magic Cloud Service before committing to self-hosting to experience the platform without operational overhead.
+- **Plan for Scale**: Self-hosting gives flexibility but requires infrastructure planning; use container orchestration like Kubernetes for production.
+- **Keep Updated**: Community Edition depends on your team ensuring timely updates, particularly security patches.
+- **Leverage Community**: Engage with the open-source community on GitHub for support, contributions, and shared knowledge.
+
+---
+
+By choosing the deployment model that fits your organization’s unique needs, you set a strong foundation for leveraging Magic’s powerful AI productivity platform with confidence and clarity.
