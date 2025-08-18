@@ -1,0 +1,193 @@
+---
+title: "First Start & Accessing Magic"
+description: "Get step-by-step guidance for successfully launching Magic, verifying that core services are running, and logging into the web and API portals with default credentials. This page ensures you experience the 'magic moment' of a first successful login and full-system readiness."
+---
+
+# First Start & Accessing Magic
+
+Welcome to Magic! This guide is designed to lead you confidently through the exciting moment of launching Magic for the first time, verifying that all essential services are running smoothly, and logging into both the web and API portals using the default credentials. By following this guide, you will experience your first successful Magic login and verify that your system is fully operational.
+
+---
+
+## 1. Verify Prerequisites Have Been Met
+
+Before starting Magic, ensure that you have completed the prerequisites covered in the [System Requirements](/getting-started/prerequisites-installation/system-requirements) and [Installation Guide](/getting-started/prerequisites-installation/installation-guide) pages. This includes:
+
+- Successful installation of all necessary components such as Docker and Docker Compose.
+- Completed configuration as outlined in the [Initial Configuration](/getting-started/configuration-initial-setup/initial-configuration) page.
+
+> Following these steps thoroughly ensures a smooth first launch and avoids common startup issues.
+
+---
+
+## 2. Starting Magic Services
+
+The recommended way to launch Magic is via Docker Compose or directly running the Docker containers.
+
+### Steps to Start Magic:
+
+1. **Open your terminal or command prompt.**
+2. **Navigate to your Magic installation directory.**
+
+```bash
+cd /path/to/magic
+```
+
+3. **Launch Magic services in detached mode:**
+
+```bash
+docker-compose up -d
+```
+
+4. **Verify services are running:**
+
+```bash
+docker-compose ps
+```
+
+You should see containers for the core services (e.g., magic-web, magic-api, database) listed as `Up`.
+
+### Troubleshooting Tips:
+
+- If services fail to start, consult the logs:
+
+```bash
+docker-compose logs -f
+```
+
+- Resolve any port conflicts or missing dependencies indicated.
+
+---
+
+## 3. Accessing the Magic Web Portal
+
+Once services are running, you can open Magic’s web portal to log in.
+
+### Access Instructions:
+
+1. Open your favorite web browser.
+2. Navigate to the default URL:
+
+```
+http://localhost:8080
+```
+
+3. You should see the Magic login page.
+
+### Log In Using Default Credentials:
+
+- Username: `admin`
+- Password: `magic123`
+
+> **Tip:** Change your password immediately after the first login for security.
+
+### What to Expect:
+
+- Upon correct login, you will land on the Magic dashboard.
+- Core modules such as AI Agents, Magic Flow, and IM Chat should be accessible.
+
+---
+
+## 4. Accessing the Magic API Portal
+
+Magic exposes an API portal for programmatic access.
+
+### API Endpoint:
+
+```
+http://localhost:8080/api
+```
+
+### Default API Authentication:
+
+- Use the default `admin` credentials or a token issued after your first login.
+
+### Sample API Call:
+
+Use `curl` or any REST client to verify API access with default credentials:
+
+```bash
+curl -u admin:magic123 http://localhost:8080/api/status
+```
+
+Expected output:
+
+```json
+{
+  "status": "ok",
+  "services": {
+    "magic-web": "running",
+    "magic-api": "running",
+    "database": "connected"
+  }
+}
+```
+
+If you receive this response, your core services are functioning correctly.
+
+---
+
+## 5. Confirming Full System Readiness
+
+After your first successful login:
+
+- Confirm core services are listed as `running` in the dashboard.
+- Verify you can navigate between modules.
+- Test basic features such as creating a workflow (see [Quickstart: From Zero to Magic Productivity](/guides/getting-started/quickstart-workspace) for next steps).
+
+<Check>
+A successful first start means:
+- You can log into the web portal with default credentials.
+- Core Magic services are operating without error.
+- API requests return valid status responses.
+</Check>
+
+---
+
+## 6. Common Issues & Troubleshooting
+
+### Login Fails
+- Ensure services are fully started.
+- Confirm you are using the correct default credentials (`admin/magic123`).
+- Clear browser cache or try incognito mode.
+
+### Services Not Running
+- Run `docker-compose logs -f` to identify startup errors.
+- Check for port conflicts, especially on `8080`.
+- Verify database connection settings in your configuration files.
+
+### API Access Denied
+- Confirm usage of proper credentials or tokens.
+- Verify network/firewall rules do not block API traffic.
+
+For additional troubleshooting, see [Troubleshooting Common Setup Issues](/getting-started/validation-troubleshooting/common-setup-issues).
+
+---
+
+## 7. What Next?
+
+Explore the following to deepen your Magic experience:
+
+- [Quickstart: From Zero to Magic Productivity](/guides/getting-started/quickstart-workspace) — your next step to building workflows and AI agents.
+- [Creating Your First AI Agent (Super Magic Walkthrough)](/guides/getting-started/first-ai-agent) — learn to deploy intelligent assistants.
+- [Environment Variables](/getting-started/configuration-initial-setup/environment-variables) — to customize your deployment.
+
+
+---
+
+## Summary
+This page guided you through starting Magic, verifying its core services are active, and performing your initial logins both via web and API portals using default credentials. Following these steps guarantees the foundational setup is solid and poised for deeper exploration and productivity.
+
+For full deployment preparation, refer back to [System Requirements](/getting-started/prerequisites-installation/system-requirements) and [Installation Guide](/getting-started/prerequisites-installation/installation-guide). To resolve any startup challenges, consult the troubleshooting sections and next-step guides.
+
+Your journey to mastering Magic starts with this first successful login — welcome aboard! 
+
+---
+
+## Source Code Reference
+
+For those interested in the backend login and user verification logic, the portion of Magic’s codebase that handles user API login via tokens and credentials is primarily found under:
+
+<Source url="https://github.com/dtyq/magic" paths={[{"path": "backend/easy-dingtalk/src/OpenDev/Endpoint/User/UserEndpoint.php", "range": "1-85"}]} />
+
+This demonstrates real calls to get user info by authentication codes and user IDs, integral to the login and user validation process.
