@@ -1,0 +1,203 @@
+---
+title: "Installation & Basic Setup"
+description: "Step-by-step guides for installing each SDK, including environment prerequisites, package manager commands, codebase integration, and fast project bootstrap. Equipped with code snippets and troubleshooting pointers, this page is the launchpad for turning Magic's SDKs into running code."
+---
+
+# Installation & Basic Setup
+
+Welcome to the starting point for integrating Magic's SDKs into your projects. This guide provides detailed, step-by-step instructions for installing each supported SDK, setting up your development environment, and quickly bootstrapping a new project. Whether you are a PHP, TypeScript, or Python developer, you'll find clear commands, configuration tips, and minimal code examples to get you up and running fast.
+
+---
+
+## 1. Prerequisites and Environment Setup
+
+Before installing any SDK, ensure your development environment meets the following prerequisites:
+
+- **Supported Platforms:** Verify your operating system and architecture are compatible with the SDK's target environment.
+- **Language Versions:**
+  - PHP: 8.1+ (required for Easy DingTalk SDK)
+  - Python: Latest stable version recommended
+  - TypeScript/JavaScript: Node.js version 14 or later
+- **Package Managers Installed:** Composer for PHP, npm/yarn for TypeScript, pip for Python
+- **Network Access:** Ensure outbound access to public package repositories and Magic's API endpoints.
+
+Take a moment to verify these prerequisites to avoid common installation pitfalls.
+
+---
+
+## 2. Installing Magic SDKs
+
+Magic provides officially supported SDKs in PHP, TypeScript, and Python. Each SDK is distributed via popular package managers for ease of installation.
+
+### 2.1 PHP SDK Installation
+
+Use Composer to install Magic PHP SDKs, including integrations like Easy DingTalk.
+
+```bash
+composer require dtyq/easy-dingtalk -vvv
+```
+
+This command installs the Easy DingTalk SDK, which supports PHP 8.1+ and complies with PSR standards.
+
+### 2.2 TypeScript SDK Installation
+
+To install the Magic TypeScript SDK, run:
+
+```bash
+npm install @magic/sdk
+# or
+yarn add @magic/sdk
+```
+
+Ensure Node.js is updated to a supported version to avoid runtime issues.
+
+### 2.3 Python SDK Installation
+
+Install the Python SDK via pip:
+
+```bash
+pip install magic-sdk
+```
+
+If you use virtual environments, activate them before installing.
+
+---
+
+## 3. Verifying Installation
+
+After installation, verify that the SDK is correctly available in your project:
+
+- PHP: Run `composer show dtyq/easy-dingtalk` to confirm installation and check version.
+- TypeScript: Run `npm ls @magic/sdk` or `yarn list @magic/sdk`.
+- Python: Use `pip show magic-sdk`.
+
+A successful listing confirms the package is installed and ready for integration.
+
+---
+
+## 4. Quick Project Bootstrap
+
+### 4.1 PHP Example: Easy DingTalk SDK Quickstart
+
+Here’s a minimal PHP snippet demonstrating how to initialize the Easy DingTalk SDK and fetch an access token.
+
+```php
+<?php
+use Dtyq\EasyDingTalk\OpenDevFactory;
+
+// Initialize with your DingTalk app credentials
+$factory = new OpenDevFactory([
+    'app_key' => 'your_app_key',
+    'app_secret' => 'your_app_secret',
+]);
+
+// Fetch access token to authorize API calls
+$accessToken = $factory->getAccessToken();
+
+// Use $accessToken for subsequent requests
+```
+
+### 4.2 TypeScript Example: Basic Client Setup
+
+```typescript
+import { MagicClient } from '@magic/sdk';
+
+const client = new MagicClient({
+  apiKey: 'your_api_key',
+});
+
+(async () => {
+  const user = await client.getUser();
+  console.log(user);
+})();
+```
+
+### 4.3 Python Example: Quick Start
+
+```python
+from magic_sdk import MagicClient
+
+client = MagicClient(api_key='your_api_key')
+
+user = client.get_user()
+print(user)
+```
+
+---
+
+## 5. Framework Integration
+
+### PHP - Integrating Easy DingTalk SDK with Hyperf Framework
+
+To integrate the Easy DingTalk SDK into a Hyperf PHP project, add the following service definition in your `config/autoload/dependencies.php`:
+
+```php
+return [
+    Dtyq\EasyDingTalk\OpenDevFactory::class => function (\Psr\Container\ContainerInterface $container) {
+        return new Dtyq\EasyDingTalk\OpenDevFactory([
+            'app_key' => config('dingtalk.app_key'),
+            'app_secret' => config('dingtalk.app_secret'),
+        ]);
+    },
+];
+```
+
+This configuration ensures your application can easily instantiate and access the DingTalk SDK factory.
+
+---
+
+## 6. Common Troubleshooting
+
+<AccordionGroup title="Troubleshooting Installation Issues">
+<Accordion title="Composer Package Not Found or Download Fails">
+- Confirm your internet connectivity and access to Packagist.
+- Clear Composer cache using `composer clear-cache`.
+- Verify Composer version supports PHP 8.1.
+- Check for typos in package name.
+</Accordion>
+<Accordion title="SDK Not Recognized in Project">
+- Ensure autoloading is correctly configured in your project.
+- Run `composer dump-autoload` to regenerate autoload files.
+- Confirm namespace and import statements match the SDK's documentation.
+</Accordion>
+<Accordion title="Version Conflicts">
+- Check for dependency conflicts using `composer why-not dtyq/easy-dingtalk`.
+- Upgrade dependent packages to compatible versions.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 7. Next Steps
+
+With your SDK installed and verified, you are ready to explore detailed usage:
+
+- Consult the [Quickstart: From First Call to Hello World](/sdks/usage-patterns/quickstart-examples) to see how to authenticate and make your first API calls.
+- Review [Authentication & Credential Management](/sdks/configuration-auth/authentication-methods) for securing your access.
+- Explore [Common Integration Patterns](/sdks/usage-patterns/most-common-use-cases) for real-world development workflows.
+
+---
+
+## Appendix: Useful Commands Summary
+
+| Action                         | PHP (Composer)                     | TypeScript (npm)                   | Python (pip)                |
+|--------------------------------|----------------------------------|----------------------------------|-----------------------------|
+| Install SDK                    | `composer require dtyq/easy-dingtalk -vvv` | `npm install @magic/sdk` or `yarn add @magic/sdk` | `pip install magic-sdk`      |
+| Verify Installation            | `composer show dtyq/easy-dingtalk`          | `npm ls @magic/sdk` or `yarn list @magic/sdk`    | `pip show magic-sdk`         |
+| Clear Package Cache            | `composer clear-cache`                       | `npm cache clean --force` or `yarn cache clean`  | `pip cache purge`            |
+
+Make these your go-to commands when installing or troubleshooting SDK setup.
+
+---
+
+## Resources
+
+- [Easy DingTalk SDK on Packagist](https://packagist.org/packages/dtyq/easy-dingtalk)
+- [Easy DingTalk GitHub Repository](https://github.com/lihq1403/easy-dingtalk)
+- [Magic SDK Usage & Examples](/api-reference/errors-tools-sdks/sdk-usage-examples)
+- [Authentication & Authorization](/api-reference/auth-rate-limits/api-authentication)
+
+
+---
+
+By following this guide, setting up Magic SDKs becomes a streamlined process, minimizing friction and accelerating your path to integrating powerful enterprise AI and messaging capabilities into your projects.
