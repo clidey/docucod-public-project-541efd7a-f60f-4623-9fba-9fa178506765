@@ -1,0 +1,200 @@
+---
+title: "User, Department, and Group Management"
+description: "Reference documentation for APIs to list users in departments, retrieve user profiles, manage department hierarchies, and programmatically manipulate conversation groups. Includes sample requests for onboarding users and syncing organizational structures."
+---
+
+# User, Department, and Group Management API Reference
+
+This reference page provides detailed documentation for APIs that enable you to manage users, departments, and conversation groups within your organization. These APIs empower you to list users in departments, retrieve detailed user profiles, explore department hierarchies, and programmatically manage conversation groups. You will find practical examples to assist with onboarding users, synchronizing organizational structures, and integrating with your enterprise messaging environment.
+
+---
+
+## 1. Overview
+
+Magic leverages detailed enterprise organizational data and messaging integrations to provide seamless user and group management. This API surface allows developers and administrators to:
+
+- **List users by department**, supporting pagination for large teams
+- **Retrieve detailed user profiles** by user ID, mobile phone, or login authorization code
+- **Fetch hierarchical department information**, including parent departments
+- **Manage conversation groups** programmatically for AI collaboration and enterprise messaging
+
+These APIs are essential for syncing organizational data and automating user onboarding workflows.
+
+---
+
+## 2. Authentication
+
+All endpoints require a valid OAuth 2.0 access token as a query parameter (`access_token`). Ensure your application obtains and refreshes tokens using Magic's authentication service before making requests.
+
+Callers must protect tokens according to security best practices to avoid unauthorized access.
+
+---
+
+## 3. User Management APIs
+
+### 3.1. List Users in a Department
+
+Retrieve detailed user information for all members of a specified department.
+
+- **Method**: POST
+- **Endpoint**: `/topapi/v2/user/list`
+- **Use Case**: Sync and onboard users by department within your system.
+
+#### Parameters
+
+| Parameter    | Type     | Description                                | Required |
+|--------------|----------|--------------------------------------------|----------|
+| `dept_id`    | integer  | ID of the department to list users from    | Yes      |
+| `cursor`     | integer  | Pagination cursor; start position for listing | No       |
+| `size`       | integer  | Number of users to return per request (max size limited by API) | No       |
+
+#### Request Example
+```json
+{
+  "dept_id": 123456789,
+  "cursor": 0,
+  "size": 50
+}
+```
+
+#### Response Highlights
+- `userlist`: Array of user objects with fields like `userid`, `name`, `mobile`, `email`, `job_number`, etc.
+- `hasMore`: Boolean indicating if more pages are available
+
+#### Best Practices
+- Always use `cursor` with `size` for pagination to efficiently handle large departments.
+- Cache user details to reduce redundant calls.
+
+---
+
+### 3.2. Get User Information by User ID
+
+Fetch comprehensive profile information for a user by their unique `userid`.
+
+- **Method**: POST
+- **Endpoint**: `/topapi/v2/user/get`
+
+#### Required Parameter
+- `userid` (string): The user’s unique identifier in the system.
+
+#### Use Case
+- Retrieve up-to-date user details for display or internal logic.
+
+#### Request Example
+```json
+{
+  "userid": "john.doe@example.com"
+}
+```
+
+### 3.3. Get User Information by Mobile Phone
+
+Look up user details by the registered mobile phone number.
+
+- **Method**: POST
+- **Endpoint**: `/topapi/v2/user/getbymobile`
+
+#### Parameter
+- `mobile` (string): User’s mobile phone number
+
+### 3.4. Get User Information by Authorization Code
+
+Use this endpoint to obtain user info based on a single sign-on (SSO) authorization code.
+
+- **Method**: POST
+- **Endpoint**: `/topapi/v2/user/getuserinfo`
+
+#### Parameter
+- `code` (string): Login authorization code obtained during SSO flow.
+
+#### Usage Scenario
+- Critical for implementing login flows where you authenticate users via an authorization code.
+
+---
+
+### 3.5. Get List of Department Administrators
+
+Fetch the list of administrators associated with your application or department.
+
+- **Method**: GET or POST depending on SDK
+- **Notes**: Returns array of admin user objects including their roles and permissions.
+
+---
+
+## 4. Department Hierarchy APIs
+
+### 4.1. Get All Parent Departments of a User
+
+Retrieve a list of all parent departments to which a user belongs.
+
+- **Method**: POST
+- **Endpoint**: `/topapi/v2/department/listparentbyuser`
+
+#### Parameter
+- `userid` (string): Unique user identifier
+
+#### Use Case
+- Understand user’s organizational context and access control based on hierarchy.
+
+---
+
+## 5. Conversation Group Management
+
+While the current API references focus primarily on user and department data retrieval, conversation groups underpin AI collaboration and messaging.
+
+Managing groups programmatically includes:
+
+- Creating conversation groups
+- Adding/removing users
+- Managing group topics and permissions
+
+For detailed workflows and endpoints related to conversations and messaging, see [Send Messages & Conversations API](https://your-docs-link/api-reference/im-conv-messaging/send-messages).
+
+---
+
+## 6. Practical Examples
+
+### Example: Fetch Users from a Department and Retrieve Profile Details
+
+1. Call `/topapi/v2/user/list` with `dept_id` and pagination params to get a list of users.
+2. For each user, use `/topapi/v2/user/get` with their `userid` to get detailed info.
+
+This flow is useful for syncing an organization’s directory.
+
+```http
+POST https://api.magic.com/topapi/v2/user/list?access_token=ACCESS_TOKEN
+Content-Type: application/json
+
+{
+  "dept_id": 837865406,
+  "cursor": 0,
+  "size": 50
+}
+```
+
+---
+
+## 7. Troubleshooting & Tips
+
+- **Invalid or expired access token**: Ensure tokens are fresh and correctly scoped.
+- **Empty user lists**: Verify department ID accuracy and user membership.
+- **Pagination not working**: Always include and update `cursor` for multi-page results.
+- **Authorization code errors**: Confirm code validity and timely exchange.
+
+If API calls fail, consult error responses for details and verify network connectivity.
+
+---
+
+## 8. Related Documentation
+
+- [Authentication & Authorization](https://your-docs-link/api-reference/auth-rate-limits/api-authentication): How to obtain and use access tokens.
+- [Send Messages & Conversations](https://your-docs-link/api-reference/im-conv-messaging/send-messages): APIs for messaging and conversation management.
+- [Third-Party Messaging Integration Guide](https://your-docs-link/guides/advanced-customization-integration/third-party-messaging-integration): For enterprise messaging platform integration.
+- [Workflow Orchestration](https://your-docs-link/guides/getting-started/workflow-orchestration): How to automate processes involving users and conversations.
+- [User Endpoint SDK Examples](https://github.com/dtyq/magic/blob/main/backend/easy-dingtalk/src/OpenDev/Endpoint/User/UserEndpoint.php): For practical SDK usage patterns.
+
+---
+
+## 9. Summary
+
+These APIs form the foundation for managing users and departments programmatically in Magic. By integrating these endpoints into your systems, you can automate user onboarding, maintain synchronization with organizational changes, and support rich conversational AI experiences within your teams.
