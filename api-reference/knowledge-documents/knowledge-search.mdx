@@ -1,0 +1,182 @@
+---
+title: "Knowledge Search & Retrieval"
+description: "Reference for semantic and full-text queries against the knowledge base. Explains query syntax, semantic ranking, complex search filters, and retrieving relevant snippets for chat or workflow nodes."
+---
+
+# Knowledge Search & Retrieval API Reference
+
+Discover how to leverage Magic’s Knowledge Search & Retrieval APIs to perform semantic and full-text searches against your enterprise knowledge base. This reference guides you through constructing powerful queries, applying advanced filters, using semantic ranking, and retrieving relevant content snippets ideal for chat or workflow automation nodes.
+
+---
+
+## Overview
+Magic’s Knowledge Search & Retrieval API enables users and applications to query the knowledge base efficiently using natural language and structured filters. It supports both semantic search — understanding intent and context — as well as traditional full-text search. This API is key for building intelligent assistants and workflow nodes that provide precise, context-aware information.
+
+Key capabilities include:
+
+- Rich query syntax supporting keywords and complex filters
+- Semantic ranking to surface the most relevant documents
+- Retrieval of context snippets to enrich AI conversations or workflow steps
+- Integration support for chatbots, workflow nodes, and other systems
+
+
+---
+
+## Query Syntax and Search Types
+
+### Semantic Queries
+Semantic queries leverage AI-powered embeddings and ranking algorithms to understand the user’s intent, going beyond literal keyword matching. This enables retrieval of documents that relate conceptually to the query, even if keywords differ.
+
+**Example use case:** Find company policy documents related to remote work even if the exact phrase isn't present.
+
+### Full-Text Queries
+Full-text queries perform classic keyword searches over documents. They are ideal for exact matches or filtering by specific terms.
+
+**Example use case:** Search for documents containing a certain product name or technical term.
+
+### Combining Semantic and Full-Text
+The API supports combining semantic ranking with full-text filters for precision and recall, balancing broad relevance and strict filtering.
+
+---
+
+## Building Queries: Parameters and Filters
+
+The API accepts a structured query object that defines:
+
+- **Query String:** The user’s search input (semantic or keywords)
+- **Filters:** Conditions to narrow down results by metadata such as document type, author, date ranges
+- **Ranking Options:** Controls to prioritize semantic relevance, recency, or popularity
+- **Pagination:** Parameters to limit and offset results for performance and UI loading
+
+
+### Key Parameters
+| Parameter       | Description                                                  | Example                         |
+|-----------------|--------------------------------------------------------------|--------------------------------|
+| `query`         | Search string, either natural language or keywords           | `"remote work policy"`        |
+| `filters`       | JSON object with filter conditions (e.g., `{type:"policy"}`) | `{ "type": "manual" }`      |
+| `semantic`      | Boolean flag to enable semantic ranking                      | `true`                         |
+| `rank_by`       | Ranking strategy (`semantic`, `recency`, `popularity`)       | `"semantic"`                  |
+| `page`          | Page number for paginated results                            | `1`                           |
+| `page_size`     | Number of results per page                                   | `20`                          |
+
+---
+
+## Using Snippets for Contextual Responses
+
+A standout feature is retrieving text snippets or passage highlights from documents alongside search results. These snippets can be fed directly into AI chat nodes or workflow steps to provide focused context without needing to load entire documents.
+
+### Snippet Benefits
+- Dramatically improve AI response relevance by narrowing context
+- Reduce data transfer and processing overhead
+- Highlight exact matching or semantically related passages
+
+### Example Snippet Retrieval Query
+```json
+{
+  "query": "How to apply for leave",
+  "semantic": true,
+  "page": 1,
+  "page_size": 5
+}
+```
+The response will include matching documents with excerpt snippets showing relevant paragraphs.
+
+---
+
+## Example: Performing a Semantic Search Request
+
+```http
+POST /api/knowledge-search
+Content-Type: application/json
+Authorization: Bearer YOUR_ACCESS_TOKEN
+
+{
+  "query": "best practices for remote team collaboration",
+  "semantic": true,
+  "filters": {
+    "category": "hr",
+    "language": "en"
+  },
+  "rank_by": "semantic",
+  "page": 1,
+  "page_size": 10
+}
+```
+
+### Expected Response Structure
+```json
+{
+  "results": [
+    {
+      "document_id": "doc123",
+      "title": "Remote Work Guidelines",
+      "snippet": "Effective communication and regular check-ins are key to remote collaboration...",
+      "relevance_score": 0.93,
+      "metadata": {
+        "author": "HR Team",
+        "date": "2024-01-10"
+      }
+    },
+    ...
+  ],
+  "total_count": 45,
+  "page": 1,
+  "page_size": 10
+}
+```
+
+---
+
+## Practical Usage Tips
+- **Start with semantic:true** when user queries are natural language for best contextual results.
+- **Use filters** to narrow results by document attributes or organizational structures to avoid irrelevant matches.
+- **Paginate smartly** to keep UI responsive and reduce API load.
+- **Retrieve snippets** for better AI chat responses or workflow node inputs.
+
+---
+
+## Common Pitfalls and Troubleshooting
+
+<AccordionGroup title="Troubleshooting Knowledge Search">
+<Accordion title="Empty or Irrelevant Results">
+- Check that your access token is valid and your app has proper permissions.
+- Verify the filter conditions aren’t overly restrictive.
+- For semantic queries, ensure the knowledge base is properly indexed with embedding vectors.
+</Accordion>
+
+<Accordion title="Slow Response Times">
+- Limit page size to smaller numbers (10-20) per request.
+- Avoid very broad searches without filters, which can increase processing.
+- Monitor backend status and indexing health.
+</Accordion>
+
+<Accordion title="Snippet Not Showing or Incomplete">
+- Confirm your query explicitly requests snippet retrieval.
+- Check document ingestion includes raw text for snippet extraction.
+- Review API response codes for partial failures.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Related API Reference Pages
+- [Document CRUD & Versioning](/api-reference/knowledge-documents/document-management): Manage knowledge base content
+- [Authentication & Authorization](/api-reference/auth-rate-limits/api-authentication): Obtain and use access tokens
+- [Send Messages & Conversations](/api-reference/im-conv-messaging/send-messages): Integrate chat interactions with knowledge content
+
+---
+
+## Next Steps
+- Explore building conversational AI agents that integrate semantic search results.
+- Combine knowledge retrieval with workflow automation to trigger document-based decisions.
+- Tune search filters and ranking to optimize user experience for your organizational knowledge.
+
+
+---
+
+For comprehensive guides on building workflows with Magic and enabling chatbots that use this API, see the [Workflow Automation & Magic Flow APIs](/api-reference/workflow-automation/flow-crud) and [Instant Messaging & Conversation APIs](/api-reference/im-conv-messaging/send-messages).
+
+
+---
+
+*Documentation generated from internal API references and integration guides.*

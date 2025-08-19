@@ -1,0 +1,391 @@
+{
+  "background": {
+    "decoration": "gradient"
+  },
+  "colors": {
+    "dark": "#1E3A8A",
+    "light": "#60A5FA",
+    "primary": "#60A5FA"
+  },
+  "favicon": "/favicon.svg",
+  "fonts": {
+    "family": "Montserrat",
+    "format": "woff2",
+    "source": "https://fonts.gstatic.com/s/googlesansflex/v5/t5sJIQcYNIWbFgDgAAzZ34auoVyXkJCOvp3SFWJbN5hF8Ju1x6sKCyp0l9sI40swNJwGpVd4AZzz0v6lJ4qFXNZhGjLvDSkV4USKMo6qQzwliVdHAy9jxTDHg_ugnAakpwGc-cxgUqDCIUI.woff2"
+  },
+  "icons": {
+    "library": "fontawesome"
+  },
+  "logo": {
+    "dark": "./logo/logo.svg",
+    "light": "./logo/logo.svg"
+  },
+  "name": "Magic - First Open-Source All-in-One AI Productivity Platform",
+  "navigation": {
+    "tabs": [
+      {
+        "groups": [
+          {
+            "group": "What is Magic?",
+            "pages": [
+              "overview/product-intro-and-value/product-overview",
+              "overview/product-intro-and-value/value-proposition",
+              "overview/product-intro-and-value/target-audiences"
+            ]
+          },
+          {
+            "group": "Platform Architecture \u0026 Ecosystem",
+            "pages": [
+              "overview/architecture-glance/product-matrix",
+              "overview/architecture-glance/system-architecture-diagram",
+              "overview/architecture-glance/integration-points"
+            ]
+          },
+          {
+            "group": "Core Concepts \u0026 Terminology",
+            "pages": [
+              "overview/key-concepts-and-terminology/core-concepts",
+              "overview/key-concepts-and-terminology/domain-terminology",
+              "overview/key-concepts-and-terminology/conceptual-workflow"
+            ]
+          },
+          {
+            "group": "Feature Highlights at a Glance",
+            "pages": [
+              "overview/feature-highlights/features-overview",
+              "overview/feature-highlights/quickstart-entry"
+            ]
+          }
+        ],
+        "tab": "Overview"
+      },
+      {
+        "groups": [
+          {
+            "group": "Prerequisites \u0026 Installation",
+            "pages": [
+              "getting-started/prerequisites-installation/system-requirements",
+              "getting-started/prerequisites-installation/installation-guide",
+              "getting-started/prerequisites-installation/cloud-service-and-community-edition"
+            ]
+          },
+          {
+            "group": "Configuration \u0026 Initial Setup",
+            "pages": [
+              "getting-started/configuration-initial-setup/environment-variables",
+              "getting-started/configuration-initial-setup/initial-configuration",
+              "getting-started/configuration-initial-setup/first-start-and-login"
+            ]
+          },
+          {
+            "group": "Validation \u0026 Troubleshooting",
+            "pages": [
+              "getting-started/validation-troubleshooting/quick-validation-steps",
+              "getting-started/validation-troubleshooting/common-setup-issues",
+              "getting-started/validation-troubleshooting/resources-and-support"
+            ]
+          }
+        ],
+        "tab": "Getting Started"
+      },
+      {
+        "groups": [
+          {
+            "group": "Getting Started \u0026 Core Workflows",
+            "pages": [
+              "guides/getting-started/quickstart-workspace",
+              "guides/getting-started/first-ai-agent",
+              "guides/getting-started/workflow-orchestration",
+              "guides/getting-started/ai-im-setup"
+            ]
+          },
+          {
+            "group": "Real-World Use Cases \u0026 Scenarios",
+            "pages": [
+              "guides/real-world-examples/knowledge-assistant",
+              "guides/real-world-examples/complex-task-agent",
+              "guides/real-world-examples/group-conversation-bots",
+              "guides/real-world-examples/ai-workflow-approval"
+            ]
+          },
+          {
+            "group": "Advanced Customization \u0026 System Integration",
+            "pages": [
+              "guides/advanced-customization-integration/custom-tools-plugins",
+              "guides/advanced-customization-integration/third-party-messaging-integration",
+              "guides/advanced-customization-integration/custom-llm-integration",
+              "guides/advanced-customization-integration/event-driven-extensibility"
+            ]
+          },
+          {
+            "group": "Best Practices \u0026 Optimization",
+            "pages": [
+              "guides/best-practices-optimization/system-config-management",
+              "guides/best-practices-optimization/workflow-performance-tuning",
+              "guides/best-practices-optimization/secure-deployment"
+            ]
+          }
+        ],
+        "tab": "Guides"
+      },
+      {
+        "groups": [
+          {
+            "group": "Authentication \u0026 Usage Basics",
+            "pages": [
+              "api-reference/auth-rate-limits/api-authentication",
+              "api-reference/auth-rate-limits/rate-limits-quotas"
+            ]
+          },
+          {
+            "group": "Instant Messaging \u0026 Conversation APIs",
+            "pages": [
+              "api-reference/im-conv-messaging/send-messages",
+              "api-reference/im-conv-messaging/user-and-group-lookup",
+              "api-reference/im-conv-messaging/callback-handling"
+            ]
+          },
+          {
+            "group": "Workflow Automation \u0026 Magic Flow APIs",
+            "pages": [
+              "api-reference/workflow-automation/flow-crud",
+              "api-reference/workflow-automation/flow-execution"
+            ]
+          },
+          {
+            "group": "Knowledge Base \u0026 Document APIs",
+            "pages": [
+              "api-reference/knowledge-documents/document-management",
+              "api-reference/knowledge-documents/knowledge-search"
+            ]
+          },
+          {
+            "group": "Errors, Tools, SDKs \u0026 Advanced Integration",
+            "pages": [
+              "api-reference/errors-tools-sdks/error-handling-status-codes",
+              "api-reference/errors-tools-sdks/sdk-usage-examples"
+            ]
+          }
+        ],
+        "tab": "API Reference"
+      },
+      {
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "sdks/getting-started-sdks/available-sdks",
+              "sdks/getting-started-sdks/sdk-installation-setup"
+            ]
+          },
+          {
+            "group": "Configuration \u0026 Authentication",
+            "pages": [
+              "sdks/configuration-auth/authentication-methods",
+              "sdks/configuration-auth/sdk-configuration-options"
+            ]
+          },
+          {
+            "group": "Usage Examples \u0026 Common Workflows",
+            "pages": [
+              "sdks/usage-patterns/quickstart-examples",
+              "sdks/usage-patterns/most-common-use-cases",
+              "sdks/usage-patterns/advanced-examples"
+            ]
+          },
+          {
+            "group": "Troubleshooting \u0026 Best Practices",
+            "pages": [
+              "sdks/troubleshooting-bestpractices/error-handling-debugging",
+              "sdks/troubleshooting-bestpractices/sdk-best-practices"
+            ]
+          }
+        ],
+        "tab": "SDKs"
+      },
+      {
+        "groups": [
+          {
+            "group": "Platform Architecture",
+            "pages": [
+              "concepts/architecture-overview/system-architecture",
+              "concepts/architecture-overview/component-ecosystem",
+              "concepts/architecture-overview/deployment-modes"
+            ]
+          },
+          {
+            "group": "Data Model \u0026 Workflow Foundations",
+            "pages": [
+              "concepts/data-and-schema-foundations/domain-models",
+              "concepts/data-and-schema-foundations/flow-schema",
+              "concepts/data-and-schema-foundations/vector-and-knowledge-model"
+            ]
+          },
+          {
+            "group": "Security Model \u0026 Permissions",
+            "pages": [
+              "concepts/security-permission-design/security-architecture",
+              "concepts/security-permission-design/permission-system",
+              "concepts/security-permission-design/data-isolation"
+            ]
+          },
+          {
+            "group": "Integration Patterns \u0026 Extensibility",
+            "pages": [
+              "concepts/integration-and-extensibility/api-ecosystem",
+              "concepts/integration-and-extensibility/external-integrations",
+              "concepts/integration-and-extensibility/tool-plugin-system"
+            ]
+          },
+          {
+            "group": "Performance \u0026 Scalability Principles",
+            "pages": [
+              "concepts/performance-scalability/scalability-foundations",
+              "concepts/performance-scalability/performance-optimizations"
+            ]
+          }
+        ],
+        "tab": "Concepts"
+      },
+      {
+        "groups": [
+          {
+            "group": "Getting Started with Deployment",
+            "pages": [
+              "deployment/getting-started-deployment/system-requirements-and-preparation",
+              "deployment/getting-started-deployment/quick-deployment-with-docker",
+              "deployment/getting-started-deployment/verifying-and-accessing-services"
+            ]
+          },
+          {
+            "group": "Environment Configuration \u0026 Customization",
+            "pages": [
+              "deployment/advanced-environment-configuration/configuring-environment-variables",
+              "deployment/advanced-environment-configuration/multi-environment-deployment-strategies",
+              "deployment/advanced-environment-configuration/storage-and-file-driver-configuration"
+            ]
+          },
+          {
+            "group": "Scaling, Monitoring \u0026 Disaster Recovery",
+            "pages": [
+              "deployment/scaling-monitoring-and-resilience/scaling-and-high-availability",
+              "deployment/scaling-monitoring-and-resilience/monitoring-and-logging-overview",
+              "deployment/scaling-monitoring-and-resilience/backup-and-disaster-recovery"
+            ]
+          },
+          {
+            "group": "Security Hardening \u0026 Best Practices",
+            "pages": [
+              "deployment/security-hardening-and-compliance/runtime-hardening-and-secrets-management",
+              "deployment/security-hardening-and-compliance/network-exposure-and-access-control"
+            ]
+          }
+        ],
+        "tab": "Deployment"
+      },
+      {
+        "groups": [
+          {
+            "group": "Authentication and Access Control",
+            "pages": [
+              "security/authentication-and-access/authentication-methods",
+              "security/authentication-and-access/access-control-and-authorization",
+              "security/authentication-and-access/multi-organization-and-tenant-isolation"
+            ]
+          },
+          {
+            "group": "Data Protection and Privacy",
+            "pages": [
+              "security/data-protection-and-privacy/data-encryption-and-storage",
+              "security/data-protection-and-privacy/api-security-and-transport",
+              "security/data-protection-and-privacy/privacy-and-data-deletion"
+            ]
+          },
+          {
+            "group": "Platform Defenses and Security Best Practices",
+            "pages": [
+              "security/platform-defenses-and-best-practices/ssrf-and-external-service-defense",
+              "security/platform-defenses-and-best-practices/middleware-and-audit-logging",
+              "security/platform-defenses-and-best-practices/security-hardening-and-updates"
+            ]
+          },
+          {
+            "group": "Compliance and Vulnerability Reporting",
+            "pages": [
+              "security/compliance-vulnerability-reporting/compliance-overview",
+              "security/compliance-vulnerability-reporting/vulnerability-reporting"
+            ]
+          }
+        ],
+        "tab": "Security"
+      },
+      {
+        "groups": [
+          {
+            "group": "Release History \u0026 Highlights",
+            "pages": [
+              "changelog/release-history/latest-release",
+              "changelog/release-history/complete-changelog",
+              "changelog/release-history/recent-highlights"
+            ]
+          },
+          {
+            "group": "Breaking Changes \u0026 Upgrade Guidance",
+            "pages": [
+              "changelog/breaking-changes-upgrades/breaking-changes",
+              "changelog/breaking-changes-upgrades/upgrade-instructions",
+              "changelog/breaking-changes-upgrades/compatibility-support-matrix"
+            ]
+          },
+          {
+            "group": "Advanced Changes \u0026 API/Integration Impact",
+            "pages": [
+              "changelog/advanced-change-analysis/api-changes",
+              "changelog/advanced-change-analysis/integration-impact"
+            ]
+          }
+        ],
+        "tab": "Changelog"
+      },
+      {
+        "groups": [
+          {
+            "group": "Getting Started \u0026 Common Questions",
+            "pages": [
+              "faq/getting-started-faq/requirements-installation-faq",
+              "faq/getting-started-faq/initial-config-guide-faq",
+              "faq/getting-started-faq/login-access-faq"
+            ]
+          },
+          {
+            "group": "Troubleshooting \u0026 Optimization",
+            "pages": [
+              "faq/platform-troubleshooting/troubleshooting-runtime-errors",
+              "faq/platform-troubleshooting/performance-optimization-faq",
+              "faq/platform-troubleshooting/integration-debugging"
+            ]
+          },
+          {
+            "group": "Help \u0026 Community Support",
+            "pages": [
+              "faq/support-resources/official-support-channels",
+              "faq/support-resources/community-and-discussion"
+            ]
+          },
+          {
+            "group": "Advanced Topics \u0026 Edge Cases",
+            "pages": [
+              "faq/advanced-topics-edge-cases/enterprise-scenarios-faq",
+              "faq/advanced-topics-edge-cases/customization-edge-cases-faq"
+            ]
+          }
+        ],
+        "tab": "FAQ"
+      }
+    ]
+  },
+  "styling": {
+    "codeblocks": "dark",
+    "eyebrows": "breadcrumbs"
+  }
+}

@@ -1,0 +1,286 @@
+---
+title: "Environment Variables"
+description: "Configure Magic's environment variables, including .env files for both Magic core and Super Magic modules. Guidance is provided on which variables must be set for minimal viability, such as connecting to language models and external services."
+---
+
+# Environment Variables Configuration Guide
+
+Welcome to the Environment Variables configuration guide for Magic. This document focuses exclusively on how to set up, customize, and manage the `.env` files and environment variables essential for configuring both the Magic core and Super Magic modules. Proper configuration of these variables is critical to connect your deployment to language models, databases, external services, and other core components.
+
+---
+
+## 1. Overview
+
+Magic relies heavily on environment variables loaded through `.env` files to manage its configuration across multiple layers of the platform. These variables define service versions, database credentials, AI model keys, application feature toggles, storage settings, and integration points with external systems.
+
+Your primary goal is to create and maintain a `.env` file tailored to your deployment environment, ensuring all required variables are set to achieve minimal viability.
+
+---
+
+## 2. Creating Your Environment Configuration File
+
+Magic provides a baseline configuration template called `.env.example`. Begin your configuration by copying this file:
+
+```bash
+cp .env.example .env
+```
+
+Open the newly created `.env` file and carefully edit values based on your deployment scenario:
+
+- **Development**: Adjust for local services and debug settings.
+- **Testing**: Reflect test endpoints and credentials.
+- **Production**: Use secure secrets, strong passwords, and reliable service endpoints.
+
+<Tip>
+Always keep your `.env` file out of version control to protect sensitive information.
+</Tip>
+
+---
+
+## 3. Key Environment Variable Categories
+
+Your `.env` file configures multiple domains. Below are the critical categories with examples and must-know parameters.
+
+### 3.1 Basic Service Configuration
+
+- **Service Version Tags**: Specify versions for Magic core services.
+
+```bash
+MAGIC_SERVICE_TAG=latest
+MAGIC_WEB_TAG=latest
+MAGIC_EDITION=COMMUNITY  # (Options: ENTERPRISE | COMMUNITY)
+```
+
+- **Git Repository URL**: For internal references and updates.
+
+```bash
+GIT_REPO_URL=git@github.com:dtyq
+```
+
+### 3.2 Database Configurations
+
+Configure each data system to allow Magic to store, retrieve, and process data.
+
+- **MySQL**
+
+```bash
+MYSQL_USER=magic
+MYSQL_PASSWORD=magic123456
+MYSQL_DATABASE=magic
+DB_HOST=db
+DB_PORT=3306
+DB_USERNAME=magic
+DB_PASSWORD=magic123456
+DB_CHARSET=utf8mb4
+DB_COLLATION=utf8mb4_unicode_ci
+```
+
+- **Redis**
+
+```bash
+REDIS_HOST=redis
+REDIS_AUTH=magic123456
+REDIS_PORT=6379
+REDIS_DB=0
+REDIS_PASSWORD=magic123456
+```
+
+- **RabbitMQ**
+
+```bash
+AMQP_HOST=rabbitmq
+AMQP_PORT=5672
+AMQP_USER=admin
+AMQP_PASSWORD=magic123456
+AMQP_VHOST=magic-chat
+```
+
+- **OpenSearch**
+
+```bash
+OPENSEARCH_DISCOVERY_TYPE=single-node
+OPENSEARCH_INITIAL_ADMIN_PASSWORD=Qazwsxedc!@#123
+```
+
+- **Qdrant** (Vector database for embeddings)
+
+```bash
+QDRANT_API_KEY=magic123456
+ODIN_QDRANT_BASE_URI=http://qdrant
+```
+
+### 3.3 Application Configuration
+
+Core application settings and feature switches allow control of runtime behavior.
+
+```bash
+APP_NAME=magic_service
+APP_ENV=dev
+ENABLE_CONSUME=true
+ENABLE_CHAT_MESSAGE=true
+ENABLE_MAGIC_WATCHDOG=false  # Disable watchdog in local dev
+```
+
+#### Super Admin & Organization White Lists
+
+```bash
+SUPER_WHITELISTS={"privilege_send_message":["13800000000","13900000000"]}
+ORGANIZATION_WHITELISTS={}
+```
+
+### 3.4 AI Model Configuration
+
+Set API keys and endpoints for AI services powering Magic’s capabilities.
+
+- Azure OpenAI and GPT Models
+
+```bash
+AZURE_OPENAI_4_API_KEY=
+AZURE_OPENAI_4O_GLOBAL_MODEL=gpt-4o-global
+```
+
+- Doubao Models
+
+```bash
+DOUBAO_PRO_32K_ENDPOINT=doubao-1.5-pro-32k
+DOUBAO_PRO_32K_API_KEY=
+```
+
+- DeepSeek Models
+
+```bash
+DEEPSEEK_R1_ENDPOINT=deepseek-reasoner
+DEEPSEEK_R1_API_KEY=
+```
+
+- Other AI Services
+
+```bash
+MISC_DMETA_EMBEDDING_API_KEY=
+MIRACLE_VISION_KEY=
+```
+
+### 3.5 External Services
+
+Include configuration for Google Search, application credentials, and Magic environment IDs.
+
+```bash
+HTTP_PROXY=
+GOOGLE_SEARCH_API_KEY=
+APP_ID=
+APP_SECRET=
+MAGIC_ENV_ID=1000
+```
+
+### 3.6 File Storage Configuration
+
+Determine your file storage driver and credentials.
+
+```bash
+FILE_DRIVER=local  # Options: local, oss, tos
+FILE_LOCAL_ROOT=/app/storage/files
+# For Aliyun OSS or Volc Engine TOS, include access keys and endpoints
+```
+
+### 3.7 Web Application Configuration
+
+Frontend service ports and URLs:
+
+```bash
+PORT=8080
+MAGIC_SOCKET_BASE_URL=ws://localhost:9502
+MAGIC_SERVICE_BASE_URL=http://localhost:9501
+```
+
+---
+
+## 4. Best Practices & Security Recommendations
+
+1. Never commit `.env` files to Git repositories or any public version control.
+2. Use strong passwords and rotate credentials regularly.
+3. Apply the principle of least privilege for all service accounts and API keys.
+4. Prefer external secrets management or environment variable injection methods in production.
+5. For local or first-time deployment, use the provided `.env.example` as a template.
+
+---
+
+## 5. First Deployment & Update Workflow
+
+Follow these steps to ensure your environment variables are correctly applied when deploying Magic.
+
+<Steps>
+<Step title="Create and Customize Your .env File">
+Copy `.env.example` to `.env` and modify values to match your environment.
+</Step>
+<Step title="Start Magic Using Startup Script">
+Run:
+```bash
+./bin/magic.sh start
+```
+This command will automatically create `.env` if missing, and launch services.
+</Step>
+<Step title="Initialize File System (If Using Cloud Storage)">
+If you are using oss or tos file drivers, run initialization:
+```bash
+php bin/hyperf.php file:init
+```
+</Step>
+<Step title="Restart Services After Changes">
+After any `.env` modification, restart Magic to load changes:
+```bash
+./bin/magic.sh restart
+```
+</Step>
+</Steps>
+
+---
+
+## 6. Troubleshooting Common Environment Issues
+
+<AccordionGroup title="Common Environment Variable Issues">
+<Accordion title="Magic Services Fail to Start">
+- Verify that all required variables (e.g. `APP_ENV`, database credentials) are present in `.env`.
+- Check that sensitive keys do not contain invalid characters or trailing spaces.
+- Confirm the `.env` file permissions allow read access by the service user.
+</Accordion>
+<Accordion title="Database Connection Errors">
+- Double-check `DB_HOST`, `DB_PORT`, `DB_USERNAME`, and `DB_PASSWORD`.
+- Ensure database service is reachable from the Magic host.
+- Validate MySQL and Redis are running and configured with matching credentials.
+</Accordion>
+<Accordion title="AI Model Authentication Failures">
+- Confirm API keys (`AZURE_OPENAI_4_API_KEY`, etc.) are correctly set.
+- Verify network connectivity to the AI service endpoints.
+- Look for typos or environment-specific overrides that prevent keys from loading.
+</Accordion>
+<Accordion title="File Storage Upload Fails">
+- Check that the chosen storage driver (`FILE_DRIVER`) matches configured credentials.
+- For Cloud storage, verify endpoint URLs and access keys.
+- Ensure `file:init` command was run after driver configuration.
+</Accordion>
+<Accordion title="Environment Variables Are Not Overriding System Variables">
+- The project uses `python-dotenv` with override enabled, ensuring `.env` values take precedence.
+- Make sure your `.env` file is loaded and contains the intended variables.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 7. Additional Resources
+
+- [File Driver Usage Guide](./file-driver.md) - Detailed configuration and usage of file storage drivers.
+- [Super Magic Configuration](backend/magic-service/config/autoload/super-magic.php) - Environment driven config for Super Magic module.
+- [Search Configuration](backend/magic-service/config/autoload/search.php) - Details for configuring search backend environment variables.
+- For custom environment loading behavior, refer to the [dotenv priority configuration](backend/super-magic/guides/dotenv_configuration.md).
+
+---
+
+## 8. Summary
+
+Environment variables are the backbone of configuring Magic’s multi-service ecosystem. This guide empowers you to build reliable, secure, and environment-specific `.env` configurations that enable Magic to connect seamlessly with databases, AI models, external APIs, and file storage. Follow best practices to keep secrets secure and your deployment stable.
+
+Your next step: customize the `.env` for your environment, start Magic with the startup script, and validate connectivity for your key services.
+
+---
+
+For full context and related setup, see the [Getting Started Configuration & Initial Setup](https://your-docs-link/getting-started/configuration-initial-setup/) documentation section.

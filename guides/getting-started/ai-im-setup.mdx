@@ -1,0 +1,209 @@
+---
+title: "Enabling Collaborative AI Conversations (Magic IM)"
+description: "Practical walkthrough on setting up Magic IM, connecting knowledge bases, enabling group and multi-turn conversations, and integrating AI agents into enterprise messaging environments."
+---
+
+# Enabling Collaborative AI Conversations (Magic IM)
+
+Welcome to the practical guide on setting up and enabling Magic IM — Magic’s powerful instant messaging (IM) module for collaborative AI conversations. This walkthrough helps you seamlessly connect knowledge bases, enable group and multi-turn conversations, and integrate AI agents into your enterprise messaging environment to unlock collaborative intelligence.
+
+---
+
+## 1. What You Will Achieve
+
+This guide empowers you to:
+- Set up and configure Magic IM for real-time AI-assisted messaging.
+- Connect knowledge bases to enrich conversations.
+- Enable group chat rooms with multi-turn AI interactions.
+- Integrate AI agents into popular enterprise messaging platforms.
+
+By the end, you will have a fully operational, AI-driven conversational platform capable of supporting collaborative workflows across your organization.
+
+---
+
+## 2. Prerequisites
+
+Before you begin, ensure:
+- Magic platform and core services are installed and running. Follow the [Installation Guide](https://magic/docs/getting-started/prerequisites-installation/installation-guide) if needed.
+- You have administrative access to the Magic web console.
+- Your knowledge bases are set up and indexed within Magic's system (for knowledge-driven AI responses).
+- You have credentials and configuration details for your target messaging platforms (e.g., DingTalk, WeCom, Feishu).
+
+---
+
+## 3. Setup Overview
+
+Magic IM ties together:
+- **The Magic AI Chat API** to process messages and manage conversational context.
+- **Knowledge connectors** to provide intelligent context-aware answers.
+- **Messaging platform adapters** that enable sending and receiving messages across enterprise channels.
+
+The workflow:
+1. A user sends a message in the enterprise messaging app.
+2. Magic IM routes the message to AI agents enhanced by linked knowledge.
+3. AI processes the message, maintains conversation history, and generates responses.
+4. Responses are delivered back to group chats or individuals in real time.
+
+---
+
+## 4. Step-by-Step Setup Instructions
+
+### 4.1 Enable Magic IM Services
+
+1. **Verify Magic AI Chat API is active**
+   - Ensure the backend service `magic-service` is running, as it hosts the AI chat endpoints.
+   - Use Quick Validation Steps to confirm health: `curl http://<magic_host>:<port>/api/status`
+
+2. **Enable IM modules in Magic configuration**
+   - In your Magic config files (usually under `/config`), confirm IM features are enabled, especially the Magic AI Chat API route:
+
+```php
+// Example: Confirm MagicAIApi service registration
+use App\Infrastructure\ExternalAPI\MagicAIApi\MagicAIApi;
+// MagicAIApi exposes 'chat' endpoint for conversations
+```
+
+3. **Restart Magic services** to load configuration changes.
+
+### 4.2 Connect Knowledge Bases
+
+- Navigate to the Magic web console > Knowledge Management.
+- Link or upload your document sources, indexes, or FAQs.
+- Use connectors to bind the knowledge base to your AI Chat agents.
+
+This connection ensures AI responses incorporate factual, company-specific information.
+
+### 4.3 Configure Messaging Platform Integration
+
+Magic IM supports popular enterprise messaging platforms like DingTalk, WeCom, and Feishu.
+
+#### Example: Setting Up DingTalk Integration
+
+1. Obtain your DingTalk app credentials (`app_key` and `app_secret`).
+2. Configure Magic's DingTalk SDK:
+
+```php
+use Dtyq\EasyDingTalk\Hyperf\DingtalkFactory;
+
+$container = // Get your DI container
+$dingtalkFactory = new DingtalkFactory($container);
+$openDevFactory = $dingtalkFactory->createOpenDevFactory();
+// Set app credentials
+$config = [
+  'app_key' => 'your_app_key',
+  'app_secret' => 'your_app_secret',
+];
+// Apply the config in Magic environment or config files
+```
+
+3. Enable webhook callbacks and conversation APIs for your DingTalk bot (follow DingTalk official docs).
+4. Restart Magic services to load integration.
+
+### 4.4 Establish AI Agents in Group Conversations
+
+- Create or assign AI agents in the Magic console with defined roles.
+- Link these agents to your IM integration.
+- Enable “multi-turn conversation” mode to preserve dialogue context.
+- In group chat environments, configure triggers or mentions to activate AI responses.
+
+### 4.5 Test Your Setup
+
+- From your connected messaging platform, send a message mentioning the AI bot.
+- Confirm the AI replies with relevant information drawing from the knowledge base and conversation context.
+- Check Magic’s monitoring logs or console output for conversation flows.
+
+If you face issues, consult the Troubleshooting section below.
+
+---
+
+## 5. Best Practices
+
+- **Keep your knowledge base updated** to maintain accuracy in AI responses.
+- **Enable context window limits** in multi-turn conversations to optimize performance.
+- **Configure conversation retention policies** to protect user privacy.
+- **Monitor message throughput and API latency** to ensure smooth user experience.
+- **Use agent persona profiles** to tailor AI behaviour for different conversation scenarios.
+
+---
+
+## 6. Troubleshooting Common Issues
+
+<AccordionGroup title="Troubleshooting Magic IM Setup">
+<Accordion title="AI Responses Not Appearing in Messaging Platform">
+- Verify that the messaging webhook callbacks are correctly configured and reachable.
+- Confirm Magic IM services are running and reachable on the expected network ports.
+- Check API keys and secrets for typing errors or expired tokens.
+- Review Magic IM logs for warnings or errors related to message processing.
+</Accordion>
+<Accordion title="Group Conversations Not Maintaining Context">
+- Ensure multi-turn conversation mode is enabled.
+- Check that session IDs or conversation IDs are correctly passed and tracked.
+- Monitor if memory limits or timeout settings are truncating conversation history.
+- Validate the AI agent’s conversational state persistence configuration.
+</Accordion>
+<Accordion title="Knowledge Base Content Not Reflected in Answers">
+- Confirm the knowledge base integration is active and indexes are up to date.
+- Trigger manual indexing or refresh within Magic’s management console.
+- Check if AI models have permission or access to fetch knowledge data.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 7. Advanced Configuration
+
+- Automate user onboarding in messaging platforms to assign AI bots dynamically.
+- Customize AI agents with specific instruction sets to align with company policies.
+- Integrate additional messaging platforms or create custom adapters.
+
+Refer to [Third-Party Messaging Integration Guide](https://magic/docs/guides/advanced-customization-integration/third-party-messaging-integration) for detailed expansion.
+
+---
+
+## 8. Next Steps
+
+After setting up Magic IM:
+- Explore creating and customizing AI agents with [Creating Your First AI Agent](https://magic/docs/guides/getting-started/first-ai-agent).
+- Build automated, AI-assisted workflows via [Magic Flow Orchestration](https://magic/docs/guides/getting-started/workflow-orchestration).
+- Enhance collaboration by enabling more multi-agent conversation scenarios.
+
+---
+
+## Appendix: Example API Integration Snippet
+
+```php
+use App\Infrastructure\ExternalAPI\MagicAIApi\MagicAIApi;
+
+// Initialize Magic AI API container
+$container = // Dependency Injection container
+
+$magicAI = new MagicAIApi($container);
+
+// Send a chat message to AI chat route
+$response = $magicAI->chat->sendMessage([
+    'conversation_id' => 'group_chat_1234',
+    'user_id' => 'user_xyz',
+    'message' => 'What are the latest updates on project X?',
+]);
+
+// Handle response
+echo $response['reply'];
+```
+
+---
+
+## References & Further Reading
+
+- [Magic Installation Guide](https://magic/docs/getting-started/prerequisites-installation/installation-guide)
+- [Magic Flow Orchestration Guide](https://magic/docs/guides/getting-started/workflow-orchestration)
+- [Knowledge Base Management](https://magic/docs/knowledge-management)
+- [Third-Party Messaging Integration](https://magic/docs/guides/advanced-customization-integration/third-party-messaging-integration)
+- [Troubleshooting Common Setup Issues](https://magic/docs/getting-started/validation-troubleshooting/common-setup-issues)
+
+---
+
+With this guide, you are fully equipped to enable and harness the power of collaborative AI conversations in your organization using Magic IM. Reach out to the community forums or support channels for additional assistance.
+
+<Check>
+Validate Magic IM functionality regularly by sending test messages and monitoring for seamless context-aware AI replies in your enterprise chat environment.
+</Check>

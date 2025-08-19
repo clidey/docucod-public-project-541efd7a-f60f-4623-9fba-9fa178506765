@@ -1,0 +1,274 @@
+---
+title: "Troubleshooting Common Setup Issues"
+description: "Find solutions for frequently encountered setup problems—including container failures, port conflicts, permission errors, and missing environment variables. This page offers streamlined troubleshooting guides for the most common friction points in onboarding."
+---
+
+# Troubleshooting Common Setup Issues
+
+This guide helps you quickly diagnose and resolve frequent setup problems encountered during Magic's installation and initial configuration. Whether you face container startup failures, port conflicts, permission issues, or missing environment variables, this page provides straightforward, actionable solutions to get you back on track with minimal downtime.
+
+---
+
+## 1. Container Startup Failures
+
+Containers are central to running Magic's services efficiently. If containers fail to start, follow these steps to isolate and fix the problem.
+
+### Step 1: Check Container Logs
+
+Run the following command to get real-time logs for the container(s):
+
+```bash
+docker-compose logs -f
+```
+
+Look for error messages that indicate missing files, permission problems, or environment misconfigurations.
+
+### Step 2: Validate Docker and Docker Compose Versions
+
+Ensure your environment meets the minimum requirements:
+
+- Docker version 20.10 or higher
+- Docker Compose version 1.29 or higher
+
+Check your versions using:
+
+```bash
+docker --version
+docker-compose --version
+```
+
+Upgrade if necessary.
+
+### Step 3: Confirm Resource Availability
+
+Containers might fail if your system lacks sufficient memory or CPU resources. Verify your system has at least 4GB of free RAM and available CPU cores.
+
+### Step 4: Restart Docker Service
+
+Sometimes, simply restarting Docker helps:
+
+```bash
+sudo systemctl restart docker
+```
+
+### Troubleshooting Tip:
+- If the error mentions volume mounting or permission denied, skip to the **Permission Errors** section below.
+
+---
+
+## 2. Port Conflicts
+
+Magic services use predefined ports for communication. Conflicts occur when another process occupies one of these ports.
+
+### Step 1: Identify Occupied Ports
+
+Run:
+
+```bash
+sudo lsof -i -P -n | grep LISTEN
+```
+
+Look for ports Magic needs (default: 8080, 8000, 5672 for RabbitMQ, etc.).
+
+### Step 2: Change Service Port Configurations
+
+If ports are taken, update the ports in your `docker-compose.yml` or configuration files.
+
+Example snippet to change the web UI port from 8080 to 8090:
+
+```yaml
+services:
+  webui:
+    ports:
+      - "8090:8080"
+```
+
+Restart services after changes.
+
+### Step 3: Stop Conflicting Applications
+
+Alternatively, stop the application using the conflicting port if possible.
+
+```bash
+sudo kill $(sudo lsof -t -i:<port-number>)
+```
+
+---
+
+## 3. Permission Errors
+
+Permission issues commonly block file access, volume mounts, or container execution.
+
+### Step 1: Check Directory Ownership
+
+Verify ownership of the Magic installation directory and data volumes:
+
+```bash
+ls -ld /path/to/magic
+```
+
+Make sure your user has read/write access.
+
+### Step 2: Fix Permissions
+
+Grant proper permissions recursively:
+
+```bash
+sudo chown -R $USER:$USER /path/to/magic
+chmod -R u+rw /path/to/magic
+```
+
+### Step 3: Avoid Running as Root
+
+Do not run Docker commands with `sudo` unless absolutely necessary; prefer managing Docker permissions for your user.
+
+### Step 4: SELinux and AppArmor
+
+If using SELinux or AppArmor, ensure policies allow Docker to access volumes. Temporarily disable SELinux to test:
+
+```bash
+sudo setenforce 0
+```
+
+Re-enable after testing:
+
+```bash
+sudo setenforce 1
+```
+
+---
+
+## 4. Missing or Incorrect Environment Variables
+
+Magic relies on environment variables for configuration.
+
+### Step 1: Verify `.env` File
+
+Make sure the `.env` file exists at the root of your Magic directory and contains keys such as:
+
+```env
+APP_KEY=your_app_key
+APP_SECRET=your_app_secret
+DATABASE_URL=mysql://user:pass@localhost/magicdb
+```
+
+### Step 2: Reload Environment Variables
+
+After any update, reload them with:
+
+```bash
+source .env
+```
+
+If using Docker Compose, restart with:
+
+```bash
+docker-compose down && docker-compose up -d
+```
+
+### Step 3: Check for Typographical Errors
+
+Ensure all variable names are correct and values are complete.
+
+### Step 4: Use Default Values with Caution
+
+Avoid relying on default environment variables unless documented; explicitly set required keys.
+
+---
+
+## 5. Common Error Messages and Their Meaning
+
+| Error Message                         | Explanation                                    | Suggested Action                         |
+|-------------------------------------|------------------------------------------------|-----------------------------------------|
+| `无效参数` (Invalid Parameter)      | A parameter provided to the API is incorrect  | Review parameters sent in your API calls |
+| `无效配置` (Invalid Config)          | Missing or incorrect app_key/app_secret        | Verify keys in the configuration          |
+| `获取access_token失败`               | Failed to retrieve access token                 | Check API credentials & connectivity      |
+| `端口已被占用` (Port Already in Use) | Port conflict in service startup                | Change ports or stop conflicting process  |
+
+---
+
+## 6. Verifying a Successful Setup
+
+Once resolved, confirm your system is operational:
+
+1. **Containers Running:**
+
+```bash
+docker-compose ps
+```
+
+All Magic containers should show as `Up`.
+
+2. **Access Web UI:**
+
+Open your browser to `http://localhost:<your-configured-port>`.
+
+3. **Basic API Call:**
+
+Run a simple test to retrieve an access token from the SDK:
+
+```php
+use Dtyq\EasyDingTalk\OpenDevFactory;
+
+$factory = new OpenDevFactory([
+    'app_key' => 'your_app_key',
+    'app_secret' => 'your_app_secret',
+]);
+
+try {
+    $accessToken = $factory->getAccessToken();
+    echo "Access Token retrieved:\n" . $accessToken;
+} catch (Exception $e) {
+    echo 'Error: ' . $e->getMessage();
+}
+```
+
+A valid token confirms connectivity and correct credentials.
+
+---
+
+## 7. Getting Additional Help
+
+If problems persist:
+
+- Visit the [Getting Help & Additional Resources](./resources-and-support) page for community support.
+- Review the [Installation Guide](../prerequisites-installation/installation-guide) and [Initial Configuration](../configuration-initial-setup/initial-configuration) for setup correctness.
+- Check logs and error details carefully.
+
+---
+
+## Summary
+
+Troubleshooting Magic setup should start with checking container logs and environment variables, verifying ports and permissions, and validating configurations such as app keys and secrets. Following the structured diagnostics here will help you overcome most onboarding friction points quickly.
+
+---
+
+<AccordionGroup title="Troubleshooting Quick Reference">
+<Accordion title="Container Startup Troubleshooting">
+- Run `docker-compose logs -f` to identify errors.
+- Confirm Docker and Compose versions.
+- Check system resources.
+</Accordion>
+<Accordion title="Fixing Port Conflicts">
+- Use `sudo lsof -i -P -n | grep LISTEN` to find conflicts.
+- Modify port mappings in `docker-compose.yml`.
+- Stop conflicting services if possible.
+</Accordion>
+<Accordion title="Resolving Permission Problems">
+- Verify ownership of directories.
+- Use `chown` and `chmod` to set permissions.
+- Manage SELinux/AppArmor settings.
+</Accordion>
+<Accordion title="Verifying Environment Variables">
+- Ensure `.env` exists and variables are set.
+- Reload environment variables properly.
+</Accordion>
+</AccordionGroup>
+
+<Tip>
+Always check the exact error output during container startup and API calls—error messages like '无效配置' or '获取access_token失败' precisely indicate what part of your setup needs attention.
+</Tip>
+
+<Note>
+Keep your `app_key` and `app_secret` confidential and correctly configured in your environment variables for successful API authentication.
+</Note>

@@ -1,0 +1,174 @@
+---
+title: "System Requirements"
+description: "Understand the minimum and recommended system requirements for deploying Magic, including Docker, Docker Compose versions, and supported operating systems. Learn what resources and permissions are necessary to ensure a successful deployment, whether on a local machine or a cloud server."
+---
+
+# System Requirements for Magic Deployment
+
+Welcome to the System Requirements page. Here you'll find everything you need to prepare your environment for a successful Magic deployment. Whether you're setting up on a local machine or a cloud server, this guide walks you through the essential hardware, software, and permission prerequisites.
+
+---
+
+## 1. Supported Operating Systems
+Magic supports deployment on the following operating systems:
+
+- **Linux** (preferred for production environments)
+- **macOS** (ideal for local development and testing)
+- **Windows 10 and later** (via WSL 2 or native Docker Desktop)
+
+> **Tip:** For production, Linux distributions like Ubuntu 20.04+ or CentOS 8+ provide the best compatibility.
+
+---
+
+## 2. Hardware Requirements
+To ensure smooth operation, your environment should meet the following minimum hardware specifications:
+
+| Resource       | Minimum          | Recommended     |
+|----------------|------------------|-----------------|
+| CPU            | 2 cores          | 4+ cores        |
+| RAM            | 4 GB             | 8+ GB           |
+| Storage        | 20 GB free space | 50+ GB SSD      |
+| Network        | Stable broadband | Gigabit Ethernet|
+
+> **Note:** Heavy AI workloads and multi-agent orchestration can benefit significantly from additional RAM and faster CPUs.
+
+---
+
+## 3. Required Software Dependencies
+Magic relies on containerization to streamline installation and isolation. Ensure the following software and versions are installed and configured:
+
+- **Docker:** 
+  - Minimum version: 20.10
+  - Recommended: Latest stable release
+- **Docker Compose:**
+  - Minimum version: 1.29
+  - Recommended: Latest stable release supporting Compose v2 syntax
+
+> **Important:** Docker must be properly configured with adequate permissions (e.g., user belongs to `docker` group on Linux).
+
+> **Tip:** Verify Docker Compose version by running `docker-compose --version`.
+
+### Installing Docker & Docker Compose
+
+- On **Linux** (Ubuntu example):
+
+  ```bash
+  sudo apt update
+  sudo apt install -y docker.io docker-compose
+  sudo systemctl start docker
+  sudo systemctl enable docker
+  sudo usermod -aG docker $USER
+  newgrp docker
+  ```
+
+- On **macOS** and **Windows**:
+
+  Install [Docker Desktop](https://www.docker.com/products/docker-desktop) and enable the WSL 2 integration on Windows.
+
+---
+
+## 4. Network and Permissions
+
+Ensure your environment allows the following:
+
+- Outbound HTTPS access for downloading base images and libraries
+- Open Docker daemon port (default: Unix socket or TCP as configured)
+- Firewall rules permitting container traffic internally
+
+<Warning>
+Improper Docker permissions or restrictive firewalls can cause deployment failures. Confirm your user has Docker access and networking permits container communication.
+</Warning>
+
+---
+
+## 5. User Account and Access Rights
+
+- Administrator/root access during installation to configure Docker and system-level dependencies
+- SSH or remote access to cloud or server environments
+- Ability to modify environment variables and system configurations if needed
+
+---
+
+## 6. Verifying Your Environment
+
+After setup, verify your environment before proceeding:
+
+### Step 1: Check Docker version
+```bash
+docker --version
+```
+Expected output: `Docker version 20.10.x, build ...`
+
+### Step 2: Check Docker Compose version
+```bash
+docker-compose --version
+```
+Expected output: `docker-compose version 1.29.x, build ...`
+
+### Step 3: Test Docker run
+```bash
+docker run hello-world
+```
+You should see a message confirming Docker can run and pull containers.
+
+<Check>
+If you encounter permission denied errors, ensure your user is part of the Docker group or run commands with `sudo`.
+</Check>
+
+---
+
+## 7. Summary Checklist
+- Operating system supported and up to date
+- Hardware meets minimum specs
+- Docker (>= 20.10) and Docker Compose installed
+- User permissions configured for Docker
+- Network settings allow container image download and internal communication
+
+---
+
+## 8. Troubleshooting Common System Issues
+
+<AccordionGroup title="Troubleshooting System Preparation">
+<Accordion title="Docker installation fails or commands not found">
+- Verify installation steps for your OS
+- Ensure `$PATH` includes Docker binaries
+- Restart your terminal or system after installation
+</Accordion>
+<Accordion title="Permission denied when running Docker commands">
+- Add your user to the `docker` group:
+
+  ```bash
+  sudo usermod -aG docker $USER
+  newgrp docker
+  ```
+
+- Alternatively, prepend commands with `sudo`.
+</Accordion>
+<Accordion title="Firewall or proxy blocking Docker image downloads">
+- Ensure outbound HTTPS (port 443) is open
+- Configure proxy settings for Docker if behind corporate proxy
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 9. Next Steps
+With your system prepared, proceed to the [Installation Guide](/getting-started/prerequisites-installation/installation-guide) to deploy Magic. 
+
+For configuring advanced environment variables, see [Environment Variables](/getting-started/configuration-initial-setup/environment-variables).
+
+If you encounter issues, consult [Troubleshooting Common Setup Issues](/getting-started/validation-troubleshooting/common-setup-issues) or reach out via our support channels.
+
+---
+
+By ensuring your environment aligns with these requirements, you set a solid foundation for a successful Magic deployment experience.
+
+---
+
+<Info>
+Want a quick overview? Visit the [Quickstart: First Steps](https://docs.magic.com/overview/feature-highlights/quickstart-entry) guide to combine system readiness with a hands-on walkthrough.
+</Info>
+
+---
+
+*This documentation reflects the latest stable support matrix as of the current Magic version.*

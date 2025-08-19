@@ -1,0 +1,167 @@
+---
+title: "Getting Started: First Steps"
+description: "Guides users on how to run Magic locally, highlights required system settings, initial login process, and the most direct path to value for developers and business users alike."
+---
+
+# Getting Started: First Steps
+
+Start your journey with Magic by setting up the local environment, completing initial configuration, and logging into the platform. This guide walks developers and business users through the essential steps required to quickly experience Magic’s AI productivity capabilities.
+
+---
+
+## Why Start Here?
+Starting Magic locally helps you directly interact with its powerful AI orchestration, chat, and knowledge management features. Understanding the system requirements and login process ensures a smooth onboarding experience and rapid access to value.
+
+This page focuses exclusively on running Magic on your machine, highlighting the prerequisites, login flow, and early wins to get you productive fast.
+
+---
+
+## System Requirements
+Before diving in, verify your system meets these basic requirements to ensure successful installation and operation:
+
+- **Operating System:** Linux, macOS, or Windows with WSL.
+- **Hardware:** Minimum 4 CPU cores and 8GB RAM recommended for comfortable usage
+- **Software:** 
+  - PHP 8.1 or higher
+  - Composer for dependency management
+  - Docker (optional yet highly recommended for containerized setup)
+  - Supported database (MySQL or compatible)
+- **Network:** Reliable internet connection required to fetch dependencies and connect to external AI model services
+
+Check the [System Requirements](/getting-started/prerequisites-installation/system-requirements) page for detailed hardware and software prerequisites.
+
+---
+
+## Installation & Running Locally
+
+Follow these streamlined steps to get Magic running on your local machine:
+
+<Steps>
+<Step title="Clone the Repository">
+Open your terminal and run:
+
+```bash
+git clone https://github.com/dtyq/magic.git
+cd magic
+```
+</Step>
+<Step title="Install Dependencies">
+Use Composer to install PHP dependencies:
+
+```bash
+composer install
+```
+
+This will set up all necessary packages and libraries.
+</Step>
+<Step title="Configure Environment Variables">
+Create a `.env` file by copying `.env.example` and update key settings such as database connection strings and API keys.
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env`:
+
+- Set `DB_HOST`, `DB_USERNAME`, and `DB_PASSWORD`.
+- Configure AI model provider keys if applicable.
+</Step>
+<Step title="Database Setup">
+Run migrations to prepare the database:
+
+```bash
+php artisan migrate
+```
+
+This initializes the necessary tables and schema.
+</Step>
+<Step title="Start the Local Server">
+Run the PHP built-in server or use Docker:
+
+- Using PHP server:
+
+```bash
+php artisan serve
+```
+
+- Using Docker (recommended):
+
+Follow instructions in [Quick Deployment with Docker](/deployment/getting-started-deployment/quick-deployment-with-docker).
+</Step>
+</Steps>
+
+---
+
+## Initial Login Process
+
+Once Magic is running, access the web UI by navigating to `http://localhost:8000` (or the configured port).
+
+### First-Time Login
+
+- Use the default administrator credentials (specified during setup or documented in `.env.example`).
+- Upon first login, change your password for security.
+- Optionally, create or join an organization to start collaborative workflows.
+
+### Post-Login Quick Tasks
+
+- Explore the Dashboard for an overview of active AI agents and workflows.
+- Access the Knowledge Base to upload or link documents.
+- Start a new conversation or AI workflow with guided prompts.
+
+---
+
+## Path to Early Value
+
+Magic delivers tangible benefits quickly by enabling you to:
+
+- **Create AI Agents:** Use pre-built templates to launch assistants for common tasks.
+- **Experiment with Magic Flow:** Build simple workflows visually to familiarize yourself with orchestration.
+- **Engage in Collaborative Chat:** Leverage the integrated chat interface for AI-powered discussions.
+- **Explore Knowledge Management:** Upload documents and query them using AI for immediate insights.
+
+These initial activities let you experience Magic's productivity boost firsthand and set the stage for deeper customization.
+
+---
+
+## Best Practices & Tips
+
+- **Save your `.env` file securely** since it contains sensitive keys.
+- **Use Docker for consistent environment replication**, especially in team settings.
+- **Regularly update dependencies** with `composer update` to benefit from improvements.
+- **Explore sample AI agents** provided in the docs to accelerate learning.
+- **Back up your database** before running major migrations or upgrades.
+
+---
+
+## Troubleshooting Common Issues
+
+<AccordionGroup title="Troubleshooting Tips">
+<Accordion title="Installation Fails or Dependencies Missing">
+Verify your PHP version matches the requirement and Composer is installed properly. Run `composer diagnose` to identify issues.
+</Accordion>
+<Accordion title="Database Connection Errors">
+Check your `.env` configuration for correct database credentials and network access. Confirm your database service is running.
+</Accordion>
+<Accordion title="Login Fails or Admin Credentials Not Working">
+Reset credentials following the recovery instructions or check if migrations completed successfully.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+Having completed initial setup and login, explore the following documentation to deepen your Magic expertise:
+
+- [Quickstart: From Zero to Magic Productivity](/guides/getting-started/quickstart-workspace) for hands-on workflow creation.
+- [Creating Your First AI Agent (Super Magic Walkthrough)](/guides/getting-started/first-ai-agent) to build and deploy intelligent agents.
+- [System Requirements](/getting-started/prerequisites-installation/system-requirements) for detailed environment preparation.
+- [Value Proposition & Key Benefits](/overview/product-intro-and-value/value-proposition) to understand strategic advantages.
+
+---
+
+By following this path, you will move rapidly from installation to meaningful use, unlocking the full potential of Magic’s AI productivity platform.
+
+---
+
+> For further assistance, visit our [Getting Help & Additional Resources](/getting-started/validation-troubleshooting/resources-and-support) page or consult the community forums.

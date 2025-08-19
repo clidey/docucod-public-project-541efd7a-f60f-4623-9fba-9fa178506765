@@ -1,0 +1,206 @@
+---
+title: "Error Handling & Status Codes"
+description: "Comprehensive enumeration of API error codes, meanings, and actionable remedies. Includes strategies for catching, logging, and programmatically responding to errors, plus detailed HTTP status code mapping."
+---
+
+## Error Handling & Status Codes
+
+Effectively managing errors is critical to building reliable and maintainable integrations with the Magic platform's API. This documentation provides you with a thorough catalog of error codes, their meanings, and actionable remedies. It also guides you through best practices for catching, logging, and programmatically responding to errors encountered during API interactions. Additionally, detailed mappings of HTTP status codes are included to help you interpret the API's responses accurately.
+
+---
+
+### 1. Understanding API Error Codes
+
+Magic APIs use a consistent error code structure that reflects both HTTP status and application-level errors.
+
+| Error Code        | Meaning             | Description                                  | Typical Cause                                      |
+|-------------------|---------------------|----------------------------------------------|---------------------------------------------------|
+| 400               | Bad Request         | The request was malformed or invalid.       | Invalid parameters, malformed JSON, missing fields|
+| 500               | System Error        | An internal server error occurred.           | Unexpected fault in processing or service failure|
+| 40000 (TEA_ERROR) | Framework Error     | Low-level SDK or framework error.            | SDK internal issue or network failure             |
+| 40001             | Invalid Parameter   | One or more request parameters are invalid. | Parameter type mismatch, out-of-range, or missing |
+| 40002             | Invalid Config      | Configuration is invalid or incomplete.      | Credentials missing, invalid token, or misconfiguration|
+| 40003             | Invalid Result      | Response format or content is unexpected.   | Server returned corrupt or unexpected data        |
+
+Each error code maps to an exception class for handling in your client code.
+
+### 2. Exception Classes & Their Usage
+
+When an error occurs, Magic's PHP SDK throws specific exceptions that embed the error code and message. The key exception classes include:
+
+| Exception Class            | Error Code Constant | Description                          |
+|----------------------------|---------------------|------------------------------------|
+| `BadRequestException`      | 400                 | General bad request errors         |
+| `InvalidParameterException`| 40001               | Invalid input parameters           |
+| `InvalidConfigException`   | 40002               | Invalid or missing configuration   |
+| `InvalidResultException`   | 40003               | Invalid response content           |
+| `SystemException`          | 500                 | System-level or unexpected errors |
+
+Example of catching specific exceptions in your integration:
+
+```php
+try {
+    $result = $endpoint->sendOneOnOneChatMessages($parameter);
+} catch (InvalidParameterException $e) {
+    // Handle invalid input parameters
+    error_log('Parameter error: ' . $e->getMessage());
+    // Respond with user-friendly validation feedback
+} catch (BadRequestException $e) {
+    // Handle generic bad requests
+    error_log('Bad request: ' . $e->getMessage());
+    // Possibly retry or escalate
+} catch (SystemException $e) {
+    // Handle internal server issues
+    error_log('System error: ' . $e->getMessage());
+    // Consider fallback or alert
+} catch (EasyDingTalkException $e) {
+    // Generic fallback for any other SDK-related errors
+    error_log('SDK error: ' . $e->getMessage());
+}
+```
+
+### 3. HTTP Status Codes & Their Interpretation
+
+The Magic APIs predominantly operate over HTTP/HTTPS and follow standard status code conventions, including:
+
+| Status Code | Meaning                 | Guidance                                         |
+|-------------|-------------------------|-------------------------------------------------| 
+| 200         | OK                      | Request succeeded; proceed with response data   |
+| 400         | Bad Request             | Client sent invalid request parameters or data  |
+| 401         | Unauthorized            | Missing or invalid authentication token         |
+| 403         | Forbidden               | Token valid but insufficient permissions         |
+| 404         | Not Found               | Requested resource or endpoint does not exist    |
+| 429         | Too Many Requests       | Rate limit exceeded; back off and retry later    |
+| 500         | Internal Server Error   | Server error; retry after some delay             |
+| 503         | Service Unavailable     | Temporary downtime or overload; retry advised   |
+
+**Important:** The response content will often include API-specific error codes and messages within the payload even if status is 200. Always verify `errcode` and `errmsg` inside the response JSON.
+
+### 4. Error Handling Strategies & Best Practices
+
+Follow these recommendations to build resilient applications:
+
+- **Validate Input Early:** Always validate request parameters before sending API calls to reduce client-side errors.
+- **Handle Exceptions Explicitly:** Use try-catch blocks to catch and handle specific exceptions like `InvalidParameterException` separately from system exceptions.
+- **Implement Retries with Backoff:** For errors like 500, 503, or 429, implement retry logic with exponential backoff to avoid hammering the service.
+- **Log Errors Adequately:** Log all failures, including error codes, messages, and stack traces to aid debugging.
+- **Provide User-Friendly Feedback:** Map technical error messages to actionable messages for end users.
+- **Monitor Rate Limits:** When receiving 429 errors, respect rate limits by delaying further requests.
+
+### 5. Common API Error Scenarios and Remedies
+
+| Scenario                        | Cause                                | Remedy                                     |
+|--------------------------------|------------------------------------|--------------------------------------------|
+| Missing or invalid token        | Authentication header missing/expired| Obtain fresh token; validate and refresh tokens regularly|
+| Invalid JSON request body       | Malformed JSON or wrong field names | Use JSON validators; ensure parameter alignment with API spec|
+| Parameter type mismatch         | Sending string instead of integer   | Validate types on client side before sending|
+| Permission denied               | Insufficient API scopes or roles     | Verify token scopes and user permissions|
+| Resource not found              | Non-existent conversation or file   | Validate resource IDs and existence prior to request|
+| Download URL expired            | Temporary file access expired        | Retry download promptly or request new URL|
+
+<Tip>
+Always catch and log exceptions close to the API call boundary to know exactly where an error occurred.
+</Tip>
+
+### 6. Programmatic Error Response Handling
+
+Here’s a typical user flow for handling API errors gracefully:
+
+<Steps>
+<Step title="Call the API endpoint">
+Invoke the endpoint method with validated parameters.
+</Step>
+<Step title="Catch specific exceptions">
+If an `InvalidParameterException` is caught, notify the caller to correct their input.
+</Step>
+<Step title="Handle BadRequestException">
+This indicates logic errors or failed calls; consider retry or adjustment.
+</Step>
+<Step title="System-level exceptions">
+Treat `SystemException` as transient errors, implement retries or alert admins.
+</Step>
+<Step title="Generic fallback">
+Catch any other exceptions and log for postmortem analysis.
+</Step>
+</Steps>
+
+### 7. Logging and Monitoring Recommendations
+
+Set up centralized logging to capture:
+
+- Exception types and messages
+- Full stack traces
+- Contextual request and parameter information
+- Response payloads where applicable
+
+Monitor for spikes in error rates, particularly 400 and 500 class errors, which can indicate client bugs or server instability.
+
+### 8. Sample Error Response Structure
+
+When the API returns an error, you will typically receive a JSON body like:
+
+```json
+{
+  "errcode": 40001,
+  "errmsg": "Invalid parameter: userId"
+}
+```
+
+Your client should decode this and handle according to the code. A zero `errcode` indicates success.
+
+### 9. Specific Endpoint Failures
+
+For example, in the ChatBot endpoint:
+
+- Sending a one-on-one message will throw a `BadRequestException` if the API response lacks a valid `processQueryKey` or HTTP status is not 200.
+- Similar validation and error throwing apply when sending group messages or downloading files.
+
+Handle these exceptions by catching `BadRequestException` and inspecting the error message for more detail.
+
+### 10. Troubleshooting Common Errors
+
+<AccordionGroup title="Troubleshooting Common API Error Cases">
+<Accordion title="Invalid Parameter Errors">
+
+- Double-check parameter types and required fields.
+- Refer to the API parameter definition in the respective endpoint documentation.
+- Use SDK validation methods when available.
+
+</Accordion>
+<Accordion title="Authentication Errors">
+
+- Confirm your access token is current and correctly scoped.
+- Inspect HTTP 401 and 403 responses for unauthorized or forbidden issues.
+- Refresh tokens prior to expiry.
+
+</Accordion>
+<Accordion title="Rate Limit Exceeded">
+
+- Implement exponential backoff retries.
+- Distribute API requests evenly over time.
+
+</Accordion>
+<Accordion title="System Errors (5xx)">
+
+- Retry after delays; implement alerts for sustained failures.
+- Check for platform status notifications.
+
+</Accordion>
+</AccordionGroup>
+
+---
+
+This comprehensive coverage is designed to empower you to interpret API responses reliably, handle errors thoughtfully, and build robust integrations atop Magic's powerful capabilities.
+
+
+---
+
+### References & Links
+- [Authentication & Authorization](https://docs.magic.com/api-reference/auth-rate-limits/api-authentication)
+- [Send Messages & Conversations](https://docs.magic.com/api-reference/im-conv-messaging/send-messages)
+- [Workflow Automation](https://docs.magic.com/api-reference/workflow-automation/flow-crud)
+- [SDK Usage & Code Samples](https://docs.magic.com/api-reference/errors-tools-sdks/sdk-usage-examples)
+- [Troubleshooting Common Setup Issues](https://docs.magic.com/getting-started/validation-troubleshooting/common-setup-issues)
+- [Best Practices & Performance Tips](https://docs.magic.com/sdks/troubleshooting-bestpractices/sdk-best-practices)
+
+

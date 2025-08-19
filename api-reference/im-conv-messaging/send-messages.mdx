@@ -1,0 +1,276 @@
+---
+title: "Send Messages & Conversations"
+description: "Explore APIs for sending messages between users, bots, and groups, including both one-on-one and group chat scenarios. Covers endpoints for pushing text, media, and rich messages as well as batch messaging and replying to threads, supporting both human and AI Agent conversations."
+---
+
+# Send Messages & Conversations API Reference
+
+Explore how to send messages and manage conversations through Magic's API—the gateway to seamless communication between users, bots, and groups. This section focuses exclusively on messaging endpoints including one-on-one chats and group conversations, supporting diverse message formats such as text, markdown, and rich content.
+
+---
+
+## Overview
+
+Magic's messaging APIs empower your applications to deliver messages flexibly across human users and AI agents in enterprise scenarios. Whether pushing a quick notification to a single user, replying within an ongoing conversation, or broadcasting rich messages to a group, the endpoints covered here handle robust communication flows.
+
+Key capabilities include:
+
+- **Sending one-on-one chat messages:** Batch send markdown or text messages from bots to users.
+- **Group chat messaging:** Post messages into existing group conversations.
+- **Batch operations:** Optimize throughput by sending to multiple users or groups.
+- **Replying to conversation threads:** Contextual replies within conversation streams.
+- **Supporting various message formats:** Markdown, text, images, and richer content.
+
+All operations leverage robust request validation and return process tracking keys to monitor message delivery.
+
+---
+
+## Authentication & Prerequisites
+
+### Access Token
+All messaging endpoints require an OAuth 2.0 access token with the appropriate scopes to authenticate requests. You must include this token as an HTTP header (`x-acs-dingtalk-access-token`) in your API calls.
+
+### Permissions
+Bots interacting via these APIs must be authorized with the target user or group.
+
+### Message Formats
+When sending messages, supply the `msgKey` indicating the template type (e.g., `sampleText`, `sampleMarkdown`) and a JSON-encoded `msgParam` containing the message content.
+
+---
+
+## Endpoints
+
+### 1. Send One-on-One Chat Messages
+
+Send text or markdown messages from a bot to individual users in batch.
+
+- **HTTP Method:** `POST`
+- **URL Path:** `/v1.0/robot/oToMessages/batchSend`
+- **Description:** Push messages to one or more users. This supports markdown messages and is suited for personal communication or alert scenarios.
+
+#### Parameters
+
+| Parameter    | Type       | Description                                    | Required |
+|--------------|------------|------------------------------------------------|----------|
+| `robotCode`  | string     | Unique identifier of the bot sending the message | Yes      |
+| `userIds`    | array      | List of recipient user IDs                     | Yes      |
+| `msgKey`     | string     | Message template key, e.g., `sampleMarkdown`  | Yes      |
+| `msgParam`   | string     | JSON string containing message-specific parameters (title, text, etc.) | Yes      |
+
+#### Example Request
+
+```http
+POST https://api.dingtalk.com/v1.0/robot/oToMessages/batchSend
+Headers:
+  x-acs-dingtalk-access-token: YOUR_ACCESS_TOKEN
+Content-Type: application/json
+
+{
+  "robotCode": "your_bot_code",
+  "userIds": ["123456789"],
+  "msgKey": "sampleMarkdown",
+  "msgParam": "{\"title\": \"Greetings\", \"text\": \"Hello from Magic platform!\"}"
+}
+```
+
+#### Success Response
+
+- **Status:** 200 OK
+- **Body:**
+  ```json
+  {
+    "processQueryKey": "unique_process_key_for_tracking"
+  }
+  ```
+
+#### Errors
+- 400 Bad Request if required parameters are missing or invalid.
+
+---
+
+### 2. Send Group Messages
+
+Post messages from a bot into a specified group chat.
+
+- **HTTP Method:** `POST`
+- **URL Path:** `/v1.0/robot/groupMessages/send`
+- **Description:** Deliver messages to group conversations identified by `openConversationId`. Supports rich content using markdown message format.
+
+#### Parameters
+
+| Parameter           | Type   | Description                                | Required |
+|---------------------|--------|--------------------------------------------|----------|
+| `robotCode`         | string | Bot unique identifier                       | Yes      |
+| `openConversationId`| string | Unique ID of the target group conversation | Yes      |
+| `msgKey`            | string | Message template key, e.g., `sampleMarkdown` | Yes      |
+| `msgParam`          | string | JSON string with message details            | Yes      |
+
+#### Example Request
+
+```http
+POST https://api.dingtalk.com/v1.0/robot/groupMessages/send
+Headers:
+  x-acs-dingtalk-access-token: YOUR_ACCESS_TOKEN
+Content-Type: application/json
+
+{
+  "robotCode": "your_bot_code",
+  "openConversationId": "group_conversation_id",
+  "msgKey": "sampleMarkdown",
+  "msgParam": "{\"title\": \"Team Update\", \"text\": \"Hello team, here is the latest update.\"}"
+}
+```
+
+#### Success Response
+- **Status:** 200 OK
+- **Body:**
+  ```json
+  {
+    "processQueryKey": "unique_process_key_for_tracking"
+  }
+  ```
+
+#### Errors
+- 400 Bad Request if parameters are missing or invalid.
+
+---
+
+### 3. Download Files from Messages
+
+Retrieve downloadable URLs for attachments referenced via download codes in messages.
+
+- **HTTP Method:** `POST`
+- **URL Path:** `/v1.0/robot/downloadFile`
+- **Description:** Used to obtain a secure download URL for media or attachment files sent or received in conversations.
+
+#### Parameters
+
+| Parameter    | Type   | Description                           | Required |
+|--------------|--------|---------------------------------------|----------|
+| `robotCode`  | string | Bot identifier                        | Yes      |
+| `downloadCode` | string | Unique code referencing the file     | Yes      |
+
+#### Example Request
+
+```http
+POST https://api.dingtalk.com/v1.0/robot/downloadFile
+Headers:
+  x-acs-dingtalk-access-token: YOUR_ACCESS_TOKEN
+Content-Type: application/json
+
+{
+  "robotCode": "your_bot_code",
+  "downloadCode": "unique_file_code"
+}
+```
+
+#### Success Response
+- **Status:** 200 OK
+- **Body:**
+  ```json
+  {
+    "downloadUrl": "https://file-download-url.example.com/yourfile"
+  }
+  ```
+
+---
+
+## Usage Patterns and Best Practices
+
+### Sending Messages
+
+- Use batching appropriately in one-on-one message sending to optimize API usage.
+- For group messaging, ensure the `openConversationId` is current and valid for the target group.
+- Validate and sanitize all message content to conform with expected JSON formats.
+
+### Handling Rich Content & Attachments
+
+- Message parameters allow embedding markdown with images, titles, and formatted text.
+- To retrieve media files, save the `downloadCode` from incoming messages and request the download URL before usage.
+
+### Error Handling
+
+- Always check for a successful `processQueryKey` in responses to confirm message submission.
+- Handle HTTP 400 errors by inspecting missing or invalid parameters.
+- Network or timeout errors in media downloads require retry policies as file retrieval can be slower.
+
+### Security
+
+- Keep access tokens confidential and rotate periodically.
+- Validate bot codes and user/group identifiers strictly to prevent unauthorized messaging.
+
+### Monitoring & Tracking
+
+- Use the `processQueryKey` returned by message sending APIs to track message delivery and processing status through supporting Magic platform monitoring tools.
+
+---
+
+## Example Workflow: Sending a Markdown Message to a User
+
+<Steps>
+<Step title="Prepare Authentication">
+Obtain a valid access token with messaging scopes.
+</Step>
+<Step title="Compose Message Parameters">
+Set the `robotCode`, specify `userIds` for targeted recipients, choose `msgKey` (e.g., `sampleMarkdown`), and create a JSON `msgParam` with title and text content.
+</Step>
+<Step title="Send Message">
+Call the `sendOneOnOneChatMessages` endpoint with all parameters and authentication header.
+</Step>
+<Step title="Verify Delivery">
+Ensure a successful response returned a `processQueryKey` to track status.
+</Step>
+</Steps>
+
+---
+
+## Troubleshooting Common Issues
+
+<AccordionGroup title="Troubleshooting Chat Message Sends">
+<Accordion title="Missing or Invalid Parameters">
+Check that `robotCode`, `userIds` or `openConversationId`, `msgKey`, and `msgParam` are all properly set and non-empty. Validate JSON syntax in `msgParam`.
+</Accordion>
+<Accordion title="Authentication Errors">
+Ensure your access token is valid, current, and has the necessary permissions. Tokens must be passed in the `x-acs-dingtalk-access-token` HTTP header.
+</Accordion>
+<Accordion title="Timeouts When Sending Media Messages">
+Downloading attachments to embed in messages can cause timeouts. Implement retries or extend timeout limits in your HTTP client.
+</Accordion>
+<Accordion title="Invalid Conversation IDs">
+Confirm that the conversation or group IDs used are active and you have the proper access rights.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Related Pages & Next Steps
+
+- [Authentication & Authorization]( /api-reference/auth-rate-limits/api-authentication ): How to obtain and use API tokens.
+- [Third-Party Messaging Integration Guide]( /guides/advanced-customization-integration/third-party-messaging-integration ): Learn how to integrate Magic with enterprise messaging platforms using these APIs.
+- [Group Conversation Bots]( /guides/real-world-examples/group-conversation-bots ): Real-world scenarios involving AI agents in group chats.
+
+---
+
+## Source Code & SDKs
+
+Magic’s APIs are backed by robust PHP SDKs with endpoint abstractions such as `SendOneOnOneChatMessagesApi` and `SendGroupMessageApi`. Sample code snippets and tests demonstrate practical usage:
+
+```php
+// Send a one-on-one markdown message to multiple users
+$param = new SendOneOnOneChatMessagesParameter($accessToken);
+$param->setRobotCode('bot_code_example');
+$param->setUserIds(['user_id_1', 'user_id_2']);
+$param->setMsgKey('sampleMarkdown');
+$param->setMsgParam(json_encode([
+    'title' => 'Greetings',
+    'text' => 'Welcome to Magic platform!'
+], JSON_UNESCAPED_UNICODE));
+
+$result = $chatBotEndpoint->sendOneOnOneChatMessages($param);
+
+echo "Process key: " . $result->getProcessQueryKey();
+```
+
+---
+
+Leverage these messaging capabilities to build seamless, AI-augmented communication experiences within Magic’s ecosystem.

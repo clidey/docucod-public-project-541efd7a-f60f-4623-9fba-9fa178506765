@@ -1,0 +1,300 @@
+---
+title: "Developing Custom Tools and Plugins"
+description: "How to create and register custom tool nodes, extend the workflow palette, and hook into event mechanisms for deeper workflow automation and AI-powered business logic."
+---
+
+# Developing Custom Tools and Plugins
+
+Extend Magic’s powerful automation capabilities by creating and integrating your own custom tool nodes and plugins. This guide walks you through the practical steps to define new workflow nodes, make them appear in the visual workflow palette, and hook them into Magic’s event system to enable sophisticated, AI-driven business logic.
+
+---
+
+## 1. Introduction
+
+Modern enterprises rely on tailored AI-enhanced workflows to automate unique tasks. Magic’s extensible platform allows developers to build custom tool nodes and plugins, enhancing workflows beyond default capabilities.
+
+This page teaches you how to:
+- Create new custom tool nodes with actionable logic
+- Register and expose these nodes in the workflow builder palette
+- Integrate your tools with Magic’s event-driven architecture for fine-grained control
+
+By following this workflow, you will empower your teams to craft AI workflows that perfectly fit specific business goals.
+
+---
+
+## 2. Prerequisites
+
+Before you begin, ensure you have:
+
+- A working Magic platform instance with access to the workflow editor UI
+- Basic knowledge of Magic’s workflow nodes and visual flow orchestration
+- Familiarity with the plugin and event architecture concepts
+- Development environment setup, including access to project source code and ability to deploy plugin components
+
+For detailed environment setup, see the [Quickstart: From Zero to Magic Productivity](/guides/getting-started/quickstart-workspace) guide.
+
+---
+
+## 3. Creating Custom Tool Nodes
+
+Custom tool nodes are functional building blocks encapsulating your business logic or integrations.
+
+### Step 1: Define Your Tool Node Class
+
+Create a new class inheriting from Magic’s base tool node class. Implement the execution logic to handle inputs, process data, and return outputs.
+
+```php
+namespace App\Tools;
+
+use Magic\Workflow\Nodes\ToolNodeBase;
+
+class CustomEmailSenderNode extends ToolNodeBase
+{
+    public function execute(array $inputs): array
+    {
+        $recipient = $inputs['email'] ?? null;
+        $subject = $inputs['subject'] ?? 'No Subject';
+        $body = $inputs['body'] ?? '';
+
+        // Your logic to send email
+        $success = $this->sendEmail($recipient, $subject, $body);
+
+        return [
+            'sent' => $success
+        ];
+    }
+
+    private function sendEmail(string $to, string $subject, string $body): bool
+    {
+        // Implement email sending logic (e.g., using SMTP or API)
+        // Return true if email sent successfully
+        return true;
+    }
+}
+```
+
+<Tip>
+Keep your tool node focused on a single responsibility for easier testing and reuse.
+</Tip>
+
+### Step 2: Add Node Metadata
+
+Define the metadata such as inputs, outputs, display name, icon, and description. This enables seamless integration into Magic’s builder UI.
+
+```php
+class CustomEmailSenderNode extends ToolNodeBase
+{
+    public static function nodeName(): string
+    {
+        return 'customEmailSender';
+    }
+
+    public static function displayName(): string
+    {
+        return 'Custom Email Sender';
+    }
+
+    public static function description(): string
+    {
+        return 'Sends a custom email via configured service';
+    }
+
+    public static function inputs(): array
+    {
+        return [
+            'email' => 'Recipient email address',
+            'subject' => 'Email subject line',
+            'body' => 'Email message body content'
+        ];
+    }
+
+    public static function outputs(): array
+    {
+        return [
+            'sent' => 'Boolean indicating if email was sent'
+        ];
+    }
+    
+    // execute() method as above
+}
+```
+
+### Step 3: Implement Validation and Error Handling
+
+Ensure you validate inputs and handle errors clearly so that flow failures provide actionable messages.
+
+```php
+if (empty($recipient) || !filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
+    throw new \InvalidArgumentException('Invalid or missing recipient email address');
+}
+```
+
+---
+
+## 4. Registering Custom Tools into the Workflow Palette
+
+Once your tool node class is ready, you must register it so that it appears in the workflow builder palette.
+
+### Step 1: Register the Tool Node
+
+Modify your plugin or module configuration to include the new tool node class. For example, in your service provider or plugin registration file:
+
+```php
+use Magic\Workflow\ToolNodeRegistry;
+use App\Tools\CustomEmailSenderNode;
+
+public function boot()
+{
+    ToolNodeRegistry::register(CustomEmailSenderNode::class);
+}
+```
+
+### Step 2: Group the Node Appropriately
+
+You can assign your custom tool node to a category/group in the palette to improve discoverability. Define this in the node metadata or registration process.
+
+```php
+public static function category(): string
+{
+    return 'Communication';
+}
+```
+
+### Step 3: Verify Visibility in UI
+
+Open the Magic visual workflow builder and check the palette for your tool node under the correct category. You should be able to drag it onto the canvas.
+
+<Check>
+If the node is not visible:
+- Confirm the registration method runs on app boot
+- Review metadata completeness
+- Check logs for registration errors
+</Check>
+
+---
+
+## 5. Integrating with the Event System
+
+Magic supports event-driven extensibility to react to workflow lifecycle events, node execution stages, and custom triggers.
+
+### Step 1: Create Event Listeners
+
+Write listener classes to hook into events provided by your tool node or the overall workflow engine.
+
+```php
+namespace App\Listeners;
+
+use Magic\Events\WorkflowNodeExecuted;
+use Psr\Log\LoggerInterface;
+
+class LogCustomEmailSentListener
+{
+    protected LoggerInterface $logger;
+
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+
+    public function handle(WorkflowNodeExecuted $event): void
+    {
+        if ($event->node instanceof CustomEmailSenderNode) {
+            $result = $event->result;
+            if (!empty($result['sent'])) {
+                $this->logger->info('Custom email sent successfully', ['nodeId' => $event->node->getId()]);
+            }
+        }
+    }
+}
+```
+
+### Step 2: Register Listeners
+
+Bind your listeners to events in your plugin service provider or configuration:
+
+```php
+use Magic\Events\WorkflowNodeExecuted;
+use App\Listeners\LogCustomEmailSentListener;
+
+public function boot()
+{
+    Event::listen(WorkflowNodeExecuted::class, LogCustomEmailSentListener::class);
+}
+```
+
+### Step 3: Use Events for Advanced Automation
+
+Leverage events to trigger notifications, chain nodes, update external systems, or capture audit trails.
+
+---
+
+## 6. Example Scenario: Automated Customer Email Workflow
+
+Imagine a use case where after an AI decision node approves a customer request, your Custom Email Sender node sends confirmation emails.
+
+Workflow flow:
+1. AI Approval Node completes successfully
+2. Event fires `WorkflowNodeExecuted` with approval result
+3. Custom Email Sender node executes with the customer’s email and message
+4. Listener logs email sending success and triggers downstream notifications
+
+This integration empowers a fully automated, trackable customer communication pipeline.
+
+---
+
+## 7. Tips and Best Practices
+
+- **Keep nodes stateless:** Avoid side effects inside nodes to improve reusability.
+- **Use input validation rigorously:** Prevent failures early.
+- **Test nodes independently:** Build automated tests to validate execution paths.
+- **Document node metadata:** Clear labels and descriptions accelerate onboarding.
+- **Monitor event listeners:** Ensure listeners fail gracefully to avoid blocking workflows.
+
+---
+
+## 8. Troubleshooting
+
+<AccordionGroup title="Troubleshooting Custom Tool Nodes and Plugins">
+<Accordion title="Custom Node Not Visible in Workflow Builder">
+- Confirm node class is correctly registered in the ToolNodeRegistry.
+- Check for boot method invocation in your plugin or service provider.
+- Verify node metadata completeness and category assignment.
+- Inspect application logs for registration errors or exceptions.
+</Accordion>
+<Accordion title="Node Execution Fails or Throws Errors">
+- Validate all input parameters strictly before processing.
+- Capture and log exceptions inside execute() for diagnosis.
+- Test node logic in isolation if possible.
+</Accordion>
+<Accordion title="Event Listener Does Not Trigger">
+- Ensure listener is registered to the correct event class.
+- Check event firing inside the node execution path.
+- Confirm no exceptions in listener code prevent execution.
+</Accordion>
+</AccordionGroup>
+
+<Tip>
+Use Magic’s built-in logging features to track your custom nodes and event listeners during development and production.
+</Tip>
+
+---
+
+## 9. Next Steps
+
+- Explore building multi-node AI-powered tools combining custom logic and third-party APIs.
+- Delve into the [Building Visual AI Workflows with Magic Flow](/guides/getting-started/workflow-orchestration) guide to master workflow design.
+- Learn about creating collaborative AI conversations using Magic IM in [Enabling Collaborative AI Conversations (Magic IM)](/guides/getting-started/ai-im-setup).
+- Review the [Using and Extending the Event System](/guides/advanced-customization-integration/event-driven-extensibility) guide for advanced hooks and middleware.
+
+---
+
+## 10. References and Links
+
+- [Quickstart: From Zero to Magic Productivity](/guides/getting-started/quickstart-workspace)
+- [Building Visual AI Workflows with Magic Flow](/guides/getting-started/workflow-orchestration)
+- [Using and Extending the Event System](/guides/advanced-customization-integration/event-driven-extensibility)
+- Magic SDKs and API docs for tool and event integration
+
+---
+
+Your custom tools and plugins unlock the full potential of Magic’s versatile AI automation platform. Approach development methodically, integrate strategically, and watch your workflows transform into powerful business assets.

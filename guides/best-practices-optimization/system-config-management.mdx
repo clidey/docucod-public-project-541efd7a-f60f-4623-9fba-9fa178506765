@@ -1,0 +1,232 @@
+---
+title: "Managing Configuration Across Environments"
+description: "Recommendations and actionable steps for organizing, versioning, and deploying system configurations, secrets, and plugins in multi-environment setups. Includes guidance on .env usage and environment isolation."
+---
+
+# Managing Configuration Across Environments
+
+## Overview
+
+Managing configuration effectively across multiple environments is crucial to ensure smooth development, testing, staging, and production deployments. This guide provides actionable recommendations and step-by-step instructions to organize, version, and deploy system configurations, secrets, and plugins safely and consistently.
+
+You will learn how to maintain environment isolation, leverage `.env` files, and manage secrets without compromising security or operational stability.
+
+
+---
+
+## 1. What You Will Achieve
+
+- **Organize** configurations logically by environment (development, staging, production, etc.)
+- **Version** configuration changes to track history and enable rollback
+- **Deploy** configuration and secrets safely along with your system
+- **Use `.env` files** effectively to isolate environment-specific settings
+- **Maintain environment isolation** to minimize accidental cross-environment contamination
+
+
+---
+
+## 2. Prerequisites
+
+Before proceeding, ensure you have:
+
+- Access to your codebase or configuration repository
+- Permissions to create or edit environment variable files on your deployment hosts
+- Basic understanding of environment variables and secret management
+- Access to your deployment tooling (e.g., CI/CD pipelines or manual deployment processes)
+
+
+---
+
+## 3. Key Concepts and Best Practices
+
+### 3.1 Environment Isolation
+
+Isolating environments means each environment has its own configuration settings, secrets, and plugin versions. This prevents accidental cross-contamination and makes debugging easier.
+
+- Keep separate configuration files or `.env` files per environment.
+- Use unique secret values for each environment.
+- Avoid sharing writable volumes or centralized config stores between environments.
+
+
+### 3.2 Organization of Configuration Files
+
+Structure your configuration files clearly:
+
+```
+/config
+  ├── .env.development
+  ├── .env.staging
+  ├── .env.production
+  ├── plugins/
+  └── secrets/
+```
+
+- Use `.env` files for environment variables.
+- Plugins and secrets should be versioned and stored appropriately (e.g., encrypted storage for secrets).
+
+
+### 3.3 Versioning Configurations
+
+- Store configuration files and plugin manifests in version control (Git).
+- Use branching or tags to track environment-specific versions or releases.
+- Use change descriptions to communicate configuration updates.
+
+
+### 3.4 Using `.env` Files Effectively
+
+- `.env` files control environment variables used by the system.
+- Avoid committing secrets or sensitive information directly into source code.
+- Use `.env.example` files to share non-sensitive configuration templates.
+
+
+<Tip>
+Use unique `.env` files per environment and load the correct one based on your deployment context.
+</Tip>
+
+
+---
+
+## 4. Step-by-Step: Managing Configurations Across Environments
+
+<Steps>
+<Step title="Create and Organize Your .env Files">
+Create distinct `.env` files for each environment: `.env.development`, `.env.staging`, and `.env.production`. Populate each with environment-specific values, especially for keys, endpoints, and database URLs.
+
+Example (inside `.env.production`):
+
+```
+APP_ENV=production
+DB_CONNECTION=mysql
+DB_HOST=prod-db-server
+SECRET_API_KEY=prod-secret-key
+```
+
+> Save `.env` files in a secured location and restrict access.
+</Step>
+
+<Step title="Use .env.example as Template">
+Create a `.env.example` file without actual secret values to share with your team. This acts as documentation and a template for required environment variables.
+
+Example:
+
+```
+APP_ENV=
+DB_CONNECTION=
+DB_HOST=
+SECRET_API_KEY=
+```
+</Step>
+
+<Step title="Set Up Environment-Specific Configuration in Your Application">
+Configure your application or SDK (such as Magic) to load the proper `.env` file based on the deployment environment.
+
+For example, you might use a wrapper script or your deployment tool to copy or link the correct `.env` file:
+
+```bash
+cp .env.production .env
+# then start your application
+```
+
+Ensure your app reads environment variables at runtime securely.
+</Step>
+
+<Step title="Secure Your Secrets and Plugins">
+Avoid hardcoding secrets or plugin credentials in config files.
+
+- Use secret management tools like Vault or cloud provider secrets services.
+- Encrypt secrets at rest.
+- Audit access to secrets regularly.
+
+For plugins, store their configuration and versions alongside environment configs to ensure consistency.
+</Step>
+
+<Step title="Version Control and Deployment Integration">
+Commit configuration templates and plugin manifests to version control but ignore secrets or sensitive `.env` files with `.gitignore`.
+
+Integrate environment config loading in your CI/CD pipelines to deploy the correct settings automatically.
+
+Example in a pipeline:
+
+```yaml
+steps:
+  - name: Deploy production
+    script:
+      - cp .env.production .env
+      - ./deploy.sh
+```
+
+This guarantees the right configs are deployed to each environment.
+</Step>
+</Steps>
+
+
+---
+
+## 5. Practical Tips and Common Pitfalls
+
+- **Never commit real secrets to source control.** Use `.env.example` for example values only.
+- **Keep staging and production environments fully isolated,** especially databases and caches.
+- **Use environment variables consistently** to avoid hardcoded values scattered across code.
+- **Test configuration changes in development or staging before production** to avoid service disruption.
+- **Document environment-specific settings clearly,** including optional plugins.
+
+
+## 6. Troubleshooting
+
+<AccordionGroup title="Common Issues with Multi-Environment Configuration">
+<Accordion title="App fails to start due to missing configs">
+- Verify the `.env` file is in the correct directory and loaded by your app.
+- Confirm the environment variable is set correctly in the deployment script or container.
+- Check for typos or syntax errors in `.env` files.
+</Accordion>
+
+<Accordion title="Secrets not being applied correctly">
+- Ensure secret files or environment variables are injected to the runtime environment at deployment.
+- Confirm secret manager permissions.
+- Use debug output to log environment variables without revealing secrets.
+</Accordion>
+
+<Accordion title="Configuration changes not reflected after deployment">
+- Clear caches if your app caches config values.
+- Verify that the deployment process replaces or reloads the configuration files.
+- Restart services to pick up new settings.
+</Accordion>
+</AccordionGroup>
+
+
+---
+
+## 7. Next Steps & Related Resources
+
+- For detailed environment variable usage, see [Environment Variables](/getting-started/configuration-initial-setup/environment-variables).
+- To learn about secure secret management practices, refer to [Runtime Hardening & Secrets Management](/deployment/security-hardening-and-compliance/runtime-hardening-and-secrets-management).
+- For example workflows deploying with environments, see [Multi-Environment Deployment Strategies](/deployment/advanced-environment-configuration/multi-environment-deployment-strategies).
+- Explore plugin management and versioning in [Developing Custom Tools and Plugins](/guides/advanced-customization-integration/custom-tools-plugins).
+
+
+---
+
+## Appendix: Example .env File Structure
+
+```bash
+# .env.development
+APP_ENV=development
+DB_CONNECTION=sqlite
+DB_HOST=localhost
+SECRET_API_KEY=dev-key
+
+# .env.production
+APP_ENV=production
+DB_CONNECTION=mysql
+DB_HOST=prod-db-host
+SECRET_API_KEY=prod-sensitive-key
+```
+
+
+---
+
+## Summary
+This guide empowers you to organize and control system configurations across environments securely and efficiently using best practices around `.env` files, secrets management, and versioning. Following these steps ensures consistent and safe deployment of Magic and associated services.
+
+
+

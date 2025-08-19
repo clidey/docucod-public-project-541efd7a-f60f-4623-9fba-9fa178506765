@@ -1,0 +1,222 @@
+---
+title: "Initial Configuration"
+description: "Edit and review initial configuration files, including service ports, database connections, and platform-specific options. This page outlines how to adapt sample config files to your local or organizational needs before first launch."
+---
+
+# Initial Configuration Guide
+
+Welcome to the Initial Configuration guide for Magic. Before launching your Magic instance for the first time, it is essential to tailor its configuration files to your local environment or organizational requirements. This guide walks you through editing and reviewing key configuration settings such as service ports, database connections, and platform-specific options to prepare Magic for a smooth and secure startup.
+
+---
+
+## 1. Overview
+
+This page focuses entirely on the initial configuration process. It helps you:
+
+- Understand which configuration files to edit
+- Adapt sample configurations for your environment
+- Ensure key settings are correct before first run
+
+If you have not yet installed Magic, please complete the [Installation Guide](../prerequisites-installation/installation-guide) first.
+
+
+## 2. Configuration Files Location
+
+Magic’s key configuration files are located under the `config/autoload` directory in your installation root. Common file names include:
+
+- `app.php` — general app and service ports
+- `database.php` — database connection and pooling details
+- `cache.php` — caching backend setup
+- `cloudfile.php` — cloud file storage integration
+- `dingtalk-sdk.php` — messaging platform integration
+
+Files may vary based on your chosen modules and extensions.
+
+
+## 3. Adapting Sample Configuration Files
+
+During installation, sample config files are provided as templates. Follow these steps to adapt them:
+
+<Steps>
+<Step title="Locate Sample Files">
+Find sample config files ending with `.php.dist` or inside the `publish` folders of components.
+
+Example:
+```bash
+config/autoload/app.php.dist
+config/autoload/database.php.dist
+```
+</Step>
+<Step title="Copy to Active Configs">
+Copy each sample to a file without the `.dist` suffix:
+```bash
+cp config/autoload/app.php.dist config/autoload/app.php
+cp config/autoload/database.php.dist config/autoload/database.php
+```
+</Step>
+<Step title="Open for Editing">
+Open each copied config file with your preferred text editor to customize.
+</Step>
+</Steps>
+
+
+## 4. Key Configuration Sections to Review
+
+### 4.1 Service Ports
+
+In `app.php`, verify:
+
+- HTTP and Websocket ports do not conflict with other services
+- Adjust ports if the defaults (e.g., 9501) are already in use
+
+Example snippet:
+```php
+return [
+  'server' => [
+    'http' => [
+      'port' => 9501,
+    ],
+    'websocket' => [
+      'port' => 9502,
+    ],
+  ],
+];
+```
+
+
+### 4.2 Database Connections
+
+In `database.php`, set the connection credentials for your database:
+
+- Hostname or IP
+- Port
+- Username and password
+- Database schema name
+
+Example snippet for MySQL:
+```php
+return [
+  'default' => [
+    'host' => '127.0.0.1',
+    'port' => 3306,
+    'username' => 'magicuser',
+    'password' => 'changeMe',
+    'database' => 'magicdb',
+    'charset' => 'utf8mb4',
+  ],
+];
+```
+
+<Tip>
+Ensure your database user has sufficient permissions: SELECT, INSERT, UPDATE, DELETE, and schema modifications if you plan upgrades.
+</Tip>
+
+
+### 4.3 Component and Platform-Specific Options
+
+Check config files for optional modules you plan to use:
+
+- **Cloud file storage (`cloudfile.php`)**: Set API keys and endpoints for integration with cloud providers.
+- **Messaging integrations (`dingtalk-sdk.php`, etc.)**: Provide credentials and webhook URLs for messaging platforms.
+
+
+### 4.4 Environment & Debug Settings
+
+In the main config (usually in `app.php` or environment-config files), set:
+
+- `app_env`: Use `production` for live or `development` during setup
+- `debug`: Enable (`true`) during initial testing, disable (`false`) in production
+
+
+## 5. Saving and Validation
+
+Once edited, save the files with correct permissions readable by the Magic service.
+
+Verify the configuration syntax by running PHP’s lint tool:
+
+```bash
+php -l config/autoload/app.php
+php -l config/autoload/database.php
+```
+
+This checks for syntax errors that may cause startup failures.
+
+
+## 6. Common Pitfalls & Best Practices
+
+<AccordionGroup title="Configuration Best Practices and Common Issues">
+<Accordion title="Avoid Port Conflicts">
+Ensure no other service runs on the configured ports to prevent startup failure of Magic.
+Use commands like `netstat -tlnp` or `ss -tlnp` on Linux.
+</Accordion>
+<Accordion title="Secure Sensitive Data">
+Avoid committing configuration files containing passwords or API keys to public repositories.
+Consider environment variable injection or secret management systems for production.
+</Accordion>
+<Accordion title="Consistent File Encoding">
+Use UTF-8 encoding without BOM for all config files to ensure proper parsing.
+</Accordion>
+<Accordion title="Check Dependency Configurations">
+If enabling plugins or SDKs, confirm their config files are also adapted and published correctly.
+For example, if using the Dingtalk SDK, copy and update `dingtalk-sdk.php` accordingly.
+</Accordion>
+</AccordionGroup>
+
+
+## 7. What’s Next?
+
+After completing the initial configuration, proceed to the [First Start & Accessing Magic](../configuration-initial-setup/first-start-and-login) guide. This walks you through starting the Magic server, logging into the platform, and verifying your setup.
+
+
+---
+
+## Appendix: Example Minimal app.php Configuration
+
+```php
+<?php
+return [
+  'server' => [
+    'http' => [
+      'port' => 9501, // Adjust as needed
+    ],
+    'websocket' => [
+      'port' => 9502,
+    ],
+  ],
+  'app_env' => 'development',
+  'debug' => true,
+];
+```
+
+
+## Troubleshooting Tips
+
+If Magic fails to start after configuration:
+
+- Confirm no PHP syntax errors (run `php -l` above)
+- Check port availability
+- Verify database connection parameters (test connectivity from server)
+- Review logs found in `runtime/logs/` for specific errors
+
+
+
+## Additional Resources
+
+- [Installation Guide](../prerequisites-installation/installation-guide)
+- [System Requirements](../prerequisites-installation/system-requirements)
+- [Cloud Service vs Community Edition](../prerequisites-installation/cloud-service-and-community-edition)
+
+
+
+---
+
+<Check>
+You have now tailored your initial configurations and are ready to launch your Magic instance with confidence.
+</Check>
+
+---
+
+If you encounter configuration issues, consult the Troubleshooting section in the [Common Setup Issues](../validation-troubleshooting/common-setup-issues) page or seek help via official support channels.
+
+
+---
