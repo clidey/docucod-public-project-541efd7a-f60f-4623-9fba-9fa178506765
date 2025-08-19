@@ -1,0 +1,94 @@
+---
+title: "Breaking Changes & Deprecations"
+description: "Calls out any backward-incompatible changes, deprecated APIs, or removed features for each significant release. Users will find concise explanations, rationale, and links to related upgrade or migration resources."
+---
+
+# Breaking Changes & Deprecations
+
+This page documents significant backward-incompatible changes, deprecated features, and removed APIs introduced in Magic platform's updates. It is essential for users planning upgrades or maintaining existing integrations to review this information carefully. Understanding these alterations guarantees smooth transitions and uninterrupted usage of Magic’s ecosystem.
+
+---
+
+## Understanding Breaking Changes
+
+Breaking changes are modifications that prevent previous functionalities from working without adjustment. These may include changes in data formats, removed or altered API endpoints, or shifts in workflow behavior. Identifying and adapting to these changes early ensures your environment remains stable and your integrations continue to operate as expected.
+
+### What Users Need to Do:
+
+- **Review each breaking change carefully**: Confirm if your current usage is affected.
+- **Follow migration instructions** where provided to update your workflows or code.
+- **Test in staging environments** before applying changes in production.
+
+## Deprecated Features and APIs
+
+Deprecation signals that a feature or API is planned for removal in a future release. While still available, deprecated items should be phased out promptly to avoid sudden disruptions.
+
+### Recommended Best Practices:
+
+- Identify use of deprecated features in your projects.
+- Replace deprecated APIs with the supported alternatives as soon as possible.
+- Monitor deprecation timelines outlined in the upgrade guides.
+
+## Recent Breaking Changes and Deprecations by Version
+
+### Version 3.2.0 (Released 2024-05-15)
+- **Removal of legacy flow node types:** Older node types, such as "single-debug" nodes, have been removed. Users must update workflows to adopt the supported node types detailed in the [Workflow Orchestration Guide](https://docs.magic.com/guides/getting-started/workflow-orchestration).
+- **Strict validation on flow JSON schema:** Start nodes now enforce additional validation rules for trigger types and input keys, requiring updates to existing flows to comply with new JSON schema standards.
+- **Deprecated flow entity property:** The `flow_entity` attribute is deprecated and will be removed in 4.0. Migrate references to the new `flow_code` property.
+
+### Version 3.1.5 (Released 2024-03-10)
+- **API parameter changes in flow execution endpoints:** Some parameters related to node execution and branching have changed to enhance consistency. See [Flow CRUD API](https://docs.magic.com/api-reference/workflow-automation/flow-crud) for updated request formats.
+- **Model embedding configuration revamped:** Embedding configuration errors now return explicit `embedding_failed` messages. Users must ensure embedding parameters match updated specifications.
+
+### Version 3.0.0 (Released 2024-01-05)
+- **Breaking changes to agent interaction commands:** Interaction command structures were revised. Existing custom commands require redefinition following the updated interaction command schema.
+- **Deprecated message types:** Certain message types unsupported in streaming scenarios are no longer accepted. Please consult the [Magic IM Setup Guide](https://docs.magic.com/guides/getting-started/ai-im-setup) for compatible message formats.
+- **Removed default editing permission for tool sets:** Editing the default tool set is now prohibited to prevent accidental disruption. Define custom tool sets for modifications.
+
+## How This Page Fits Into the Magic Documentation
+
+- This page complements the [Upgrade & Migration Guides](https://docs.magic.com/changelog/breaking-changes-upgrades/upgrade-instructions) by highlighting specific changes users must accommodate.
+- It links to the [Compatibility & Support Matrix](https://docs.magic.com/changelog/breaking-changes-upgrades/compatibility-support-matrix) to understand version support timelines.
+- For detailed API differences, refer to [API and SDK Changes](https://docs.magic.com/changelog/advanced-change-analysis/api-changes).
+
+## Practical Tips for Managing Breaking Changes
+
+- **Regularly monitor this page** during maintenance windows to prepare for upcoming changes.
+- **Leverage development or staging environments** to test deprecated and changed features before production rollout.
+- **Utilize version control and backups** to safeguard current workflows and configurations.
+- **Engage with community support** channels if unexpected issues arise.
+
+## Common Pitfalls and Troubleshooting
+
+<AccordionGroup title="Common Issues and Solutions">
+<Accordion title="Flow Node Execution Failures After Upgrade">
+- Ensure your flow nodes comply with the new valid node types.
+- Validate flow configurations with updated JSON schema validators.
+- Review error messages related to 'execute_num_limit' or 'unsupported_node_type' for node-specific issues.
+</Accordion>
+<Accordion title="Embedding Configuration Errors">
+- Confirm embedding vectors match the required size.
+- Check for missing or incorrect embedding settings in the model configuration.
+- See error references like 'embedding_failed' or 'vector_size_not_match' for guidance.
+</Accordion>
+<Accordion title="Message API Rejections Due to Type Changes">
+- Verify message types conform to supported formats for streaming.
+- Replace deprecated message structures following the latest Magic IM message guidelines.
+- Use the SDK's validation tools and refer to error codes for precise troubleshooting.
+</Accordion>
+</AccordionGroup>
+
+## Migration and Upgrade Resources
+
+- **[Upgrade & Migration Guides](https://docs.magic.com/changelog/breaking-changes-upgrades/upgrade-instructions):** Step-by-step guidance to adapt your environment.
+- **[Compatibility & Support Matrix](https://docs.magic.com/changelog/breaking-changes-upgrades/compatibility-support-matrix):** Details on version interoperability and support end-of-life.
+- **[Workflow Orchestration Guide](https://docs.magic.com/guides/getting-started/workflow-orchestration):** Updated workflow creation and editing instructions.
+- **[Magic IM Setup Guide](https://docs.magic.com/guides/getting-started/ai-im-setup):** Best practices on message formats and interactive commands.
+
+## Summary
+
+This page is essential for all Magic platform users to understand and adapt to breaking changes and deprecations, maintaining reliable AI workflows and integrations. Clear explanations and links empower users to navigate upgrades confidently with minimal disruption.
+
+---
+
+*For further assistance, consult the [Troubleshooting Common Setup Issues](https://docs.magic.com/getting-started/validation-troubleshooting/common-setup-issues) and [Getting Help & Additional Resources](https://docs.magic.com/getting-started/validation-troubleshooting/resources-and-support).*
