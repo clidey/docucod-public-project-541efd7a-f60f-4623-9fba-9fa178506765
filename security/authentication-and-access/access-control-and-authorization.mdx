@@ -1,0 +1,198 @@
+---
+title: "Access Control and Authorization Models"
+description: "Explore Magic's multi-level permission system, including role-based access, organization and department-level isolation, and resource-specific permissions. Learn how permissions are enforced across APIs, UI features, and custom extensions."
+---
+
+# Access Control and Authorization Models
+
+Discover how Magic enforces multi-level access control to keep your data and workflows secure. This guide walks you through Magic's comprehensive permission system, explaining how user roles, organizational boundaries, department hierarchies, and resource-level permissions work together to safeguard actions and data across APIs, UI, and integrations.
+
+---
+
+## 1. Introduction to Access Control in Magic
+
+Magic is designed for complex enterprise environments where granular control over user actions and data visibility is paramount. Our access control architecture empowers administrators to assign precise permissions that align tightly with organizational policies, enabling secure collaboration while preventing unauthorized access.
+
+Users want assurance that their workflows and data are protected by robust guards. Magic meets this need with an extensible role-based model combined with organizational and departmental isolation.
+
+
+## 2. Role-Based Access Control (RBAC)
+
+At the core of Magic’s permission system lies Role-Based Access Control (RBAC). Users are granted roles that determine what they can do and see.
+
+### How Roles Work:
+- **Role Assignment:** Users receive roles scoped at organization, workspace, or project levels.
+- **Permission Sets:** Each role encapsulates one or more permissions defining allowed actions (read, write, admin etc). 
+- **Custom Roles:** Administrators can define custom roles for fine-tuned control beyond default system roles.
+
+### User Flow Example:
+> Alice is assigned the ‘Workflow Manager’ role within Finance Dept. This role lets her create, edit, or delete workflows but not access confidential HR documents outside her department.
+
+### Best Practices:
+- Apply the **least privilege principle**: assign roles with only needed permissions.
+- Use system default roles as templates to accelerate onboarding.
+- Review role assignments periodically to ensure compliance.
+
+
+## 3. Organization and Department-Level Isolation
+
+Magic enforces strict data segmentation by organizational boundaries and department hierarchies to prevent data leakage.
+
+### Organizational Isolation:
+- Organizations are top-level tenants.
+- Users cannot access data or workflows in another organization without explicit cross-org permissions.
+
+### Departmental Boundaries:
+- Departments group related users and resources.
+- Permissions can be limited to departments to further restrict access.
+
+### Access Enforcement Across APIs and UI:
+- API calls check requesting user’s organizational and departmental membership.
+- UI features dynamically hide or disable elements outside the user’s scope.
+
+### Scenario:
+> Bob in the Marketing Department cannot view or edit workflows owned by the Engineering Department due to department-level isolation.
+
+### Tips:
+- Structure departments to mirror real-world organizational layout.
+- Use isolation to mitigate risks of insider threat and accidental data exposure.
+
+
+## 4. Resource-Level Permissioning
+
+Beyond roles and organizational scopes, Magic applies permissions directly on specific resources.
+
+### Types of Resource Permissions:
+- **Workflows:** Control who can run, modify, or delete a workflow.
+- **Documents:** Specify read/write access rights on knowledge base documents.
+- **Messaging Threads:** Manage view/post rights on conversations and chat groups.
+
+### Example:
+> Carol may have view-only rights on a particular workflow but can fully manage others.
+
+### How Permissions Are Enforced:
+- Resources have ACLs (Access Control Lists) tied to roles or individual users.
+- Permission checks happen during API calls and UI interactions.
+
+### Best Practices:
+- Use resource-level permissions sparingly for high-value assets.
+- Combine with RBAC and organizational isolation for defense in depth.
+
+
+## 5. Enforcing Permissions Across APIs, UI Features, and Extensions
+
+Magic’s security model ensures that authorization checks are consistent and enforced regardless of access channel.
+
+### Key Enforcement Areas:
+- **API Layer:** Every API validates tokens, user roles, organizational membership, and resource permissions.
+- **User Interface:** Features and data views dynamically adapt based on user permissions.
+- **Custom Extensions:** Plugins and workflow nodes respect platform permission constraints.
+
+### User Workflow Example:
+1. User logs in and the system verifies their roles and org memberships.
+2. In the UI, restricted features hide automatically—no need for manual checks.
+3. Workflow execution nodes validate if users have start/modify rights.
+
+### Common Pitfalls to Avoid:
+- Attempting cross-organization API calls without appropriate tokens.
+- Misconfigured roles granting excessive privileges.
+- Overlooking permission rules in custom extension code.
+
+
+## 6. Practical Tips to Secure Your Magic Deployment
+
+- **Regularly Audit Roles and Permissions:** Use admin dashboards to review and adjust role assignments.
+- **Leverage Department & Org Isolation:** Structure your organizations and departments to naturally segment data.
+- **Apply Principle of Least Privilege:** Always start with minimal access and expand only as necessary.
+- **Test Permissions Thoroughly:** Use test accounts across role levels and organizations to confirm proper restrictions.
+- **Integrate with Authentication Methods:** Combine access control with strong authentication (MFA, SSO) for layered security.
+
+
+## 7. Troubleshooting Common Access Issues
+
+<AccordionGroup title="Troubleshooting Access Control Issues">
+<Accordion title="User Cannot Access Expected Workflows or Data">
+- Check if the user is correctly assigned the required role.
+- Verify the user’s organizational and departmental memberships.
+- Confirm resource-level permissions (ACLs) are properly set.
+- Audit token scopes and expiration where applicable.
+</Accordion>
+<Accordion title="APIs Return Permission Denied Errors">
+- Validate OAuth tokens are correctly applied in API requests.
+- Inspect if the API client is operating under the correct organizational context.
+- Review API logs to trace permission failure points.
+- Confirm no stale or outdated SDK/client configuration.
+</Accordion>
+<Accordion title="UI Elements Not Visible or Disabled Unexpectedly">
+- Confirm user session permissions match the expected roles.
+- Clear browser cache to avoid stale UI state.
+- Check for any UI customization or plugins that may alter feature visibility.
+</Accordion>
+</AccordionGroup>
+
+
+## 8. Summary
+
+Magic’s multi-layered access control model combines role-based permissions with strict organizational and department-level isolation plus resource-specific ACLs. This ensures security coherent across APIs, UI, and extensions, enabling enterprise-grade governance without sacrificing productivity or ease of collaboration.
+
+By following recommended practices — least privilege, clear organizational structures, regular audits, and thorough testing — administrators can confidently secure their Magic AI deployments against unauthorized access.
+
+
+---
+
+## Additional Resources
+
+- [Authentication Methods](https://docs.magic.com/security/authentication-and-access/authentication-methods) — Understand supported login and token issuance
+- [Multi-Organization and Tenant Isolation](https://docs.magic.com/security/authentication-and-access/multi-organization-and-tenant-isolation) — For details on isolating data across organizations
+- [Secure Deployment Best Practices](https://docs.magic.com/guides/best-practices-optimization/secure-deployment) — General security hardening
+- [Permission & Access Control Framework](https://docs.magic.com/concepts/security-permission-design/permission-system) — Deep dive on internal permission mechanics
+
+For hands-on integration examples and code samples, explore the [API Authentication & Authorization](https://docs.magic.com/api-reference/auth-rate-limits/api-authentication) documentation.
+
+
+---
+
+## Diagram: Magic Access Control Model Overview
+
+```mermaid
+flowchart TD
+  ORG["Organization"] -->|Contains| DEPT["Department"]
+  DEPT -->|Assigns| USER["User"]
+  USER -->|Granted| ROLE["Role"]
+  ROLE -->|Defines| PERM["Permission Set"]
+
+  USER -->|Has Access To| RESOURCE["Resource (Workflow, Document, Messaging)"]
+  RESOURCE -->|Controlled By| ACL["Access Control List"]
+
+  subgraph "Access Enforcement"
+    API["API Request"] -->|Checks| ROLE
+    API --> ACCESS
+    UI["User Interface"] -->|Checks| ROLE
+    UI --> ACCESS
+    EXT["Extensions & Plugins"] -->|Checks| ROLE
+    EXT --> ACCESS
+  end
+
+  ACCESS["Permission Enforcement Engine"] -->|Authorize| RESOURCE
+
+  classDef orgStyle fill:#f9f,stroke:#333,stroke-width:2px;
+  classDef userStyle fill:#bbf,stroke:#333,stroke-width:1px;
+  class ORG,DEPT orgStyle;
+  class USER,ROLE,PERM,userStyle;
+```
+
+---
+
+## Final Recommendations
+
+Stay proactive in managing access and authorization:
+
+- Build your organizational and department hierarchies reflecting real ownership.
+- Start permission assignments conservatively.
+- Automate audits and deploy monitoring to detect potential anomalies.
+- Train administrators on how Magic’s access controls interoperate with authentication.
+
+This layered approach ensures your Magic-powered AI workflows and collaboration remain secure and compliant under any enterprise environment.
+
+
+---
