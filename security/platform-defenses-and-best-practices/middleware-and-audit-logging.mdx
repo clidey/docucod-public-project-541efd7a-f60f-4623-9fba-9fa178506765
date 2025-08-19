@@ -1,0 +1,293 @@
+---
+title: "Middleware, Logging, and Auditing"
+description: "Review Magic’s HTTP and WebSocket middleware stack for request validation, context enforcement, and audit log creation. Learn how to inspect, configure, and extend audit trails for compliance, troubleshooting, and security analysis."
+---
+
+# Middleware, Logging, and Auditing Security Guide
+
+Welcome to the comprehensive guide for securing and managing the middleware, logging, and auditing components within the Magic platform. This page focuses on understanding how Magic’s HTTP and WebSocket middleware stack enforces request validation, context propagation, and audit trail generation to enhance compliance, security analysis, and troubleshooting capabilities.
+
+---
+
+## 1. Understanding Magic’s Middleware Stack
+
+Magic utilizes a robust middleware architecture to intercept and process HTTP and WebSocket requests. This layered middleware stack serves several crucial security functions:
+
+- **Request Validation:** Ensures that incoming requests are properly authenticated and authorized before processing.
+- **Context Enforcement:** Propagates tenant and user context across service boundaries to maintain strict isolation and traceability.
+- **Audit Logs Creation:** Generates detailed, structured logs capturing request and response metadata for forensic analysis, compliance, and debugging.
+
+This stack is the frontline defense and observability layer, making it essential to understand its operation and configuration.
+
+### How Middleware Fits into Your Security Workflow
+
+Imagine a request entering Magic’s system—before any business logic executes, middlewares validate authentication tokens, apply relevant access scopes, filter sensitive information, and log essential data without impacting user experience. This process helps prevent unauthorized access, enforces organizational boundaries, and ensures accountability through transparent audit trails.
+
+<Info>
+Middleware acts as gatekeepers and record keepers — ensuring only valid, authorized data flows through while capturing critical information for security and operational excellence.
+</Info>
+
+---
+
+## 2. Key Middleware Components for Security
+
+### Request Validation Middleware
+
+Security begins with verifying every request. Middleware components validate access tokens, check API keys, and reject unauthorized connections instantly.
+
+- Validates presence of `authorization` headers or tokens.
+- Rejects requests missing required authentication.
+- Integrates with Magic’s authentication providers (e.g., Easy DingTalk SDK).
+
+Example:
+
+```php
+// Simplified excerpt of the VerifyLoginMiddleware
+public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+{
+    $token = $request->getHeader('authorization')[0] ?? '';
+    if (!$token) {
+        ExceptionBuilder::throw(HttpErrorCode::Unauthorized);
+    }
+    // Token validation logic continues...
+
+    return $handler->handle($request);
+}
+```
+
+<Tip>
+Always ensure that the VerifyLoginMiddleware (or equivalent) is correctly configured and included early in your middleware stack to stop unauthorized requests before any sensitive processing.
+</Tip>
+
+### Context Enforcement Middleware
+
+This ensures the right organizational and user contexts flow through the system consistently, preventing cross-tenant data leaks.
+
+- Injects tenant identifiers and user roles into the request context.
+- Supports downstream services in applying fine-grained access control.
+
+### Response and Logging Middleware
+
+Captures detailed logs of every request-response cycle:
+
+- Records request URL, method, headers (with sensitive headers redacted).
+- Logs response bodies and error traces without blocking user responses.
+- Applies limits to avoid logging overly large payloads.
+
+Excerpt from Magic’s `ResponseMiddleware`:
+
+```php
+public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+{
+    $this->logger->info('Request start', [
+        'url' => $request->getRequestTarget(),
+        'method' => $request->getMethod(),
+        'headers' => $this->desensitizeRequestHeaders($request->getHeaders()),
+    ]);
+
+    $startTime = microtime(true);
+    try {
+        $response = $handler->handle($request);
+        return $response;
+    } finally {
+        $endTime = microtime(true);
+        defer(function () use ($request, $response, $startTime, $endTime) {
+            if (in_array($request->getUri()->getPath(), $this->ignoreUris, true)) {
+                return;
+            }
+            $this->logger->info('Request tracking info', $this->formatMessage($request, $response, $startTime, $endTime));
+        });
+    }
+}
+```
+
+<Warning>
+Sensitive headers such as authorization tokens are masked in logs automatically; avoid disabling desensitization to preserve security.
+</Warning>
+
+---
+
+## 3. Audit Trail Creation and Management
+
+Audit logs form the backbone of post-incident investigations and compliance audits. Magic’s middleware ensures that every relevant action is recorded with context-rich metadata.
+
+### What’s Captured in Audit Logs?
+
+- Request URL, HTTP method, and query parameters.
+- Request headers with sensitive data masked.
+- Remote client IP address.
+- Request and response payloads, with size limits enforced.
+- Timing metrics such as start time, end time, and duration.
+- Error details when exceptions occur, including stack traces (captured but segregated to protect data).
+
+### Best Practices for Audit Logs
+
+- Enable audit logging in all environments but store logs securely, preferably centrally using a log aggregation system.
+- Review logs regularly for anomalies or suspicious access patterns.
+- Protect logs with strict access controls to prevent unauthorized tampering.
+- Use log retention policies aligned with compliance standards.
+
+---
+
+## 4. Configuration Highlights
+
+### Logger Configuration
+
+Magic uses [Monolog](https://github.com/Seldaek/monolog) and PSR-3 compatible logging interfaces. By default, logs are written to standard output with configurable verbosity.
+
+Sample configuration snippet:
+
+```php
+return [
+    'default' => [
+        'handler' => [
+            'class' => StdoutHandler::class,
+            'constructor' => ['level' => Level::Info],
+        ],
+        'formatter' => ['class' => NullFormatter::class],
+        'processors' => [[
+            'class' => AppendRequestIdProcessor::class,
+        ]],
+    ],
+    'debug' => [
+        'handler' => [
+            'class' => StdoutHandler::class,
+            'constructor' => ['level' => Level::Debug],
+        ],
+        'formatter' => ['class' => NullFormatter::class],
+        'processors' => [[
+            'class' => AppendRequestIdProcessor::class,
+        ]],
+    ],
+];
+```
+
+Configure log levels and output destinations according to your operational needs.
+
+### Sensitive Information Handling
+
+Middlewares desensitize headers such as `token`, `authorization`, and `api-key` by replacing their values with `******` in logs to prevent data leaks.
+
+### Excluding Certain URIs
+
+Some URI paths related to heartbeat or favicon retrieval are excluded from detailed request and response logging to optimize log volume and protect privacy.
+
+---
+
+## 5. Extending and Customizing Middleware
+
+Magic’s middleware system is extensible, allowing you to:
+
+- Add custom validation logic for new authentication schemes.
+- Inject additional context into audit logs (e.g., user roles, device info).
+- Integrate external security monitoring or SIEM tools.
+
+### Practical Extension Example
+
+If you have specific compliance needs requiring recording custom headers or masking additional fields, consider extending `ResponseMiddleware`’s `desensitizeRequestHeaders` method or adding a new middleware layer.
+
+---
+
+## 6. Troubleshooting Common Issues
+
+<AccordionGroup title="Troubleshooting Middleware and Logging">
+<Accordion title="Logs Not Appearing as Expected">
+Ensure your logging configuration sets appropriate levels and handlers. Verify container or host permissions allow writing to configured endpoints.
+</Accordion>
+<Accordion title="Sensitive Information Leaking in Logs">
+Review middleware desensitization configurations. Confirm your sensitive headers are included in the desensitize list.
+</Accordion>
+<Accordion title="Unauthorized Requests Bypassing Validation">
+Make sure `VerifyLoginMiddleware` is registered early in the middleware execution stack.
+</Accordion>
+<Accordion title="Performance Impact Due to Logging">
+Limit capturing or truncate large payloads as the middleware does by default. Consider asynchronous logging or log aggregation solutions.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 7. Security Considerations and Best Practices
+
+- Always run middleware components in a trusted execution environment.
+- Regularly update your logging and middleware libraries to benefit from security patches.
+- Monitor for unexpected logs indicating abnormal access or usage patterns.
+- Use structured logging to enable efficient querying and anomaly detection.
+- Combine audit logs with Magic’s broader security model including authentication, multi-tenant isolation, and network controls.
+
+
+---
+
+## 8. Further Reading and Related Documentation
+
+- [Authentication Methods Guide](/security/authentication-and-access/authentication-methods) — Deep dive into token validation and login workflows.
+- [Access Control and Authorization Models](/security/authentication-and-access/access-control-and-authorization) — Learn how user permissions are enforced throughout Magic.
+- [SSRF and External Service Defense](/security/platform-defenses-and-best-practices/ssrf-and-external-service-defense) — Protect your middleware calls from server-side request forgery.
+- [Runtime Hardening & Secrets Management](/deployment/security-hardening-and-compliance/runtime-hardening-and-secrets-management) — Best practices for securing environment at runtime.
+- [Monitoring & Logging Overview](/deployment/scaling-monitoring-and-resilience/monitoring-and-logging-overview) — Advanced strategies for collecting, aggregating, and using Magic platform logs.
+
+---
+
+By mastering Magic’s middleware, logging, and auditing stack, you solidify your operational security posture, streamline troubleshooting, and maintain strict compliance with enterprise and regulatory requirements. Proper configuration and continuous scrutiny of these layers safeguard your AI productivity platform and your organization's data.
+
+---
+
+<Callout title="Need Help or Security Reporting?">
+If you encounter security issues or require assistance, consult the [Getting Help & Additional Resources](/getting-started/validation-troubleshooting/resources-and-support) guide for official support channels and responsible disclosure guidelines.
+</Callout>
+
+---
+
+### Example: Monitoring a Request Through the Middleware Stack
+
+1. **Incoming Request:** User sends an API request including an authorization token.
+2. **VerifyLoginMiddleware:** Checks presence and validity of the token. If invalid, request is rejected immediately.
+3. **Context Injection:** User and tenant identity are attached to the processing context.
+4. **ResponseMiddleware:** Logs request metadata and redacts sensitive headers.
+5. **Request Handling:** Core application logic executes and returns response.
+6. **ResponseMiddleware (finally block):** Logs response status, body size, and timing metrics asynchronously.
+
+This flow guarantees secure request handling, context enforcement, and transparent audit tracking.
+
+
+---
+
+## Appendix: Sample Log Entry Produced by Middleware Logger
+
+```json
+{
+  "url": "/api/v1/resource",
+  "method": "POST",
+  "headers": {
+    "authorization": ["******"],
+    "content-type": ["application/json"]
+  },
+  "remote_addr": "192.168.1.100",
+  "startTime": "2024-06-25T14:32:10.123456Z",
+  "endTime": "2024-06-25T14:32:10.234567Z",
+  "cosTime": 111,
+  "requestBody": {
+    "query_params": {},
+    "parsed_body": {"field1": "value1", "field2": "value2"}
+  },
+  "responseBody": "{\"code\":0,\"message\":\"success\"}",
+  "error": null
+}
+```
+
+This log shows sanitized authorization headers, precise timing, and request/response content for audit and troubleshooting.
+
+---
+
+## Final Checklist for Secure Middleware Usage
+
+- ✅ Verify `VerifyLoginMiddleware` is included and actively rejecting unauthorized requests.
+- ✅ Configure and maintain logging with sensitive data masking.
+- ✅ Exclude irrelevant or high-volume endpoints from detailed logging.
+- ✅ Regularly review log retention policies and secure log storage.
+- ✅ Extend middleware for custom validation or logging needs where necessary.
+
+
+---
+
+_Last updated: June 2024_
