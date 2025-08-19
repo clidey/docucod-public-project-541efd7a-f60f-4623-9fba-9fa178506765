@@ -1,0 +1,202 @@
+---
+title: "Connecting Custom LLMs and Model Providers"
+description: "End-to-end guide for supporting third-party or private LLMs (OpenAI-compatible, Azure, Wenxin, etc.), including configuration, testing, and troubleshooting. Includes best practices for routing requests and managing API keys."
+---
+
+# Connecting Custom LLMs and Model Providers
+
+## Overview
+This guide provides a practical, end-to-end workflow for configuring and integrating third-party or private Large Language Models (LLMs) that are OpenAI-compatible or provided by platforms such as Azure and Wenxin. It focuses on managing API keys, routing requests properly within Magic’s architecture, testing the integration, and troubleshooting common issues. By following these instructions, users will be able to extend Magic's AI capabilities with custom or external LLM providers effectively.
+
+---
+
+## 1. Workflow Overview
+
+### What You Will Achieve
+- Configure Magic to support third-party or private LLMs
+- Manage API keys securely for the custom model providers
+- Route AI requests appropriately based on provider configuration
+- Test integration for conversational completions and embeddings
+- Troubleshoot common errors and optimize configuration
+
+### Prerequisites
+- Access to Magic platform with administrative privileges
+- API credentials for the third-party or private LLM service (e.g., OpenAI API key, Azure LLM credentials, Wenxin API key)
+- Basic familiarity with Magic’s AI agent architecture and SDK usage
+
+### Time Estimate
+- Initial setup and testing: 15–30 minutes
+- Troubleshooting (if needed): 10–20 minutes
+
+### Difficulty Level
+- Intermediate (requires understanding of Magic platform configuration and API integration)
+
+---
+
+## 2. Step-by-Step Integration Instructions
+
+### Step 1: Obtain your LLM Provider Credentials
+- Locate your API Key or authentication credentials for your LLM provider.
+  - For OpenAI-compatible providers, ensure you have the `api_key`.
+  - For Azure or Wenxin, collect necessary endpoint URLs, subscription keys, or tokens.
+
+<Tip>
+Ensure your API keys have the necessary permissions/scopes for completion and embedding operations.
+Store keys securely following your organization's security standards.
+</Tip>
+
+### Step 2: Add LLM Provider Configuration to Magic
+
+1. Navigate to Magic’s configuration files or administration panel where AI model providers are configured.
+2. Add a new entry for your LLM provider under the LLM or AI models configuration section.
+3. Include the following essential details:
+   - Provider name (e.g., 'azure-openai', 'wenxin', 'custom-openai')
+   - Base API endpoint URL
+   - API key or token
+   - Model identifiers compatible with your usage
+   - Optional configurations such as API version, rate limits, or request timeout
+
+### Example Configuration Snippet (YAML or JSON):
+
+```yaml
+llm_providers:
+  azure-openai:
+    base_url: https://example-openai.azure.com/
+    api_key: YOUR_AZURE_API_KEY
+    models:
+      - gpt-4
+      - gpt-35-turbo
+  wenxin:
+    base_url: https://wenxin.api.example.com/
+    api_key: YOUR_WENXIN_API_KEY
+    models:
+      - wenxin-chat
+```
+
+### Step 3: Update Request Routing Logic
+
+Magic internally routes model requests to the appropriate provider based on your configuration.
+
+- Verify that your custom LLM provider is registered in the routing logic.
+- If using the Magic SDK or API, specify the desired model provider when triggering requests.
+
+### Step 4: Manage API Keys Securely in Magic
+
+- Use environment variables or secure vaults to hold your API keys.
+- Avoid hardcoding keys in source files.
+- Confirm Magic’s cache and config modules respect secure storage practices.
+
+### Step 5: Test Integration
+
+#### Testing Chat Completions
+- Use Magic's API or SDK to send test chat completion requests to the LLM.
+- Confirm the provider returns valid completions.
+
+##### Example Test Curl Request:
+```bash
+curl -X POST https://magic.example.com/api/llm/chat-completions \
+ -H 'Authorization: Bearer YOUR_MAGIC_ACCESS_TOKEN' \
+ -H 'Content-Type: application/json' \
+ -d '{"model":"azure-openai:gpt-4","messages":[{"role":"user","content":"Hello!"}]}'
+```
+
+#### Testing Text Embeddings
+- Similarly, send test embedding requests using your configured provider.
+- Validate the semantic vectors returned are as expected.
+
+<Tip>
+Use Magic’s built-in API endpoints like `/api/llm/chat-completions` and `/api/llm/embeddings` for live testing.
+Monitor Magic logs and responses for troubleshooting.
+</Tip>
+
+---
+
+## 3. Best Practices
+
+- **Version Pinning**: Lock your model and API versions to avoid unexpected breaking changes.
+- **Rate Limits**: Monitor your provider’s API rate limits and handle throttling gracefully in Magic.
+- **Caching**: Use Magic’s built-in caching for tokens or frequent queries to optimize performance.
+- **Secure Storage**: Always keep keys secure; configure environment variables outside of source control.
+- **Failover Strategies**: Consider fallback providers if your primary model is unavailable.
+
+---
+
+## 4. Troubleshooting
+
+### Issue: Missing or Invalid API Key
+- Verify your API key is entered correctly and has appropriate permissions.
+- Check Magic’s configuration to ensure the key is being loaded properly.
+- Confirm no trailing spaces or hidden characters in the key.
+
+### Issue: Request Routed to Wrong Provider
+- Double-check provider name and model identifier mapping in configuration.
+- Consult Magic logs to see which provider the request targeted.
+- Update routing rules if needed to correctly distinguish between providers.
+
+### Issue: Unexpected Errors from LLM Provider
+- Review error messages returned by the external API.
+- Check network connectivity and endpoint URLs.
+- Validate provider status and quota limits.
+
+### Issue: Timeouts or Slow Responses
+- Increase request timeout settings if possible.
+- Use caching to prevent unnecessary repeated calls.
+- Monitor for network latency issues.
+
+<Tip>
+Use Magic’s logging and debug modes to trace requests and responses.
+Consult the provider’s API documentation for specific error codes.
+</Tip>
+
+---
+
+## 5. Advanced Configuration
+
+### Custom Models & Parameters
+- Define your own model names and parameters in the configuration to leverage new or private LLMs.
+
+### Multi-Tenant API Key Management
+- Use Magic’s environment profiles or vault integration to manage multiple keys securely for different tenants.
+
+### API Key Rotation
+- Follow your provider’s best practices for key rotation and update Magic’s configuration without downtime.
+
+---
+
+## 6. Next Steps & Related Documentation
+
+- [Integrating AI Agents with Magic](guides/getting-started/first-ai-agent) — Build AI agents using your newly connected LLM.
+- [Workflow Orchestration with Custom LLMs](guides/getting-started/workflow-orchestration) — Use LLMs in automated workflows.
+- [Third-Party Messaging Integration](guides/advanced-customization-integration/third-party-messaging-integration) — Combine LLMs with messaging platforms.
+- [Securing and Isolating Your AI Deployment](guides/best-practices-optimization/secure-deployment) — Best security practices managing keys and external access.
+
+---
+
+## Diagram: LLM Integration Workflow
+
+```mermaid
+flowchart TD
+  A[User Request] --> B[Magic LLM Router]
+  B -->|Routes based on config| C{Provider Type}
+  C -->|OpenAI-compatible| D[OpenAI Provider]
+  C -->|Azure| E[Azure LLM Provider]
+  C -->|Wenxin| F[Wenxin LLM Provider]
+  C -->|Custom| G[Custom LLM Provider]
+
+  subgraph Provider Endpoints
+    D --> DAPI[OpenAI API]
+    E --> EAPI[Azure AI Service]
+    F --> FAPI[Wenxin API]
+    G --> GAPI[Custom LLM API]
+  end
+
+  DAPI & EAPI & FAPI & GAPI --> H[Return LLM Response]
+  H --> I[Magic SDK / API]
+  I --> J[User Receives Completion or Embedding]
+
+  %% Notes
+  classDef provider fill:#f9f,stroke:#333,stroke-width:2px;
+  class D,E,F,G provider;
+```
+
+---
