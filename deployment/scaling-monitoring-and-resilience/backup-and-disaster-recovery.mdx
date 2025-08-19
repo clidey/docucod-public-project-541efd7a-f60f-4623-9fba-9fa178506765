@@ -1,0 +1,131 @@
+---
+title: "Backup & Disaster Recovery"
+description: "Explains safe backup procedures for data, configuration, and attachments. Provides tested workflows for restoring services after critical failures, including container/data migration and version rollback strategies."
+---
+
+# Backup & Disaster Recovery
+
+Ensure your Magic platform deployment remains safe and resilient by following these robust backup and disaster recovery procedures. This guide details practical steps to safeguard your data, configurations, and attachments, and provides workflows for restoring services after critical failures, including container and data migration as well as version rollback strategies.
+
+---
+
+## 1. Overview of Backup & Disaster Recovery
+
+Data loss or system failure can disrupt business operations severely. Magic platform requires systematic backup of:
+
+- **Data and Databases**: User data, knowledge bases, workflow states
+- **Configuration Files**: Environment variables, system configurations
+- **Attachments and File Storage**: Uploaded documents and AI knowledge files
+- **Container States**: Running containers and persistent volumes
+
+Effective backup and disaster recovery plans ensure minimal downtime and foundational integrity for high availability.
+
+---
+
+## 2. Backup Procedures
+
+### 2.1 What to Backup
+
+- **Databases and Data Stores**: Periodically export or snapshot your production databases, including vector stores and user data.
+- **Configuration and Environment Files**: Backup `.env` files and customized configuration setups.
+- **File Attachments**: Backup file storage locations — local filesystem or configured cloud storage connections.
+- **Containers and Volumes** (if using Docker): Export persistent volumes or volumes attached to containers.
+
+### 2.2 Backup Frequency & Best Practices
+
+- Schedule **regular backups** during low-usage hours to reduce performance impact.
+- Retain **multiple backup versions** for rollback to a known good state.
+- Secure backup storage with **encryption and access control**.
+- Validate backup integrity by **periodically testing restoration**.
+
+### 2.3 Using Tools and Automation
+
+- Utilize **native database tools** for snapshotting and exports.
+- Use **infrastructure tools like Docker volumes backup, rsync, or cloud provider snapshots**.
+- Automate backups with **cron jobs or CI/CD pipelines** to ensure reliability.
+
+---
+
+## 3. Disaster Recovery Workflows
+
+### 3.1 Service Restoration Workflow
+
+Follow this recovery flow for resuming services after critical failures:
+
+1. **Prepare Environment**
+   - Ensure infrastructure meets minimum requirements.
+   - Verify Docker, Docker Compose, or orchestration platform readiness.
+
+2. **Container and Data Migration**
+   - Transfer snapshot backups of volumes and databases to target environment.
+   - Restore configuration files (.env, etc.).
+
+3. **Redeploy Containers**
+   - Use saved Docker Compose files or deployment manifests.
+   - Start containers using `docker-compose up` or orchestration tools, validating startup logs.
+
+4. **Version Rollback if Needed**
+   - Roll back workflow or AI agent versions to previous stable states.
+   - Note: Memory may not restore with rollback — plan accordingly.
+
+5. **Verification**
+   - Confirm services are accessible via Web UI and API.
+   - Verify data consistency and workflow health through monitoring tools.
+
+### 3.2 Version Rollback Strategy
+
+- Magic workflows and AI agents support version management.
+- Rollback to an earlier version using the product's version control interface.
+- Beware:
+  - **Memory state will not be restored** with rollback; only static workflow definitions change.
+  - Ensure compatibility of dependent tools and plugins after rollback.
+
+### 3.3 Common Pitfalls to Avoid
+
+- Backup storage running out of space causing truncated backups.
+- Misaligned environment configuration during restoration.
+- Relying solely on one backup without testing restoration integrity.
+- Skipping secrets and sensitive data backups, risking service security upon recovery.
+
+---
+
+## 4. Practical Tips & Best Practices
+
+- **Prioritize critical data**: Identify key workflows, knowledge bases, and user data for prioritized backup.
+- **Automate Notifications**: Set alerts for failed backups or storage issues.
+- **Use Secure Storage**: Keep backups offline or secure cloud buckets with restricted access.
+- **Document Recovery Steps**: Maintain up-to-date operational runbooks for disaster handling.
+- **Test Regularly**: Conduct scheduled recovery drills to validate procedures.
+
+---
+
+## 5. Troubleshooting Common Backup & Recovery Issues
+
+| Issue                          | Potential Cause                            | Remedy                                                      |
+| ------------------------------ | ---------------------------------------- | ----------------------------------------------------------- |
+| Backup file corrupted          | Disk errors, interrupted backups          | Use checksum validation, retry backups, maintain redundancy  |
+| Containers fail to start       | Misconfigured environment or volumes      | Review env vars and volume mounts, validate docker-compose settings |
+| Partial data loss after restore| Incomplete backup, incompatible versions  | Ensure complete snapshot, synchronize versions, perform integrity checks|
+| Secrets missing after restore  | Excluded from backup or encrypted         | Backup secrets securely, use secret management tools         |
+| Version rollback unexpected behavior| Dependencies or plugin versions changed| Align plugin versions with rolled back workflow              |
+
+---
+
+## 6. Additional Resources & References
+
+- [System Requirements & Preparation](/deployment/getting-started-deployment/system-requirements-and-preparation)
+- [Quick Deployment with Docker](/deployment/getting-started-deployment/quick-deployment-with-docker)
+- [Verifying and Accessing Your Deployment](/deployment/getting-started-deployment/verifying-and-accessing-services)
+- [Environment Variable Configuration](/deployment/advanced-environment-configuration/configuring-environment-variables)
+- [Scaling & High Availability](/deployment/scaling-monitoring-and-resilience/scaling-and-high-availability)
+- [Monitoring & Logging Overview](/deployment/scaling-monitoring-and-resilience/monitoring-and-logging-overview)
+- [System Configuration Management Best Practices](/guides/best-practices-optimization/system-config-management)
+- [Secure Deployment Best Practices](/guides/best-practices-optimization/secure-deployment)
+
+---
+
+This backup and disaster recovery guide is designed to help Magic platform operators protect and restore their deployments with confidence, using tested procedures and practical insights to maintain business continuity in production environments.
+
+---
+
+<Source url="https://github.com/dtyq/magic" paths={[{"path": "deployment/scaling-monitoring-and-resilience/backup-and-disaster-recovery.mdx", "range": "1-230"}]} branch="main" />
