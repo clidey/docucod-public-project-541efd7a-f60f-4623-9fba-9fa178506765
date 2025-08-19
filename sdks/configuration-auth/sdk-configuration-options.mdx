@@ -1,0 +1,266 @@
+---
+title: "SDK Client Configuration"
+description: "Explore flexible configuration options for SDK clients—such as endpoint URLs, logging, HTTP client, and caching. Learn how to adapt the SDK setup to various development, staging, or production needs while ensuring reliability and performance."
+---
+
+# SDK Client Configuration
+
+Explore how to customize and configure the Magic SDK clients to perfectly fit your development, staging, or production environments. This guide walks you through flexible options such as setting endpoint URLs, customizing logging, selecting the HTTP client, and managing caching strategies to ensure your integration is robust, performant, and maintainable.
+
+---
+
+## Why Configure Your SDK Client?
+
+Every project has unique demands—from the development sandbox through to high-availability production deployments. Configuring your SDK client allows you to tailor behavior according to these needs:
+
+- **Customize API endpoints** to target different environments (development, staging, production)
+- **Enable detailed logging** for faster issue resolution during development
+- **Select HTTP clients** compatible with your framework or runtime
+- **Implement caching strategies** to reduce redundant network calls and improve performance
+
+Configuring these options upfront empowers you to build reliable integrations that adapt as your project evolves.
+
+---
+
+## Core Configuration Options
+
+The Magic SDK client exposes a flexible configuration interface centered around the `OpenDevEndpointConfig` class, which helps define connection and authentication details. Let's break down the main configurable areas:
+
+### 1. Endpoint URL and Credentials
+
+Each SDK client instance requires specifying the application credentials and optionally the endpoint URL:
+
+- `app_key`: Your DingTalk application key.
+- `app_secret`: The matching secret for your app key.
+- `callback_config` (optional): Token and AES key for callback security configuration.
+
+These parameters are encapsulated in `OpenDevEndpointConfig`, accessible when you initialize or select your app client.
+
+### 2. Selecting Applications and Endpoint Types
+
+The SDK supports multiple registered applications through a configuration array. You select the target app by name with the `selectApp(string $appName)` method on endpoint classes. This method:
+
+- Loads configuration options for that app
+- Checks endpoint type compatibility (must be `open_dev` type)
+- Throws explicit exceptions if configuration is missing or invalid
+
+This allows you to switch between different DingTalk applications seamlessly in your code.
+
+### 3. HTTP Client
+
+Magic SDK relies on [GuzzleHttp](https://docs.guzzlephp.org/en/stable/) as the HTTP client under the hood. The SDK's `send` method takes care of dispatching the configured API requests. You can customize request options like headers, JSON bodies, and timeout settings via API classes.
+
+For custom HTTP client implementations or drivers (e.g., Hyperf-specific clients), integrate by overriding or extending the SDK Base class with your container and configuration.
+
+### 4. Caching Access Tokens
+
+To optimize performance and reduce redundant API authentication calls, the SDK uses a cache interface for access tokens:
+
+- Tokens are cached with an expiration time derived from API responses.
+- Cache keys are generated from app credentials for uniqueness.
+- The SDK reads and writes from the cache during token retrieval transparently.
+
+You can inject custom cache implementations depending on your environment (Redis, Memcached, filesystem, etc.) by configuring the underlying SDK base cache provider.
+
+### 5. Logging
+
+In development or debugging phases, enabling detailed logging of requests and responses is invaluable. Although not exposed directly in the core `OpenDevEndpoint`, the logging implementation can be customized by:
+
+- Integrating a PSR-3 compatible logger into your HTTP client or SDK wrapper.
+- Listening to SDK HTTP events if available for audit or troubleshooting.
+
+Plan to enable verbose logging only for development or testing to avoid performance implications in production.
+
+---
+
+## How to Configure the SDK Client
+
+Follow these practical steps to configure the SDK client in your PHP project:
+
+<Steps>
+<Step title="Define Your Application Config">
+Prepare an array with your app credentials and callback configuration. For example:
+
+```php
+$appConfig = [
+    'default' => [
+        'type' => 'open_dev',
+        'options' => [
+            'app_key' => 'your_app_key_here',
+            'app_secret' => 'your_app_secret_here',
+            'callback_config' => [
+                'token' => 'your_token',
+                'aes_key' => 'your_aes_key',
+            ],
+        ],
+    ],
+];
+```
+</Step>
+<Step title="Inject Configuration into SDK Base">
+Use your dependency injection container or SDK constructor to pass the app configs:
+
+```php
+use Dtyq\EasyDingTalk\OpenDevFactory;
+use Dtyq\SdkBase\SdkBase;
+
+$sdkBase = new SdkBase($container, [
+    'sdk_name' => 'dingtalk-sdk',
+    'applications' => $appConfig,
+]);
+$factory = new OpenDevFactory('default', $sdkBase);
+```
+</Step>
+<Step title="Select Application and Use Endpoint">
+Before calling any API, select the application context:
+
+```php
+$endpoint = $factory->userEndpoint;
+$endpoint->selectApp('default');
+```
+
+Then proceed to use API methods which internally use your configured credentials and caching.
+</Step>
+</Steps>
+
+---
+
+## Example: Customizing Access Token Retrieval with Caching
+
+By default, the SDK caches access tokens automatically. Here's a simplified example illustrating the flow inside an endpoint:
+
+```php
+protected function getAccessToken(): string
+{
+    $appKey = $this->openDevConfig->getAppKey();
+    $appSecret = $this->openDevConfig->getAppSecret();
+    $cacheKey = 'access-token:' . md5($appKey . $appSecret);
+
+    if ($this->sdkBase->getCache()->has($cacheKey)) {
+        return $this->sdkBase->getCache()->get($cacheKey);
+    }
+
+    // Prepare API request for access token
+    $api = new AccessTokenApi();
+    $api->setOptions([
+        RequestOptions::JSON => [
+            'appKey' => $appKey,
+            'appSecret' => $appSecret,
+        ],
+    ]);
+    $response = $this->send($api);
+    $data = json_decode($response->getBody()->getContents(), true);
+
+    $accessToken = $data['accessToken'] ?? null;
+    if (empty($accessToken)) {
+        throw new \Exception('Failed to get access token');
+    }
+
+    $ttl = (int) ($data['expiresIn'] ?? 7200);
+    $this->sdkBase->getCache()->set($cacheKey, $accessToken, $ttl);
+
+    return $accessToken;
+}
+```
+
+This pattern means your app does not have to manage token persistence explicitly. To customize caching, ensure the underlying cache provider in `SdkBase` is properly configured.
+
+---
+
+## Best Practices for Reliable and Performant SDK Configuration
+
+- **Isolate Credentials:** Store your `app_key`, `app_secret`, and callback secrets securely, such as in environment variables or secret management systems, not hard-coded.
+- **Use Environment-Specific Endpoints:** Define separate app entries for dev/test/prod with respective credentials for safe environment isolation.
+- **Implement Robust Caching:** Use fast in-memory or distributed caching to avoid unnecessary token requests.
+- **Add Logging During Development:** Enable detailed HTTP logging in dev to troubleshoot API issues.
+- **Handle Configuration Errors:** The SDK throws clear exceptions if the config is missing or malformed; catch and handle these to provide meaningful feedback.
+- **Review SDK Version Compatibility:** Confirm SDK and PHP versions meet requirements (e.g., PHP 8.1+) for smooth operation.
+
+---
+
+## Troubleshooting Common Configuration Issues
+
+<AccordionGroup title="Common SDK Client Configuration Issues and Fixes">
+<Accordion title="Missing or Invalid App Configuration">
+If you encounter `InvalidConfigException` stating the endpoint config is missing or the type is not `open_dev`, verify:
+
+- The application key in your config matches the key you pass to `selectApp()`
+- The `type` field in configuration is correctly set to `'open_dev'`
+- All required keys (`app_key`, `app_secret`) exist and are not empty
+
+Example fix:
+
+```php
+'applications' => [
+    'default' => [
+        'type' => 'open_dev', // <-- Ensure this matches
+        'options' => [
+            'app_key' => 'your_key',
+            'app_secret' => 'your_secret',
+        ],
+    ],
+]
+```
+</Accordion>
+<Accordion title="Access Token Retrieval Failure">
+If the access token cannot be retrieved (`BadRequestException`), the API probably rejected your credentials:
+
+- Confirm your `app_key` and `app_secret` are valid
+- Ensure network connectivity to DingTalk APIs
+- Check for rate limits or throttling on your DingTalk application
+- Enable HTTP logging to capture request/response details
+</Accordion>
+<Accordion title="Cache Not Working or Tokens Expiring Frequently">
+- Verify your cache provider in `SdkBase` is correctly set up and accessible
+- Check cache key generation logic
+- Use a fast, persistent cache backend for production
+- For testing, you can disable caching temporarily to isolate issues
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Summary
+
+Configuring the Magic SDK client is essential to unlock its full potential, ensuring each call to DingTalk APIs is authenticated correctly, securely transmitted, and efficiently managed. From selecting app keys, handling callbacks, choosing HTTP clients, to managing caching and logging, this flexible setup supports the full lifecycle of your integrations from rapid development to stable production deployments.
+
+For comprehensive integration, always refer to the SDK's error handling guidelines and follow best security practices for credentials management.
+
+---
+
+## Related Documentation
+
+- [Authentication & Credential Management](/sdks/configuration-auth/authentication-methods) — Learn how to manage API keys and tokens securely.
+- [Quickstart: From First Call to Hello World](/sdks/usage-patterns/quickstart-examples) — See example usage of configured SDK clients.
+- [Error Handling & Debugging](/sdks/troubleshooting-bestpractices/error-handling-debugging) — Handle common error scenarios gracefully.
+- [Best Practices & Performance Tips](/sdks/troubleshooting-bestpractices/sdk-best-practices) — Optimize SDK usage and configuration.
+
+---
+
+## Further Assistance
+For additional help, consult the Magic community forums or open an issue in the [Magic SDK GitHub repository](https://github.com/dtyq/magic). Detailed logs and clear configuration snippets will speed diagnosis.
+
+
+---
+
+# Appendix: Reference Code Snippet for App Config Loading
+
+```php
+// OpenDevEndpoint.php snippet showing app config loading
+public function selectApp(string $appName): void
+{
+    $config = $this->sdkBase->getConfig()['applications'][$appName] ?? [];
+    if (empty($config)) {
+        throw new InvalidConfigException("[{$appName}]Endpoint config not found");
+    }
+    $endpointType = EndpointType::from($config['type'] ?? '');
+    if ($endpointType !== EndpointType::OpenDev) {
+        throw new InvalidConfigException("[{$appName}]Endpoint type is not open_dev");
+    }
+    $this->openDevConfig = new OpenDevEndpointConfig(
+        name: $appName,
+        type: $endpointType,
+        options: $config['options'] ?? []
+    );
+}
+```
