@@ -1,0 +1,351 @@
+---
+title: "Storage & File Driver Configuration"
+description: "Explains how to configure Magic’s file, attachment, and cloud storage options, including local, OSS, TOS, and third-party drivers. Includes mapping to cloud credentials, containerized volume management, and file security best practices."
+---
+
+# Storage & File Driver Configuration
+
+This guide explains how to configure Magic's file storage system, including support for local filesystem, Alibaba Cloud OSS, ByteDance Cloud TOS, and their integration with container volumes and credentials. It also covers initialization steps, system recommendations, security best practices, and usage of file operation APIs.
+
+---
+
+## Overview of File Storage Drivers
+
+Magic Service offers flexible file storage options tailored to different deployment needs, supporting three primary drivers:
+
+- **Local File System (local)**: Suitable for development or small-scale deployments.
+- **Alibaba Cloud Object Storage Service (oss)**: A cloud storage option ideal for production on Alibaba Cloud.
+- **ByteDance Cloud Object Storage (tos)**: Cloud storage targeted at environments using ByteDance cloud services.
+
+Each driver supports two file access modes:
+
+- **Private Storage**: Files requiring authorized access.
+- **Public Storage**: Files accessible without authorization.
+
+---
+
+## Configuring File Storage Drivers
+
+### Setting the File Driver
+
+Configure the file driver by setting `FILE_DRIVER` in your `.env` file:
+
+```ini
+FILE_DRIVER=local   # Options: local, oss, tos
+```
+
+### Local File System Configuration
+
+When using the local driver:
+
+```ini
+FILE_LOCAL_ROOT=/app/storage/files         # Absolute path for file storage
+FILE_LOCAL_READ_HOST=https://example.com  # Base URL for file access
+FILE_LOCAL_WRITE_HOST=https://upload.example.com  # Base URL for file uploads
+```
+
+- `FILE_LOCAL_ROOT` defaults to `storage/files` in the project root if not set.
+- Upload paths are automatically appended with `/api/v1/file/upload`.
+
+### Alibaba Cloud OSS Configuration
+
+For Alibaba Cloud Object Storage (oss), set:
+
+```ini
+# Private bucket
+FILE_PRIVATE_ALIYUN_ACCESS_ID=YOUR_ACCESS_ID
+FILE_PRIVATE_ALIYUN_ACCESS_SECRET=YOUR_SECRET
+FILE_PRIVATE_ALIYUN_BUCKET=your-private-bucket
+FILE_PRIVATE_ALIYUN_ENDPOINT=oss-cn-region.aliyuncs.com
+FILE_PRIVATE_ALIYUN_ROLE_ARN=optional-role-arn
+
+# Public bucket
+FILE_PUBLIC_ALIYUN_ACCESS_ID=YOUR_ACCESS_ID
+FILE_PUBLIC_ALIYUN_ACCESS_SECRET=YOUR_SECRET
+FILE_PUBLIC_ALIYUN_BUCKET=your-public-bucket
+FILE_PUBLIC_ALIYUN_ENDPOINT=oss-cn-region.aliyuncs.com
+FILE_PUBLIC_ALIYUN_ROLE_ARN=optional-role-arn
+```
+
+### ByteDance Cloud TOS Configuration
+
+For ByteDance TOS storage:
+
+```ini
+# Private bucket
+FILE_PRIVATE_TOS_REGION=cn-beijing
+FILE_PRIVATE_TOS_ENDPOINT=endpoint-url
+FILE_PRIVATE_TOS_AK=YOUR_ACCESS_KEY
+FILE_PRIVATE_TOS_SK=YOUR_SECRET_KEY
+FILE_PRIVATE_TOS_BUCKET=your-private-bucket
+FILE_PRIVATE_TOS_TRN=optional-role-arn
+
+# Public bucket
+FILE_PUBLIC_TOS_REGION=cn-beijing
+FILE_PUBLIC_TOS_ENDPOINT=endpoint-url
+FILE_PUBLIC_TOS_AK=YOUR_ACCESS_KEY
+FILE_PUBLIC_TOS_SK=YOUR_SECRET_KEY
+FILE_PUBLIC_TOS_BUCKET=your-public-bucket
+FILE_PUBLIC_TOS_TRN=optional-role-arn
+```
+
+---
+
+## System Initialization
+
+### Default Icon Files
+
+Magic Service ships with default icon files located at:
+
+```
+storage/files/MAGIC/open/default/
+```
+
+These files are uploaded to the configured cloud storage during system initialization (for `oss` or `tos` drivers).
+
+### Initialization Command
+
+Run this CLI command after your initial configuration, especially when using cloud storage drivers:
+
+```bash
+php bin/hyperf.php file:init
+```
+
+This process:
+
+1. Reads your current storage bucket configuration.
+2. No operation for local storage.
+3. Uploads default icons to cloud storage buckets if using OSS or TOS.
+
+### Example Output
+
+```
+Public bucket configuration: {"adapter":"tos","config":{"region":"cn-beijing","endpoint":"tos-cn-beijing.volces.com", ...},"public_read":true}
+Local file path: /path/to/project/storage/files/MAGIC/open/default/icon1.png
+Local file path: /path/to/project/storage/files/MAGIC/open/default/icon2.png
+...
+File system initialization completed
+```
+
+---
+
+## Usage Scenarios & Recommendations
+
+### Local File System
+
+- Ideal for development or small deployments.
+- Simple setup, no external dependencies.
+- Not recommended in production due to lack of scalability and distributed support.
+
+### Alibaba Cloud OSS
+
+- Production-ready on Alibaba Cloud.
+- Supports CDN acceleration, robust backup, and disaster recovery.
+- Requires proper access keys and bucket setup.
+
+### ByteDance Cloud TOS
+
+- Optimized for ByteDance cloud environments.
+- Highly integrated with other ByteDance services.
+- Requires careful credential management and bucket policies.
+
+### Public vs Private Storage
+
+| Storage Type | Use Cases                    | Access Control                 |
+|--------------|-----------------------------|-------------------------------|
+| Public       | Website images, public docs | No authorization required     |
+| Private      | User private files, configs | Authorization or signed URLs |
+
+---
+
+## Configuration Best Practices
+
+- Ensure **all required `.env` variables** are set for your chosen driver; missing keys cause initialization failures.
+- Run the initialization command once after your first deployment.
+- Pre-create buckets with correct permissions for file upload and download.
+- Use different buckets or buckets with different prefixes for different environments (dev, staging, production).
+- For private buckets, use signed URLs to control file access duration.
+- Securely store AK/SK in environment variables or key management services; never commit to repositories.
+- Rotate your access credentials regularly.
+- Test file upload and access thoroughly before production use.
+
+---
+
+## Container and Volume Management
+
+When deploying Magic in Docker or containerized environments:
+
+- Map your local storage directory (`FILE_LOCAL_ROOT`) to a persistent volume to prevent data loss.
+- For cloud drivers (`oss` and `tos`), ensure the container network allows outbound access to cloud storage endpoints.
+- Use environment variables or Kubernetes secrets to inject storage credentials securely.
+
+---
+
+## File Operation APIs
+
+Magic Service provides robust file management via the `FileDomainService`. Common file handling scenarios:
+
+### Injecting the Service
+
+```php
+public function __construct(
+    private readonly FileDomainService $fileDomainService
+) {}
+```
+
+### Getting File Links
+
+Single file:
+
+```php
+$fileLink = $this->fileDomainService->getLink(
+    $organizationCode,
+    $filePath,
+    StorageBucketType::Public // Optional
+);
+$url = $fileLink ? $fileLink->getUrl() : null;
+```
+
+Batch files:
+
+```php
+$links = $this->fileDomainService->getLinks(
+    $organizationCode,
+    [$filePath1, $filePath2],
+    StorageBucketType::Private, // Optional
+    [$downloadName1, $downloadName2] // Optional
+);
+```
+
+### Uploading Files
+
+- **Large files or frontend direct upload:** Use temporary credentials with `uploadByCredential`.
+
+```php
+$this->fileDomainService->uploadByCredential(
+    $organizationCode,
+    new UploadFile($localFilePath, $remoteDir, $fileName, $isStream),
+    StorageBucketType::Private,
+    true
+);
+```
+
+- **Small files:** Direct upload.
+
+```php
+$this->fileDomainService->upload(
+    $organizationCode,
+    new UploadFile($localFilePath, $remoteDir, $fileName, $isStream),
+    StorageBucketType::Public
+);
+```
+
+### Pre-signed URLs for Private Files
+
+Enable temporary access to private files:
+
+```php
+$preSignedUrls = $this->fileDomainService->getPreSignedUrls(
+    $organizationCode,
+    [$fileName1, $fileName2],
+    3600,  // Valid duration in seconds
+    StorageBucketType::Private
+);
+foreach ($preSignedUrls as $fileName => $urlObject) {
+    $url = $urlObject->getUrl();
+    $expiration = $urlObject->getExpiration();
+}
+```
+
+### Other Useful APIs
+
+- Get temporary upload credentials for frontend direct uploads.
+- Check if files exist.
+- Retrieve file metadata.
+
+### Storage Bucket Types
+
+Magic defines these bucket types:
+
+```php
+use App\Infrastructure\Core\ValueObject\StorageBucketType;
+
+StorageBucketType::Public  // Public buckets, no authentication required
+StorageBucketType::Private // Private buckets, require signatures or auth
+```
+
+---
+
+## Security Recommendations
+
+- Use signed URLs for private storage to limit file access duration (default is 3 days).
+- Configure Cross-Origin Resource Sharing (CORS) policies appropriately to secure your file domains.
+- Never hardcode access keys or secrets; always use environment variables or secure vaults.
+- Use separate buckets and credentials for different environments to prevent accidental leaks.
+- Rotate credentials periodically.
+
+---
+
+## Troubleshooting Tips
+
+- Missing or invalid configuration in `.env` will cause service initialization failure; check error logs for missing credential warnings.
+- Ensure buckets exist and permissions allow file upload/download.
+- When switching file drivers, plan for data migration before cutover.
+- For cloud drivers (`oss` or `tos`), verify SDK installation and network access.
+- Test file uploads and downloads after configuration changes.
+
+---
+
+## Related Documentation and Next Steps
+
+- [System Requirements & Preparation](../getting-started/prerequisites-installation/system-requirements)
+- [Configuring Environment Variables](./configuring-environment-variables)
+- [Multi-Environment Deployment Strategies](./multi-environment-deployment-strategies)
+- [File Storage & Security Best Practices](./secure-deployment)
+- [File Operation API Reference](../api-reference/knowledge-documents/document-management)
+
+Explore these to ensure your Magic deployment has robust and scalable file storage.
+
+---
+
+For comprehensive project code and configuration examples, refer to the official Magic GitHub repository:
+
+- https://github.com/dtyq/magic
+
+
+---
+
+#### Appendix: Example `.env` Configuration Snippet
+
+```ini
+# Choose driver
+FILE_DRIVER=oss
+
+# OSS Private Config
+FILE_PRIVATE_ALIYUN_ACCESS_ID=your-access-id
+FILE_PRIVATE_ALIYUN_ACCESS_SECRET=your-access-key
+FILE_PRIVATE_ALIYUN_BUCKET=magic-private-bucket
+FILE_PRIVATE_ALIYUN_ENDPOINT=oss-cn-hangzhou.aliyuncs.com
+
+# OSS Public Config
+FILE_PUBLIC_ALIYUN_ACCESS_ID=your-access-id
+FILE_PUBLIC_ALIYUN_ACCESS_SECRET=your-access-key
+FILE_PUBLIC_ALIYUN_BUCKET=magic-public-bucket
+FILE_PUBLIC_ALIYUN_ENDPOINT=oss-cn-hangzhou.aliyuncs.com
+
+# Optional STS role ARN for temporary credentials
+FILE_PRIVATE_ALIYUN_ROLE_ARN=arn:aliyun:ram::1234567890123456:role/your-role
+FILE_PUBLIC_ALIYUN_ROLE_ARN=arn:aliyun:ram::1234567890123456:role/your-role
+```
+
+---
+
+## Summary
+
+This page equips you with the knowledge to configure Magic's file storage drivers effectively, adapt to your deployment environment, maintain file security, and leverage the built-in file APIs to manage file operations programmatically.
+
+---
+
+<Info>
+For more detailed coding examples and integration scenarios, please refer to the File Driver Usage Guide in the official Magic documentation or contact your system administrator.
+</Info>
