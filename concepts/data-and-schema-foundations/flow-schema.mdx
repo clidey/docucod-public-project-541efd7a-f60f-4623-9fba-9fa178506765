@@ -1,0 +1,174 @@
+---
+title: "Visual Flow and Workflow Schema"
+description: "Details Magic Flow’s node-based workflow representation, including how workflows are serialized, how nodes are structured, and how state and transitions are managed across the canvas. Discusses how Magic supports extension with new node types and tool integrations."
+---
+
+# Visual Flow and Workflow Schema
+
+Magic's Visual Flow and Workflow Schema page reveals the heart of Magic Flow's node-based workflow orchestration system. It provides a detailed understanding of how workflows are visually structured as interconnected nodes on a canvas, how this representation is serialized into comprehensive data models, and how execution state and transitions are managed intuitively.
+
+---
+
+## Introduction to Magic Flow’s Visual Workflow Representation
+
+Magic Flow enables users to design complex AI and automation workflows through a drag-and-drop node editor. This editor presents workflows as graph-like canvases where nodes represent discrete tasks, decisions, or data operations.
+
+- **Nodes** are the fundamental building blocks, each with inputs, outputs, parameters, and metadata.
+- **Edges** visually connect nodes to define execution order and data flow.
+- **Canvas State** includes node positions, zoom levels, and viewport configuration, supporting intuitive navigation and layout recall.
+
+This visual paradigm translates complex automation into easily understandable, modifiable, and shareable diagrams that encapsulate logic and state.
+
+## Workflow Serialization: Capturing the Canvas as Data
+
+Behind the visual interface lies Magic's robust serialization schema, which transforms the graphical workflow into a machine-readable structured format.
+
+- Workflows are serialized into JSON structures comprising:
+  - **Nodes**: Each node contains a unique ID, type, version, parameters (`params`), input/output schemas, debug flags, metadata, and positioning data.
+  - **Edges/Connections**: Defined by source and target node IDs, these specify execution flow.
+  - **Branches & Triggers**: Nodes like Start Nodes manage multiple branches triggered by specific events.
+  - **Versions & Drafts**: Serialization supports multiple saved versions and draft states for workflow lifecycle management.
+
+Serialization preserves every attribute including node configurations, form schemas, and embedded expressions, ensuring fidelity between the visual editor and the backend process engine.
+
+## Node Structure and Organization
+
+Every node in Magic Flow follows a consistent structured schema that balances flexibility with strict validation.
+
+### Key Attributes of a Node
+
+- **node_id**: Unique identifier for the node in the workflow.
+- **node_type**: Determines the node kind (e.g., Start, LLM, HTTP Request, If Selector).
+- **node_version**: Supports workflows evolving over time, enabling versioning of node implementations.
+- **name & description**: Human-readable attributes aiding user comprehension.
+- **params**: Configuration payload, often structured as nested schemas with typed properties.
+- **input / output / system_output**: Typed data schemas representing data flowing into or from nodes, using a formalized Schema model.
+- **meta**: Arbitrary metadata useful for UI or execution context.
+- **next_nodes**: Defines outgoing execution dependencies.
+
+### Node Types and Capabilities
+
+- **Core node types** include:
+  - `Start` nodes trigger flows based on external events like message receipt or schedule.
+  - `LLM` (AI chat) nodes call large language models with configurable prompts and parameters.
+  - `If` nodes implement conditional branching logic.
+  - `Code` nodes allow custom scripting for input processing and output generation.
+  - `Tools` nodes invoke external or custom toolsets.
+  - Specialized nodes for data operations include `Loader` (document parsing), `VectorStorage` (knowledge base fragment storage), and `WaitForReply` (user interaction wait).
+
+Each node type exposes inputs, outputs, and parameters through defined JSON schemas, allowing dynamic UI generation and validation.
+
+## Schema Data Model for Parameters and IO
+
+Magic Flow uses a comprehensive `Schema` data model to represent node parameters and data structures. This model supports a variety of field types, conditions, and nested properties that ensure rigor in data expression.
+
+- **Schema Types**: Include TEXT, SELECT, NUMBER, DATE, CHECKBOX, LINK, ATTACHMENT, MEMBER, and special computed or relational types.
+- **Conditions and Operators**: Nodes can define conditions such as equals, not equals, greater than, empty, and others per field type.
+- **Expression Values**: Fields often hold expression formats enabling dynamic computation and variable referencing.
+
+This schema-based approach enables:
+- Complex user inputs with validations.
+- Dynamic expressions in workflows.
+- Consistent serialization and deserialization.
+
+## State and Transition Management on the Canvas
+
+Magic Flow manages the dynamic aspects of workflow execution and visualization:
+
+- **Execution State**: Nodes carry debug flags and runtime state, allowing users to trace, debug, and inspect execution results.
+- **Transitions**: Connections denote execution order. Condition nodes dynamically select branches.
+- **Node Versioning**: Allows updating nodes without breaking existing workflows.
+- **Editing State**: Includes selection, dragging, connection management, and UI interaction modes (mouse vs touchpad).
+- **Persistence**: Drafts and published versions persist workflow graph state including layout and zoom.
+
+Through careful state control, Magic balances live execution feedback with seamless editing.
+
+## Extensibility: Adding New Node Types and Tools
+
+Magic's architecture is designed for extensibility:
+
+- **Custom Node Types**: Developers can create and register new nodes conforming to the node schema and integrate them into the palette.
+- **Tool Integration**: Tools can be packaged as nodes, leveraging inputs and outputs with protocol support.
+- **Versioning Flexibility**: Nodes can have multiple component versions supporting iterative enhancements.
+- **Event Hooks and Plugins**: Nodes and tools participate in Magic's event system for automation and monitoring.
+
+This extensibility allows Magic to adapt to evolving AI capabilities and enterprise needs.
+
+## Practical Tips and Best Practices
+
+- **Maintain Node Schema Integrity**: When customizing nodes, always preserve required schema fields and nesting to ensure workflow stability.
+- **Use Versioning**: Leverage node versions when upgrading node logic to minimize disruption.
+- **Leverage Conditional Branches**: For workflows with varied paths, use selector nodes and conditions to maintain clarity.
+- **Serialize Frequently**: Save and export drafts often to avoid unintended data loss.
+- **Work Within Limits**: Understand node input/output size limits and structure complex data using nested schemas.
+
+## Common Pitfalls
+
+- Avoid flattening complex Schema objects into JSON strings as values; use structured `properties` to retain schema fidelity.
+- Don’t remove required fields in node templates; always merge changes deeply and preserve base structure.
+- Be cautious when changing node versions; incompatible parameter changes can break workflows.
+- When connecting nodes, verify that source and target node IDs exist in the serialized data to avoid runtime errors.
+
+---
+
+## Example: Node Template Snippet
+
+Here is an example snippet illustrating the structure of a Start Node template:
+
+```json
+{
+  "node_id": "MAGIC-FLOW-NODE-uniqueid",
+  "name": "Start",
+  "node_type": 1,
+  "node_version": "latest",
+  "params": {
+    "branches": [
+      {
+        "branch_id": "branch_1",
+        "trigger_type": 1,
+        "next_nodes": [],
+        "input": null,
+        "output": {
+          "form": {
+            "structure": {
+              "type": "object",
+              "key": "root",
+              "required": ["conversation_id", "message_content", "user"],
+              "properties": {
+                "conversation_id": {"type": "string", "key": "conversation_id", "title": "Conversation ID"},
+                "message_content": {"type": "string", "key": "message_content", "title": "Message Content"},
+                "user": {
+                  "type": "object",
+                  "key": "user",
+                  "properties": {
+                    "id": {"type": "string", "key": "id", "title": "User ID"},
+                    "real_name": {"type": "string", "key": "real_name", "title": "Real Name"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Navigating the Magic Flow Ecosystem
+
+This documentation aligns closely with other Magic workflow and integration documentation:
+
+- For practical workflow creation and deployment, review the [Workflow Orchestration Guide](https://docs.magic.com/guides/getting-started/workflow-orchestration).
+- For deeper understanding of individual node types and their versions, explore the [Node Version Management](https://docs.magic.com/concepts/architecture-overview/system-architecture) and [Custom Tools & Plugins](https://docs.magic.com/guides/advanced-customization-integration/custom-tools-plugins).
+- To understand interaction with external AI models and knowledge bases, see the [Integration Capabilities](https://docs.magic.com/overview/architecture-glance/integration-points) and [Knowledge Base Models](https://docs.magic.com/concepts/data-and-schema-foundations/vector-and-knowledge-model).
+
+---
+
+## Summary
+
+This page decodes Magic Flow's node-based visual workflow schema, highlighting how workflows are serialized into structured JSON, how node attributes and data schemas are constructed, and how the system manages flow state and execution transitions visually and programmatically. It emphasizes the design principles underpinning extensibility, versioning, and solid schema construction to empower users to build robust, dynamic workflows with Magic Flow.
+
+---
