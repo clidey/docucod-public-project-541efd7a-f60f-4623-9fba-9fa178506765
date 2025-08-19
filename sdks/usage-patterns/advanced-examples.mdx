@@ -1,0 +1,240 @@
+---
+title: "Advanced Usage & Extensibility"
+description: "For experienced teams and platform builders, explore advanced topics including custom tool integration, workflow customization, batch operations, and implementing organization-wide policies. Learn how to extend core SDK classes and interface with other Magic products."
+---
+
+# Advanced Usage & Extensibility
+
+Explore how to elevate your integration with Magic’s SDK by mastering advanced usage patterns and extending the platform’s capabilities. This guide is designed for experienced developers and platform builders aiming to customize workflows, integrate custom tools, perform batch operations efficiently, enforce organization-wide policies, and seamlessly interface with Magic’s extensive product ecosystem.
+
+---
+
+## Table of Contents
+
+- [Custom Tool Integration](#custom-tool-integration)
+- [Workflow Customization and Extension](#workflow-customization-and-extension)
+- [Batch Operations and Bulk Processing](#batch-operations-and-bulk-processing)
+- [Implementing Organization-Wide Policies](#implementing-organization-wide-policies)
+- [Extending Core SDK Classes](#extending-core-sdk-classes)
+- [Interfacing with Other Magic Products](#interfacing-with-other-magic-products)
+- [Troubleshooting Advanced Usage](#troubleshooting-advanced-usage)
+
+---
+
+## Custom Tool Integration
+
+Magic’s extensible architecture empowers you to add your own custom tools and plugins, enabling tailored logic and capabilities within AI workflows.
+
+### Why Integrate Custom Tools?
+
+- Add proprietary business logic or integrations not covered by default SDK features.
+- Automate unique workflows or data transformations specific to your organization.
+- Embed external APIs or services as callable nodes within Magic Flow.
+
+### Getting Started
+
+1. **Define Your Tool Logic:** Implement your tool’s functionality as a discrete module or service.
+2. **Register the Tool Node:** Add it to Magic’s workflow palette for drag-and-drop usage.
+3. **Hook Into Events:** Use event listeners to trigger tool execution or monitor outcomes.
+
+### Best Practices
+
+- Keep each tool focused on a single responsibility to simplify maintenance.
+- Handle errors proactively and report detailed context for debugging.
+- Document your tool’s input-output schema for clear usage.
+
+<Note>
+Carefully consider performance impacts; batch or asynchronous processing is recommended for heavy or long-running tasks.
+</Note>
+
+---
+
+## Workflow Customization and Extension
+
+Customizing workflows is key to tailoring Magic Flow to complex business scenarios.
+
+### Extending Default Workflow Nodes
+
+- Override or extend existing nodes with additional validation or custom data handling.
+- Add conditional logic to branch flows dynamically beyond standard node capability.
+
+### Creating Composite Workflows
+
+Leverage node groups and reusable subflows to encapsulate common patterns.
+
+### Example Scenario
+
+Imagine extending the approval workflow to include a third-party compliance check that triggers only for high-risk submissions.
+
+### Tips
+
+- Use descriptive node names and metadata.
+- Test workflows end-to-end with realistic data.
+- Track execution logs for insights.
+
+---
+
+## Batch Operations and Bulk Processing
+
+Efficient handling of multiple items or high volume data is critical at scale.
+
+### Using Batch APIs
+
+Leverage batch endpoints (e.g., bulk sending messages or mass updating documents) to reduce network overhead and improve performance.
+
+### Implementing Batch Logic in SDK
+
+- Group operations logically to avoid partial failures.
+- Incorporate retry and backoff strategies for transient errors.
+
+### Example: Batch Sending Chat Messages
+
+```php
+use Dtyq\EasyDingTalk\OpenDevFactory;
+use Dtyq\EasyDingTalk\OpenDev\Parameter\ChatBot\SendOneOnOneChatMessagesParameter;
+
+$factory = new OpenDevFactory([
+  'app_key' => 'your_app_key',
+  'app_secret' => 'your_app_secret',
+]);
+
+$accessToken = $factory->accessTokenEndpoint->getAccessToken();
+
+$param = new SendOneOnOneChatMessagesParameter($accessToken);
+$param->setRobotCode('your_robot_code');
+$param->setUserIds(['user1', 'user2', 'user3']);
+$param->setMsgKey('sampleMarkdown');
+$param->setMsgParam(json_encode([ 'title' => 'Batch Message', 'text' => 'Hello everyone!' ]));
+
+$result = $factory->chatBotEndpoint->sendOneOnOneChatMessages($param);
+
+// Check $result for success
+```
+
+<Info>
+Batch operations reduce API calls and latency. Always validate responses to handle partial failures.
+</Info>
+
+---
+
+## Implementing Organization-Wide Policies
+
+To enforce consistency and security, Magic enables organization-wide controls through SDK customization.
+
+### Policy Enforcement Points
+
+- **Authentication and Token Management:** Leverage centralized access tokens and role-based scopes.
+- **API Request Validation:** Override endpoint methods to include policy checks.
+- **Workflow Restrictions:** Apply rules preventing unauthorized node usage or data exposure.
+
+### Practical Example
+
+Inject validation logic in SDK layers to check user roles before allowing message dispatch or sensitive data access.
+
+### Recommendations
+
+- Use environment variables and configuration files for flexible policy toggling.
+- Centralize policy logic to reduce duplication.
+
+---
+
+## Extending Core SDK Classes
+
+The SDK is designed with extensibility in mind, allowing you to subclass and modify core components.
+
+### Why Extend?
+
+- Customize request headers or retry logic.
+- Add custom logging or telemetry.
+- Modify parameter validation or result processing.
+
+### How to Extend
+
+1. Identify the SDK class to extend (e.g., `ChatBotEndpoint`).
+2. Override methods with your custom behavior.
+3. Use your subclass in place of the original in your application.
+
+### Example
+
+```php
+class CustomChatBotEndpoint extends \Dtyq\EasyDingTalk\OpenDev\Endpoint\ChatBot\ChatBotEndpoint
+{
+    public function sendGroupMessage(SendGroupMessageParameter $parameter): SendGroupMessageResult
+    {
+        // Add custom logging before sending
+        error_log('Sending group message to conversation: ' . $parameter->getOpenConversationId());
+        return parent::sendGroupMessage($parameter);
+    }
+}
+```
+
+---
+
+## Interfacing with Other Magic Products
+
+Magic’s modular ecosystem encourages integration across products for maximum business impact.
+
+### Examples
+
+- Use Magic Flow’s orchestration with Magic IM’s chat bots for contextual notifications.
+- Connect knowledge search features to AI agents for enriched conversations.
+- Automate document updates via workflow nodes triggered by chat events.
+
+### Integration Workflow
+
+- Authenticate consistently using centralized token management.
+- Use SDK endpoints cohesively, passing contextual data between modules.
+
+---
+
+## Troubleshooting Advanced Usage
+
+### Common Issues
+
+- **Token Expiration:** Ensure your extended classes refresh tokens appropriately.
+- **Partial Batch Failures:** Implement retry logic and error aggregation.
+- **Custom Tool Node Failures:** Log errors and validate input/output schemas rigorously.
+
+### Recommendations
+
+- Enable verbose SDK logging during development.
+- Keep dependencies updated for compatibility.
+- Consult Magic’s event and error handling docs for troubleshooting.
+
+---
+
+## Summary
+
+Advanced usage and extensibility unlock Magic’s full potential by adapting it precisely to your organization's unique needs. By integrating custom tools, customizing workflows, efficiently handling batch operations, enforcing organization-wide policies, and extending SDK components, you create tailored, scalable, and maintainable solutions that leverage all Magic products harmoniously.
+
+
+---
+
+## Additional Resources
+
+- [SDK Usage & Code Samples](/api-reference/errors-tools-sdks/sdk-usage-examples)
+- [Developing Custom Tools and Plugins](/guides/advanced-customization-integration/custom-tools-plugins)
+- [Workflow Orchestration Guide](/guides/getting-started/workflow-orchestration)
+- [Magic IM Setup and Integration](/guides/getting-started/ai-im-setup)
+- [Authentication & Authorization](/api-reference/auth-rate-limits/api-authentication)
+
+
+---
+
+## Next Steps
+
+- Start by extending simple SDK classes and testing customized workflows.
+- Experiment with batch operations for messaging and document updates.
+- Explore integrating Magic Flow with Magic IM for AI-powered collaboration.
+- Reach out to community forums or official support for advanced guidance.
+
+
+---
+
+#### Code References
+
+- See `ChatBotEndpoint` for message sending and file download advanced calls.
+- Extend `OpenDevEndpoint` for token and request lifecycle customization.
+- Use `OpenDevFactory` to instantiate and manage endpoint objects flexibly.
+
+---
