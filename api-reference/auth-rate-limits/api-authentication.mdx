@@ -1,0 +1,263 @@
+---
+title: "Authentication & Authorization"
+description: "Learn how to authenticate with the Magic platform APIs, including access token retrieval, OAuth2.0 flows, and managing API credentials. This page details best practices for securing API requests and illustrates how to authorize different application types (user apps, bots, integrations) using both static and dynamic token approaches."
+---
+
+# Authentication & Authorization
+
+Mastering authentication and authorization is your first step to securely unlocking the power of Magic platform APIs. This page guides you through retrieving access tokens, handling OAuth2.0 flows, managing API credentials, and securing your API requests — all essential for enabling your user apps, bots, or integrations to communicate confidently and safely with Magic services.
+
+---
+
+## 1. Understanding Authentication in Magic
+
+Authentication is the process of verifying who you are to gain access to Magic’s APIs. Without proper authentication, requests to the API endpoints will be denied to prevent unauthorized access.
+
+Magic supports multiple authentication mechanisms:
+
+- **Access Tokens:** Short-lived tokens issued via OAuth2.0 flows or internal app credentials.
+- **OAuth2.0 Authorization Flows:** Standard protocol enabling users and applications to authorize securely.
+- **Static API Credentials:** For trusted back-end integrations requiring consistent access.
+
+
+## 2. Obtaining Access Tokens
+
+Access tokens are mandatory for all API requests to Magic. They represent your access rights and are included in HTTP headers to authorize calls.
+
+### 2.1 Enterprise Internal App Access Token
+
+To act as an enterprise internal application, you need to obtain an access token using your app credentials (`appKey` and `appSecret`). This token authenticates and authorizes your app to call Magic APIs on behalf of the organization.
+
+#### Endpoint Overview
+
+| HTTP Method | URI                        | Description                                    |
+|-------------|----------------------------|------------------------------------------------|
+| POST        | `/v1.0/oauth2/accessToken` | Retrieve internal app access token             |
+
+#### Example Request Payload
+
+```json
+{
+  "appKey": "your-app-key",
+  "appSecret": "your-app-secret"
+}
+```
+
+#### Important Notes
+
+- Tokens typically expire after two hours; implement token caching and refreshing.
+- Use the provided SDK or the `AccessTokenEndpoint` in your integration to simplify token management.
+
+### 2.2 Third-Party Authorized Enterprise Access Token
+
+For third-party apps acting on behalf of an authorized enterprise, the API issues a special access token using the suite key, secret, and authorization credentials.
+
+#### Endpoint Overview
+
+| HTTP Method | URI                               | Description                                      |
+|-------------|-----------------------------------|--------------------------------------------------|
+| POST        | `/v1.0/oauth2/corpAccessToken`    | Retrieve third-party authorized enterprise token |
+
+#### Required Parameters
+
+- `suiteKey`: Third-party application key
+- `suiteSecret`: Third-party application secret
+- `authCorpId`: Authorized enterprise ID
+- `suiteTicket`: Security ticket for the authorization session
+
+### 2.3 OAuth2.0 User Authorization
+
+Magic’s API also supports OAuth2.0 workflows that allow end users to securely authorize applications, typical for user-facing apps and integrations.
+
+#### Common OAuth2.0 Workflow
+
+1. **Authorization Request:** Redirect users to Magic’s OAuth2.0 authorization URL.
+2. **User Consent:** User authenticates and consents to requested scopes.
+3. **Authorization Code:** Magic returns an authorization code.
+4. **Token Exchange:** Application exchanges code for access token.
+5. **API Calls:** Use access token to authorize API requests.
+
+The OAuth2.0 access tokens carry scopes defining permissible API operations.
+
+## 3. Including Tokens in API Requests
+
+All authorized API calls require the access token to be included as an HTTP header:
+
+```http
+x-acs-dingtalk-access-token: your_access_token_here
+```
+
+This header is mandatory; missing or invalid tokens will result in authorization failure.
+
+Example header for an API call:
+
+```
+Authorization: Bearer your_access_token_here
+```
+
+Depending on the API, the exact header key may vary (`x-acs-dingtalk-access-token` is currently used in Magic’s OpenDev endpoints).
+
+## 4. Managing API Credentials and Tokens
+
+### 4.1 Best Practices for Token Security
+
+- Never expose `appSecret` or access tokens publicly, including in client-side code.
+- Use secure storage in backend or environment variables.
+- Rotate credentials regularly as part of your security policy.
+- Cache tokens appropriately to avoid excessive token requests, respecting expiry.
+
+### 4.2 Handling Token Expiration
+
+- Monitor token TTL (`expiresIn`) returned during token acquisition.
+- Automatically refresh tokens before expiration to maintain uninterrupted API access.
+- Implement error handling for `401 Unauthorized` to detect expired or revoked tokens and trigger renewal workflows.
+
+### 4.3 Error Handling for Authentication Failures
+
+| Error Code | Description                      | User Action                                         |
+|------------|---------------------------------|----------------------------------------------------|
+| 400        | Bad Request (invalid parameters) | Check API request parameters and token presence.
+| 401        | Unauthorized (invalid or expired token) | Refresh or reacquire token. Check app credentials.
+| 403        | Forbidden (insufficient scopes)  | Verify token scopes and permissions for the API.
+
+## 5. Authorization Types Supported
+
+Magic supports different application types and authorization models:
+
+| Application Type              | Authorization Model      | Description                                      |
+|------------------------------|-------------------------|--------------------------------------------------|
+| User Applications            | OAuth2.0 user consent   | Use OAuth2.0 to obtain user-scoped access token. |
+| Enterprise Internal Apps     | AppKey/AppSecret token  | Obtain and cache internal access tokens via API. |
+| Bots and Service Integrations| Token-based             | Static or dynamic tokens are used per API specs. |
+
+## 6. Practical Example: Retrieving an Access Token with PHP SDK
+
+```php
+use Dtyq\EasyDingTalk\OpenDev\Endpoint\Oauth2\AccessTokenEndpoint;
+
+// Select the internal app configuration by app name
+$accessTokenEndpoint = new AccessTokenEndpoint();
+$accessTokenEndpoint->selectApp('your_app_name');
+
+try {
+    $accessToken = $accessTokenEndpoint->get();
+    echo "Access Token: {$accessToken}\n";
+} catch (Exception $e) {
+    echo "Error obtaining token: " . $e->getMessage();
+}
+```
+
+This example demonstrates how to use the SDK to automatically retrieve and cache an internal app access token.
+
+## 7. Securing Your API Requests
+
+- Always use HTTPS to encrypt communication.
+- Verify TLS certificates to avoid man-in-the-middle attacks.
+- Limit token scopes and privileges to a minimum necessary.
+- Log and audit API call activity for compliance and troubleshooting.
+
+## 8. Tips & Troubleshooting
+
+<Tip>
+Cache your access tokens to reduce latency and avoid rate limiting when fetching tokens too frequently.
+</Tip>
+
+<Warning>
+If you receive frequent `401 Unauthorized` errors, verify your token is valid and has not expired or been revoked.
+</Warning>
+
+<Note>
+Tokens for enterprise internal apps and third-party authorized enterprises are unique and should never be confused or swapped.
+</Note>
+
+## 9. Additional Resources
+
+- [OAuth2.0 Documentation](https://oauth.net/2/)
+- [Magic Platform Product Overview](/overview/product-intro-and-value/product-overview)
+- [Third-Party Messaging Integration Guide](/guides/advanced-customization-integration/third-party-messaging-integration)
+- [SDK Usage & Code Samples](/api-reference/errors-tools-sdks/sdk-usage-examples)
+
+---
+
+This documentation empowers you to confidently authenticate your apps, handle authorization flows, and secure your API interactions with Magic. For advanced integration and workflows around user permissions, check out our Security and Access Control guides.
+
+---
+
+<AccordionGroup title="API Endpoint References for Authentication">
+<Accordion title="POST /v1.0/oauth2/accessToken">
+Retrieve an access token for an internal application.
+
+**Request Headers:**
+- None (credentials sent in JSON body)
+
+**Request Body:**
+```json
+{
+  "appKey": "string",
+  "appSecret": "string"
+}
+```
+
+**Response:**
+```json
+{
+  "accessToken": "string",
+  "expiresIn": 7200
+}
+```
+
+**Errors:**
+- 400: Invalid parameters
+- 401: Unauthorized (invalid app credentials)
+</Accordion>
+<Accordion title="POST /v1.0/oauth2/corpAccessToken">
+Obtain access token for third-party authorized enterprise application.
+
+**Request Body:**
+```json
+{
+  "suiteKey": "string",
+  "suiteSecret": "string",
+  "authCorpId": "string",
+  "suiteTicket": "string"
+}
+```
+
+**Response:**
+```json
+{
+  "accessToken": "string",
+  "expiresIn": 7200
+}
+```
+
+**Errors:**
+- 400: Missing or invalid parameters
+- 403: Forbidden due to permissions
+</Accordion>
+</AccordionGroup>
+
+---
+
+## API Authentication Flow Diagram
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant MagicAPI
+    participant AuthServer
+
+    Client->>AuthServer: POST /v1.0/oauth2/accessToken (appKey, appSecret)
+    AuthServer-->>Client: Access Token + Expiry
+    Client->>MagicAPI: API Request + x-acs-dingtalk-access-token
+    MagicAPI-->>Client: API Response
+
+    %% Token Expiry Flow
+    alt Token Expired
+      MagicAPI-->>Client: 401 Unauthorized
+      Client->>AuthServer: Refresh Access Token
+      AuthServer-->>Client: New Access Token
+      Client->>MagicAPI: Retry API Request
+      MagicAPI-->>Client: API Response
+    end
+```
