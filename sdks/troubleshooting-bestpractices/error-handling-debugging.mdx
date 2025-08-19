@@ -1,0 +1,253 @@
+---
+title: "Error Handling & Debugging"
+description: "Learn proven techniques for capturing, logging, and responding to errors in Magic SDK integrations. Includes common exception patterns, diagnostic tools, recommended logging strategies, and where to look for actionable debug info within the SDK stack."
+---
+
+# Error Handling & Debugging in Magic SDK
+
+Discover authoritative techniques to capture, log, and respond effectively to errors encountered while integrating with Magic SDK. This guide equips developers with proven exception handling patterns, diagnostic tools within the SDK stack, recommended logging strategies, and practical advice on tracing actionable debugging information. Mastering these approaches empowers you to build robust, maintainable integrations that handle failures gracefully and expedite troubleshooting.
+
+---
+
+## Understanding Error Types and Exception Patterns
+
+Magic SDK leverages clear, distinct exception classes categorized by error nature and code. Recognizing these patterns helps you anticipate failure modes and handle them appropriately.
+
+### Key Exception Classes
+
+- **EasyDingTalkException**: Base exception class for Magic SDK’s EasyDingTalk components.
+- **BadRequestException**: Indicates client-side request errors such as invalid parameters or failed API calls. Often includes HTTP 400 status or specific SDK error codes.
+- **InvalidParameterException**: Raised when method inputs or API parameters are malformed or missing.
+- **InvalidConfigException**: Triggered when SDK is misconfigured, e.g., missing or invalid credentials.
+- **InvalidResultException**: Indicates unexpected or malformed response data received from APIs.
+
+Each exception carries a standardized error code aligned with Magic’s error codes for quick identification:
+
+| Exception               | Error Code          | Description                  |
+|-------------------------|---------------------|------------------------------|
+| BadRequestException     | 400                 | HTTP bad request errors      |
+| InvalidParameterException | 40001               | Invalid input parameter      |
+| InvalidConfigException  | 40002               | Configuration errors         |
+| InvalidResultException  | 40003               | Invalid or malformed response|
+
+### Handling Exceptions in Your Code
+
+Implement try-catch blocks around SDK calls to capture these exceptions, enabling graceful recovery or informative error feedback.
+
+```php
+try {
+    $result = $endpoint->sendGroupMessage($parameter);
+} catch (InvalidParameterException $e) {
+    // Handle invalid parameters (e.g., missing required fields)
+    error_log('Parameter issue: ' . $e->getMessage());
+} catch (BadRequestException $e) {
+    // Catch general bad requests including API failures
+    error_log('API call failed: ' . $e->getMessage());
+} catch (EasyDingTalkException $e) {
+    // Fallback catch all for SDK related exceptions
+    error_log('SDK error: ' . $e->getMessage());
+} catch (Throwable $e) {
+    // Unexpected errors
+    error_log('Unexpected error: ' . $e->getMessage());
+}
+```
+
+> This pattern ensures you capture SDK-specific errors distinctly while reserving a fallback for unknown issues.
+
+---
+
+## Common Error Scenarios & Troubleshooting Tips
+
+### 1. API Call Failures
+
+**Symptoms:** SDK throws `BadRequestException` indicating an unsuccessful API call with a non-zero error code or unexpected HTTP status.
+
+**Causes & Remedies:**
+- Ensure all required parameters are valid and correctly formatted.
+- Check access tokens and authentication credentials.
+- Inspect API rate limits or quota exceedance.
+- Enable detailed request/response logging (see Logging Strategies below) to analyze payloads.
+
+### 2. Invalid SDK Configuration
+
+**Symptoms:** `InvalidConfigException` thrown during SDK initialization or before making requests.
+
+**Causes & Remedies:**
+- Verify configuration files or environment variables for completeness.
+- Confirm token or key formats.
+- Cross-check SDK initialization settings against the latest [SDK Configuration Options](/sdks/configuration-auth/sdk-configuration-options).
+
+### 3. Unexpected Response Content
+
+**Symptoms:** `InvalidResultException` or `BadRequestException` for invalid response parsing.
+
+**Causes & Remedies:**
+- Confirm API endpoint versions.
+- Check for network issues causing incomplete responses.
+- Validate response format changes in API docs.
+
+### 4. Parameter Validation Failures
+
+**Symptoms:** Exceptions raised due to missing or incorrect parameters.
+
+**Remedies:**
+- Use SDK’s built-in parameter validation before requests.
+- Provide clear error messages to users for correction.
+
+<Tip>
+Always validate parameters early in your integration logic to avoid unnecessary API calls and catch issues closer to source.
+</Tip>
+
+---
+
+## Recommended Logging and Diagnostic Practices
+
+Robust logging is vital for capturing errors contextually and enabling swift debugging:
+
+### Log Levels & Content
+
+- **ERROR**: Log all caught exceptions with full messages, codes, and stack traces.
+- **INFO**: Log successful API requests and responses for traceability.
+- **DEBUG**: Enable detailed logs when diagnosing issues, capturing headers, request payloads, and raw API responses.
+
+### Logging Setup
+
+- Integrate with your application’s centralized logging solution (e.g., ELK stack, Graylog).
+- Correlate logs with user sessions or API keys.
+- Mask sensitive information such as tokens or passwords.
+
+### Example Logging Integration
+
+```php
+// Example to log exceptions
+try {
+    $result = $endpoint->downloadFile($parameter);
+} catch (BadRequestException $e) {
+    $logger->error("Download failed: {$e->getMessage()}", ['code' => $e->getCode(), 'trace' => $e->getTraceAsString()]);
+    throw $e; // Rethrow or handle gracefully
+}
+```
+
+---
+
+## Debugging Techniques Using SDK Tools
+
+### Inspecting API Request and Response
+
+Leverage the SDK’s `send` method error handling inside endpoints:
+
+- When API responses deviate from expectations (non-`200` status, missing keys), `BadRequestException` is thrown with detailed messages.
+- Intermediate raw response contents can be retrieved and logged before throwing exceptions.
+
+### Diagnosing with Exception Messages
+
+Exception messages use a consistent format for quick parsing:
+
+```
+[<Code>][ExceptionType]Detailed message
+```
+
+Example:
+```
+[400][BadRequest]发送失败
+```
+means a request was bad with HTTP 400 code and failure to send.
+
+### Exception Cause Linking
+
+Exceptions carry underlying `Throwable` causes, enabling chained debugging:
+
+```php
+try {
+   // SDK call
+} catch (BadRequestException $e) {
+   $previous = $e->getPrevious();
+   if ($previous !== null) {
+       error_log('Caused by: ' . $previous->getMessage());
+   }
+}
+```
+
+This reveals deeper root causes from HTTP client or network layers.
+
+---
+
+## Practical Example: Sending a Group Message with Error Handling
+
+```php
+use Dtyq\EasyDingTalk\OpenDev\Parameter\ChatBot\SendGroupMessageParameter;
+use Dtyq\EasyDingTalk\OpenDev\Endpoint\ChatBot\ChatBotEndpoint;
+use Dtyq\EasyDingTalk\Kernel\Exceptions\BadRequestException;
+
+// Setup parameters
+$param = new SendGroupMessageParameter();
+$param->setAccessToken('your-access-token');
+$param->setRobotCode('your-robot-code');
+$param->setOpenConversationId('conversation-id');
+$param->setMsgKey('text');
+$param->setMsgParam(['content' => 'Hello, Magic group!']);
+
+$endpoint = new ChatBotEndpoint($sdkBaseInstance);
+
+try {
+    $result = $endpoint->sendGroupMessage($param);
+    echo "Message sent successfully. Process key: " . $result->getProcessQueryKey();
+} catch (BadRequestException $e) {
+    error_log('Failed to send group message: ' . $e->getMessage());
+    // Implement retry, user notification, or alternative flows
+}
+```
+
+### Success Criteria
+- No exception is thrown
+- API returns HTTP 200 success
+- The message `processQueryKey` is present in the response
+
+If any fail, the `BadRequestException` or more specific exceptions will provide actionable error info.
+
+---
+
+## Tips and Best Practices
+
+- **Consistent Exception Catching**: Always catch specific SDK exceptions before general ones.
+- **Early Validation**: Use SDK parameter validation methods before making network calls.
+- **Log Smartly**: Include error codes and full messages; avoid logging sensitive tokens.
+- **Rethrow or Handle**: Decide if exceptions should propagate or be handled locally.
+- **Retries**: For network/timeouts, implement retries with backoff.
+- **Monitor Logs**: Regularly review error trends to catch integration issues early.
+
+---
+
+## Where to Look for More Debug Information
+
+- **SDK Source Exceptions**: See `EasyDingTalkException` and derived classes for all error codes.
+- **API Error Responses**: Inspect `errcode` and `errmsg` fields returned by the backend.
+- **HTTP Client Layer**: Network client exceptions are wrapped inside SDK exceptions.
+- **Configuration Validation**: Confirm initial configs as per [Initial Configuration](/getting-started/configuration-initial-setup/initial-configuration).
+
+---
+
+## Summary
+
+Mastering error handling and debugging within Magic SDK ensures your integrations are resilient and transparent. By following structured exception patterns, maintaining detailed logs, and employing diagnostic strategies, you can dramatically reduce downtime, improve user experience, and accelerate development cycles.
+
+For deeper understanding, explore related documentation on:
+
+- [SDK Client Configuration](/sdks/configuration-auth/sdk-configuration-options)
+- [Authentication & Authorization API](/api-reference/auth-rate-limits/api-authentication)
+- [Send Messages API](/api-reference/im-conv-messaging/send-messages)
+- [Troubleshooting Common Setup Issues](/getting-started/validation-troubleshooting/common-setup-issues)
+
+<Check>
+Ensure your integration captures and logs exceptions at every network call boundary to avoid silent failures.
+</Check>
+
+---
+
+### References
+
+- Exception class hierarchy and error code constants in `EasyDingTalkException` and `ErrorCode`
+- Example usage patterns in `ChatBotEndpoint` methods
+- Common SDK failure modes and ApiResponse handling
+
+---
