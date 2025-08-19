@@ -1,0 +1,162 @@
+---
+title: "API and SDK Changes"
+description: "Documents adjustments in exposed APIs, SDK behavior, and public integration interfaces across releases. This allows product integrators and extension developers to quickly assess required code or configuration changes."
+---
+
+# API and SDK Changes
+
+This documentation page focuses exclusively on the changes made to the product's public APIs and SDK behaviors across releases. It targets product integrators and extension developers who need to understand how these adjustments impact their existing code or integration configurations. By providing clear insight into API method updates, response changes, and SDK interface modifications, this page helps you respond swiftly to breaking changes, enhancements, or deprecations.
+
+---
+
+## Understanding This Page
+
+Unlike general product updates, the API and SDK Changes page zeroes in on how Magic’s OpenDev APIs, endpoints, and SDK client behavior evolve. It serves as a critical reference for anyone building on or extending Magic's platform — specifically those using Easy DingTalk SDK or working with the OpenDev API endpoints for chatbots, conversations, user data, and related functionalities.
+
+This precision allows you to rapidly assess the impact of version upgrades on your integration points and take action to update your code or configuration.
+
+---
+
+## Key Sections
+
+### 1. API Endpoint Changes
+
+- **Updated APIs and Endpoints:** Detailed listing of API methods that have changed, such as new parameters, altered request body structures, or modified response formats.
+- **Behavioral Adjustments:** Notes on how endpoint behavior or validation rules have changed that might affect integration workflows.
+- **Error Handling Updates:** Information about changes to error codes or exception conditions returned by APIs.
+
+Example:
+
+- The `ChatBotEndpoint` now uses strict validation to ensure critical fields like `processQueryKey` or `downloadUrl` are present in responses and throws explicit exceptions (`BadRequestException`) if these keys are missing or HTTP status is not 200.
+
+### 2. SDK Interface and Client Behavior
+
+- **New or Deprecated SDK Methods:** Highlights new methods (e.g., sending one-on-one chat messages, group messages, downloading files) and any removal or renaming of methods.
+- **Parameter Validation:** SDK parameter classes now enforce validation before requests are sent to prevent common errors.
+- **Token and Authentication Handling:** Explanation of how the SDK manages access tokens, caching strategies, and token refresh behavior.
+
+Example:
+
+- The `OpenDevEndpoint` base class handles access token retrieval with caching to minimize redundant calls.
+- The `OpenDevFactory` consolidates endpoints, allowing streamlined access to domain-specific APIs such as ChatBot, Calendar, User, and Conversation endpoints.
+
+### 3. Integration Impact Summary
+
+- How these changes may affect ongoing integrations and typical user codebases.
+- Recommendations for migration or adaptation to maintain compatibility.
+
+### 4. Troubleshooting and Common Pitfalls
+
+- Guidance on resolving issues caused by missing expected response fields or failed token retrievals.
+- Tips for handling `BadRequestException` and related error feedback.
+
+---
+
+## Practical Instructions & Examples
+
+### Sending One-on-One Chat Messages
+
+The SDK method `sendOneOnOneChatMessages(SendOneOnOneChatMessagesParameter $parameter)` expects valid parameters with required fields. On failure to find `processQueryKey` in the response or if HTTP status is not 200, it throws a `BadRequestException` signaling the send failure.
+
+```php
+use Dtyq\EasyDingTalk\OpenDevFactory;
+use Dtyq\EasyDingTalk\OpenDev\Parameter\ChatBot\SendOneOnOneChatMessagesParameter;
+
+$factory = new OpenDevFactory(["app_key" => "your_app_key", "app_secret" => "your_app_secret"]);
+
+$parameter = new SendOneOnOneChatMessagesParameter();
+$parameter->setAccessToken($factory->getAccessToken());
+$parameter->setRobotCode('robot_code_here');
+$parameter->setUserIds(['user_id_1', 'user_id_2']);
+$parameter->setMsgKey('text');
+$parameter->setMsgParam(['content' => 'Hello from updated SDK']);
+
+try {
+    $result = $factory->chatBotEndpoint->sendOneOnOneChatMessages($parameter);
+    // process success
+} catch (BadRequestException $e) {
+    // handle failure
+}
+```
+
+---
+
+### Access Token Management
+
+Access tokens are managed internally by the SDK and cached to optimize API requests. The `OpenDevEndpoint` class automatically fetches and caches tokens, throwing exceptions if configuration is invalid or tokens cannot be retrieved.
+
+---
+
+## Best Practices
+
+- Always validate SDK parameters before sending to avoid unnecessary API calls.
+- Monitor exceptions like `BadRequestException` closely, as they often indicate integration issues or misconfigurations.
+- Cache tokens securely as handled by the SDK but ensure your runtime environment supports caching for stability.
+- Review API release notes regularly to stay updated on changes in request formats and expected response keys.
+
+---
+
+## Troubleshooting
+
+- If you encounter errors that indicate missing response keys (`processQueryKey`, `downloadUrl`), confirm the API version and parameter correctness.
+- Validate that app key and secret are correctly configured and environment variables are set.
+- Check network and permission settings to ensure the SDK can communicate with the Magic platform APIs.
+- Use SDK debug or logging features to capture request and response details for analysis.
+
+---
+
+## Related Documentation
+
+- [Easy DingTalk SDK Quickstart](https://docs.magic.com/sdks/usage-patterns/quickstart-examples)
+- [Authentication & Authorization API](https://docs.magic.com/api-reference/auth-rate-limits/api-authentication)
+- [Send Messages & Conversations API Reference](https://docs.magic.com/api-reference/im-conv-messaging/send-messages)
+- [Third-Party Messaging Integration Guide](https://docs.magic.com/guides/advanced-customization-integration/third-party-messaging-integration)
+- [SDK Best Practices & Troubleshooting](https://docs.magic.com/sdks/troubleshooting-bestpractices/sdk-best-practices)
+
+---
+
+For more details and a comprehensive history of changes, visit the [Changelog & Release History](https://docs.magic.com/changelog/release-history/complete-changelog).
+
+---
+
+<Check>
+Ensure your application uses the latest Easy DingTalk SDK version compatible with your deployment to benefit from these API enhancements and bug fixes.
+</Check>
+
+---
+
+## Navigating the SDK and API Ecosystem
+
+Use the `OpenDevFactory` class to instantiate and access supported endpoints uniformly:
+
+```php
+$factory = new OpenDevFactory(['app_key' => 'your_app_key', 'app_secret' => 'your_app_secret']);
+$chatBotEndpoint = $factory->chatBotEndpoint;
+```
+
+This modular approach keeps integrations clean and maintainable.
+
+---
+
+## Summary
+
+This page documents all modifications to API surfaces and SDK interfaces to enable rapid impact assessment, smoother upgrades, and robust integration stability.
+
+---
+
+<AccordionGroup title="API and SDK Changes Details">
+<Accordion title="ChatBotEndpoint Updates">
+ - Enhanced validation ensures required response fields (`processQueryKey`, `downloadUrl`) are present.
+ - Exceptions thrown early to prevent silent failures.
+ - Methods added/maintained: `sendOneOnOneChatMessages`, `sendGroupMessage`, `downloadFile`.
+</Accordion>
+<Accordion title="OpenDevEndpoint Token Management">
+ - Centralized access token retrieval with cache support.
+ - Config-driven app key/secret validation.
+ - New exception handling for missing configuration or token failure.
+</Accordion>
+<Accordion title="OpenDevFactory Endpoint Aggregation">
+ - Consolidates core API endpoints for easier SDK client management.
+ - Supports ChatBot, User, Calendar, Department, Conversation, and Callback functionalities.
+</Accordion>
+</AccordionGroup>
