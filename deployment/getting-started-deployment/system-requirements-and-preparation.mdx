@@ -1,0 +1,129 @@
+---
+title: "System Requirements & Preparation"
+description: "Outlines the necessary prerequisites for deploying Magic, including supported operating systems, required software (Docker/Docker Compose versions), and recommended hardware resources for initial and production deployments. Includes tips on preparing your environment and understanding the infrastructure footprint before installation."
+---
+
+# System Requirements & Preparation
+
+Before deploying Magic, it is essential to ensure your environment meets the necessary prerequisites. Proper preparation guarantees a smooth installation and reliable operation of the platform, whether for initial evaluation or production use. This guide details supported operating systems, required software versions, recommended hardware specifications, and practical tips to ready your infrastructure for deployment.
+
+---
+
+## 1. Supported Operating Systems
+
+Magic supports deployment on a variety of modern server operating systems. To ensure compatibility and stability, use one of the following:
+
+- **Linux distributions:**
+  - Ubuntu 22.04 LTS or newer
+  - Debian 11 or newer
+  - CentOS 7/8 or equivalent
+- **macOS:** For development and testing environments only
+- **Windows:** Limited support, primarily via Windows Subsystem for Linux (WSL) or containerized environments
+
+> **Tip:** Linux is highly recommended for production environments due to performance and ecosystem support.
+
+
+## 2. Required Software
+
+Magic relies on container orchestration and runtime technologies as part of its core deployment strategy.
+
+### Docker
+
+- **Minimum Version:** 20.10.x
+- Ensure Docker is installed and configured correctly. Use the official Docker documentation for installation guidance.
+
+### Docker Compose
+
+- **Minimum Version:** 1.29.x or higher
+- Used to orchestrate Magic’s multi-container services and dependencies
+
+### Additional Tools (Optional but Recommended)
+
+- `curl` or `wget` for network interactions
+- `git` to clone repositories if installing from source
+
+> **Note:** Validate Docker daemon is running and accessible to your user account.
+
+
+## 3. Recommended Hardware Specifications
+
+Your hardware choice depends on deployment scale and expected load. Below are guidelines based on initial and production deployments.
+
+| Environment        | CPU          | RAM          | Storage               | Network            |
+|--------------------|--------------|--------------|-----------------------|--------------------|
+| **Initial Evaluation** | 4 cores       | 8 GB         | 50 GB SSD             | 1 Gbps or higher    |
+| **Small Production** | 8 cores       | 16 GB        | 100 GB SSD            | 1 Gbps or higher    |
+| **Medium to Large Production** | 16+ cores    | 32+ GB       | 250+ GB NVMe SSD      | 1 Gbps or higher    |
+
+> **Best Practice:** Use SSD or NVMe storage for optimal database and I/O performance.
+
+
+## 4. Network and Permissions Considerations
+
+Successful deployment requires appropriate network configuration and permissions.
+
+- **Outbound Internet Access:** Necessary for downloading dependencies and container images.
+- **Firewall Rules:** Open required ports for Magic services (see your installation guide for port details).
+- **User Permissions:** The installing user should have sudo or administrative rights to manage Docker and system services.
+
+
+## 5. Environment Preparation Checklist
+
+Before beginning installation, verify the following:
+
+- [ ] Operating system matches supported versions
+- [ ] Docker and Docker Compose installed and verified with `docker --version` and `docker-compose --version`
+- [ ] Hardware meets or exceeds recommendations
+- [ ] Network ports and firewalls configured to allow Magic traffic
+- [ ] User has necessary permissions for installation and runtime
+
+
+## 6. Understanding Magic’s Infrastructure Footprint
+
+Magic deploys as a set of containerized microservices, typically including:
+
+- API gateway & backend services
+- Database (PostgreSQL or MariaDB, managed within containers or external)
+- Messaging and workflow orchestrator services
+- Web frontend
+
+Each service comes with resource needs and network dependencies.
+
+> **Tip:** Perform a resource assessment against your expected user base to adjust allocation accordingly.
+
+
+## 7. Common Preparation Pitfalls
+
+- **Insufficient Docker Version:** Using outdated Docker or Compose versions leads to container orchestration failures.
+- **Storage Limitations:** Running out of disk space during installation prevents successful image downloads and container startup.
+- **Port Conflicts:** Pre-existing services using required ports (e.g., 80, 443) impede Magic’s web interfaces.
+
+
+## 8. Next Steps After Preparation
+
+Once your system meets these requirements and you’ve completed preparation steps, proceed to the [Installation Guide](/getting-started/prerequisites-installation/installation-guide) to set up Magic with Docker.
+
+
+---
+
+### Additional Resources & References
+
+- [Installation Guide](/getting-started/prerequisites-installation/installation-guide)
+- [Quickstart: From Zero to Magic Productivity](/guides/getting-started/quickstart-workspace)
+- [System Configuration Management](/guides/best-practices-optimization/system-config-management)
+- [Troubleshooting Common Setup Issues](/getting-started/validation-troubleshooting/common-setup-issues)
+
+
+---
+
+<Info>
+If you plan to deploy Magic in a cloud environment, verify your cloud provider’s compatibility with these software versions and hardware specs. Additionally, consult your cloud network and security policies to ensure smooth operation.
+</Info>
+
+<Check>
+Regularly update Docker and Docker Compose to supported versions for security, performance improvements, and compatibility.
+</Check>
+
+<Warning>
+Avoid running Magic containers on unsupported or experimental platforms to minimize unexpected failures or degraded performance.
+</Warning>
