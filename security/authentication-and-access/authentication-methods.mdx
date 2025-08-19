@@ -1,0 +1,185 @@
+---
+title: "Authentication Methods"
+description: "Learn about supported authentication options, including account/password login, API keys, and third-party SSO such as DingTalk, Lark, and WeCom. Understand how Magic validates user identity in both web and API environments, with emphasis on extensibility for teams and organizations."
+---
+
+# Authentication Methods
+
+Magic supports several robust authentication options to verify user identity and secure access across both web and API environments. This guide walks you through how Magic validates credentials for different user scenarios, including account/password login, API key usage, and third-party Single Sign-On (SSO) with popular providers such as DingTalk, Lark, and WeCom. Understanding these methods empowers you to choose and configure the best authentication approach tailored to your team or organizational needs.
+
+---
+
+## 1. Overview of Authentication in Magic
+
+Magic’s authentication framework ensures that only authorized users can access the platform’s rich feature set—whether interacting through the web interface or via APIs. The authentication methods are designed to be:
+
+- **Secure:** Enforcing credential validation with token-based workflows
+- **Flexible:** Supporting multiple authentication schemes to suit diverse operational needs
+- **Extensible:** Easily integrating with external identity providers for enterprise SSO
+- **User-Centric:** Balancing security with simple, seamless user experience
+
+
+> Users authenticate to establish their identity, which then governs their permissions and access scope across workflows, messaging, knowledge bases, and integrations.
+
+
+## 2. Supported Authentication Methods
+
+### 2.1 Account and Password Login
+
+Traditional username-and-password authentication remains a core method for user identity verification in Magic’s web portal. This method supports:
+
+- Secure password handling with encrypted storage and transmission
+- Session management to maintain user login state
+- Support for organizational user accounts with role-based permission assignment
+
+### 2.2 API Key Authentication
+
+For automated and programmatic access via APIs or SDKs, Magic supports API keys as a credential mechanism. API keys offer:
+
+- **Scoped access tokens:** API keys deliver scoped authorization allowing fine-grained permission control.
+- **Token caching and renewal:** The SDK and API handle token expiration transparently, providing a seamless experience to client applications.
+- **Secure injection:** API keys should be stored securely and injected via environment variables or secure configuration files.
+
+A typical developer flow with API keys involves generating the key in Magic’s management console, injecting it into the SDK or API client configuration, and using it to authenticate API requests.
+
+### 2.3 Third-Party Single Sign-On (SSO) Integration
+
+Magic extends its authentication platform to support third-party SSO providers, enabling organizations to leverage existing enterprise identity infrastructure. Supported providers include:
+
+- **DingTalk:** Seamless login integration leveraging DingTalk’s OAuth2 access tokens.
+- **WeCom:** Enterprise WeCom authentication for organizations using this platform.
+- **Lark:** Single sign-on connection to Lark-based enterprise identity.
+
+These SSO integrations utilize OAuth2 token flows, where Magic validates access tokens obtained from the providers’ authorization endpoints. This process ensures users can use their existing credentials without the need to manage separate Magic passwords.
+
+> Integrating SSO simplifies user management at scale, enforces centralized security policies, and enhances the user experience with single-click login capabilities.
+
+---
+
+## 3. How Magic Validates User Identity
+
+### 3.1 Web Environment
+
+When users log in through Magic’s web application, the following process occurs:
+
+1. **Credential Submission:** The user inputs either username/password or triggers SSO login.
+2. **Authentication Check:**
+   - For username/password, Magic verifies credentials against its secure user store.
+   - For SSO, Magic validates the external OAuth2 access token with the third-party provider.
+3. **Session Creation:** Upon successful validation, Magic establishes an authenticated session using secure session cookies.
+4. **Role & Permission Assignment:** The system queries organizational context to assign roles and permission scopes to the authenticated user.
+5. **Access Granted:** User is redirected to the dashboard or intended resource.
+
+### 3.2 API Environment
+
+For API clients and SDKs, Magic uses token-based authentication:
+
+1. **Token Provision:** Clients obtain access tokens via API key authentication or OAuth2 token exchange.
+2. **Token Injection:** Access tokens are included in the HTTP Authorization header or custom headers.
+3. **Token Validation:** Magic’s backend verifies token validity, scopes, and expiration before processing API calls.
+4. **Request Processing:** Upon success, authorized API requests proceed to serve the desired data or trigger workflows.
+
+Tokens obtained through the Easy DingTalk SDK or direct API calls are cached and managed securely to optimize performance and avoid repeated authentication.
+
+---
+
+## 4. Using the Easy DingTalk SDK for Authentication
+
+Magic provides seamless integration with Easy DingTalk SDK to support DingTalk-based authentication flows.
+
+### 4.1 Obtaining Access Tokens
+
+The Easy DingTalk SDK manages token retrieval and caching internally.
+
+- **Internal App Access Token:** Retrieved by providing your app_key and app_secret.
+
+- **Third-Party Enterprise Access Token:** Retrieved using corp_id and suite_ticket for authorized enterprises.
+
+Example PHP snippet to retrieve an access token:
+
+```php
+use Dtyq\EasyDingTalk\OpenDevFactory;
+
+$factory = new OpenDevFactory([
+    'app_key' => 'your_app_key',
+    'app_secret' => 'your_app_secret',
+]);
+
+// Get internal access token
+$accessToken = $factory->accessTokenEndpoint->get();
+
+// For authorized third-party enterprise
+$corpAccessToken = $factory->accessTokenEndpoint->getCorp('corp_id_here', 'suite_ticket_here');
+```
+
+Tokens are cached for their TTL to optimize API performance.
+
+> Always ensure `app_key` and `app_secret` are securely stored and never exposed publicly.
+
+### 4.2 Injecting Tokens in API Calls
+
+When calling other Easy DingTalk APIs for messaging or file download, include the obtained access token like this:
+
+```php
+$parameter->setAccessToken($accessToken);
+// Use the parameter object as required by the SDK API call
+```
+
+This practice authenticates requests, enabling successful interaction with Magic's backend and third-party messaging services.
+
+---
+
+## 5. Best Practices for Secure Authentication Setup
+
+- **Use Environment Variables:** Store API keys and secrets in environment variables or secure vaults to prevent leakage.
+
+- **Rotate Keys Regularly:** Enforce periodic API key and secret rotation to reduce risk.
+
+- **Leverage SSO for Enterprise:** Use supported SSO providers to centralize user management and comply with organizational security policies.
+
+- **Secure Token Transmission:** Always use HTTPS endpoints to prevent token snooping.
+
+- **Limit API Key Scope:** Define and enforce the minimum required permissions for each API key.
+
+- **Monitor Authentication Logs:** Audit failed login attempts and token usage for anomaly detection.
+
+- **Use SDKs When Possible:** The Easy DingTalk SDK abstracts complex auth flows, token caching, and error handling.
+
+---
+
+## 6. Troubleshooting Common Authentication Issues
+
+<AccordionGroup title="Troubleshooting Authentication Problems">
+<Accordion title="Unable to Obtain Access Token">
+Make sure your `app_key` and `app_secret` are correctly configured and have not expired. Verify network connectivity to DingTalk’s API servers. Check SDK logs for detailed error messages.
+</Accordion>
+<Accordion title="SSO Login Failures">
+Confirm that your OAuth credentials and redirect URIs are accurate in both Magic and third-party SSO provider console. Check the OAuth flow for denied permissions or expired tokens.
+</Accordion>
+<Accordion title="API Calls Returning Unauthorized (401)"
+>
+Check the validity and expiration of access tokens. Ensure the token is included and correctly formatted in request headers. Validate API key scopes and permissions.
+</Accordion>
+<Accordion title="Session Timeout or Unexpected Logouts">
+Increase session timeout in Magic’s configuration if necessary. Check browser cookie settings and ensure secure cookies are enabled.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 7. Summary
+
+Magic's authentication methods provide robust and flexible options from traditional password logins to advanced third-party SSO integrations. Using tokens managed either directly via API keys or through SDKs such as Easy DingTalk ensures secure and scalable authentication for users across web and API environments. By following best practices and monitoring authentication flows, you can maintain a secure and user-friendly access management system tailored to your organization's needs.
+
+---
+
+## Additional Resources
+
+- [Easy DingTalk SDK GitHub Repository](https://github.com/dtyq/magic) – Explore SDK documentation and source code.
+- [Authentication & Authorization API Reference](https://docs.magic.com/api-reference/auth-rate-limits/api-authentication) – Detailed API authentication endpoints.
+- [Third-Party Messaging Integration Guide](https://docs.magic.com/guides/advanced-customization-integration/third-party-messaging-integration) – Set up integrations with DingTalk, WeCom, and Lark.
+- [Secure Deployment & Isolation Best Practices](https://docs.magic.com/guides/best-practices-optimization/secure-deployment) – Enhance authentication with multi-tenant and network security layers.
+
+---
+
+Explore related documentation to build strong, secure access frameworks and streamline identity management for your Magic platform deployment.
