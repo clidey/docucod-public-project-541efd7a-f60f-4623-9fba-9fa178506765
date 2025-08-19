@@ -1,0 +1,223 @@
+---
+title: "Monitoring & Logging Overview"
+description: "Outlines how to enable, configure, and access system logs, application logs, and metrics for ongoing health monitoring and troubleshooting. Connects users to relevant log files, management interfaces, and recommendations for centralized log collection (ELK, Loki, etc)."
+---
+
+# Monitoring & Logging Overview
+
+Efficient monitoring and logging are the backbone of any stable and maintainable Magic platform deployment. This documentation guides you through enabling, configuring, and accessing the essential logs and metrics needed to stay ahead of operational issues and maintain system health.
+
+---
+
+## 1. Understanding Magic's Monitoring and Logging Capabilities
+
+Magic provides comprehensive logging and monitoring tools that help you track system behavior, detect anomalies, troubleshoot issues, and optimize performance. This includes both **application logs** for tracking runtime events and errors, and **metrics collection** for health monitoring.
+
+### Types of Logs and Metrics
+
+- **System Logs**: Capture low-level system events such as service startups, shutdowns, errors, and warnings.
+- **Application Logs**: Record business logic events, workflow execution details, API request and response traces, and error stack traces.
+- **Audit Logs**: Track security-related events like user authentications, permission changes, and access attempts.
+- **Operational Metrics**: Include CPU and memory usage, request latency, throughput, and uptime statistics.
+
+These logs and metrics form the foundation of your ongoing health monitoring and troubleshooting.
+
+---
+
+## 2. Enabling and Accessing Logs
+
+### Log Location and File Access
+
+Magic's logs are stored on the host system where the services run. Depending on your deployment (e.g., Docker-based), logs may be accessible directly through container logs or persisted in file mounts.
+
+- **Docker Deployments**: Access logs via `docker logs <container_name>` or through log files mapped in volumes.
+- **On-Premises Servers**: Logs are typically located under `/var/log/magic/` or a configured directory defined by environment variables.
+
+### Common Log Files
+
+| Log Type         | Typical File Path                    | Purpose                             |
+|------------------|------------------------------------|-----------------------------------|
+| Application Log  | `/var/log/magic/app.log`             | Runtime events and errors          |
+| System Log       | `/var/log/magic/system.log`          | Service lifecycle events           |
+| Audit Log        | `/var/log/magic/audit.log`           | Security and permission tracking  |
+| Access Log       | `/var/log/magic/access.log`          | HTTP/API access audit              |
+
+### Accessing Logs via CLI
+
+Retrieve the latest entries efficiently:
+
+```shell
+# Tail application log in real-time
+sudo tail -f /var/log/magic/app.log
+
+# Fetch last 100 lines
+sudo tail -n 100 /var/log/magic/app.log
+
+# Search within logs for errors
+sudo grep 'ERROR' /var/log/magic/app.log
+```
+
+### Web Interface for Logs
+
+Depending on your deployment and monitoring stack, you may have dashboards or web consoles to view logs and metrics graphically. For example:
+
+- **ELK Stack (Elasticsearch, Logstash, Kibana)**
+- **Loki with Grafana**
+
+Refer to your monitoring stack documentation for accessing these interfaces.
+
+---
+
+## 3. Configuring Log Management
+
+### Environment Variables for Log Configuration
+
+Magic’s logging behavior can be tuned through environment variables and configuration files, commonly set during deployment. Important options include:
+
+- `LOG_LEVEL`: Sets minimum severity to log (e.g., `info`, `warn`, `error`, `debug`)
+- `LOG_OUTPUT`: Selects log destinations (file, stdout, or centralized logging endpoints)
+- `LOG_ROTATION_SIZE` and `LOG_ROTATION_AGE`: Controls file size and age-based log rotation
+
+Adjust these parameters to balance verbosity and storage.
+
+### Best Practices
+
+- Use `info` level for production day-to-day stability, escalate to `debug` only when troubleshooting.
+- Ensure logs are rotated and archived to prevent disk exhaustion.
+- Secure log files with appropriate permissions to protect sensitive information.
+
+---
+
+## 4. Metrics Collection and Monitoring
+
+### Built-In Metrics
+
+Magic collects vital operational metrics including:
+
+- Service health (up/down status)
+- Request counts and latencies
+- Workflow queue lengths
+- Resource utilization (CPU, memory)
+
+### Integrating with Monitoring Tools
+
+To gain real-time insight and alerting capabilities, connect Magic’s metrics output to external monitoring platforms:
+
+- **Prometheus**: Scrape metrics exposed by Magic services for alerting and dashboarding
+- **Grafana**: Visualize Prometheus metrics with custom dashboards
+- **Cloud Monitoring Solutions**: AWS CloudWatch, Azure Monitor, or Google Cloud Monitoring where appropriate
+
+Refer to your environment’s integration guides for detailed setup.
+
+---
+
+## 5. Centralized Log Collection Strategies
+
+Collecting logs centrally facilitates long-term storage, advanced search, alerting, and correlation across services.
+
+### Supported Solutions
+
+- **ELK Stack (Elasticsearch, Logstash, Kibana)**: Aggregates and indexes logs for powerful searching
+- **Loki + Grafana**: Lightweight, scalable log aggregation integrated with Grafana dashboards
+
+Magic supports forwarding logs to these centralized systems by configuring appropriate log drivers and endpoints.
+
+### Setup Recommendations
+
+- Configure Magic’s containers or hosts to forward logs to your centralized collectors.
+- Ensure network access and credentials are secured.
+- Use structured logging formats (JSON) for better parsing and analysis.
+
+---
+
+## 6. Troubleshooting Common Issues
+
+### Logs Not Appearing
+
+- Verify service is running and log directories exist
+- Check file system permissions
+- Confirm correct environment variables and log levels are set
+
+### Log Overwhelm or Disk Space Issues
+
+- Implement log rotation and archival
+- Adjust log verbosity settings to reduce noise
+
+### Monitoring Metrics Missing
+
+- Ensure monitoring agents/services are running and configured correctly
+- Validate endpoint accessibility and credentials
+
+### Sample Troubleshooting Commands
+
+```shell
+# Verify service container status
+docker ps | grep magic
+
+# Check if logs directory has write permissions
+ls -ld /var/log/magic
+
+# Tail system journal for service failures
+journalctl -u magic-service -f
+```
+
+---
+
+## 7. Practical Tips for Sustainable Monitoring
+
+- Set up alerting on critical metrics such as service downtime and error rate spikes.
+- Regularly review logs for emerging warnings or patterns.
+- Rotate logs and archive offsite to comply with storage and compliance policies.
+- Secure access to logs and metrics dashboards to authorized personnel only.
+
+By integrating these practices into your operational routine, you’ll ensure Magic runs reliably and issues can be rapidly diagnosed and resolved.
+
+---
+
+## Additional Resources
+
+- [System Requirements & Preparation](./system-requirements-and-preparation) - Ensure your deployment meets logging and monitoring prerequisites.
+- [Scaling & High Availability](./scaling-and-high-availability) - Guides to enhance your monitoring in large-scale environments.
+- [Backup & Disaster Recovery](./backup-and-disaster-recovery) - Maintain logs and metrics as part of recovery procedures.
+- [Runtime Hardening & Secrets Management](./runtime-hardening-and-secrets-management) - Secure your log and monitoring infrastructure.
+
+
+---
+
+_Last updated: June 2024_
+
+
+---
+
+_Repository: [Magic GitHub](https://github.com/dtyq/magic)_
+
+---
+
+### Example: Accessing Logs Using Docker
+
+```shell
+# Show real-time logs for the Magic API container
+docker logs -f magic-api
+
+# Retrieve last 50 lines
+docker logs --tail 50 magic-api
+```
+
+### Example: Basic Kibana Search Query
+
+```json
+{
+  "query": {
+    "match": {
+      "log.level": "error"
+    }
+  }
+}
+```
+
+Use this to quickly identify errors in your centralized logs.
+
+
+---
+
+This overview equips you to confidently implement and manage Magic’s logging and monitoring landscape, enabling you to keep your AI productivity platform healthy and performant.

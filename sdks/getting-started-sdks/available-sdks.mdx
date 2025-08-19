@@ -1,0 +1,205 @@
+---
+title: "Available SDKs & Supported Languages"
+description: "An overview of officially supported SDKs and client libraries for Magic, mapping SDKs to their core capabilities, supported languages (PHP, TypeScript, Python, etc.), versioning strategies, and compatibility with key Magic product features. Use this page to choose the right SDK for your platform and understand ecosystem fit."
+---
+
+# Available SDKs & Supported Languages
+
+Magic provides a diverse and robust set of officially supported SDKs and client libraries, designed to empower developers to integrate, extend, and interact with Magic’s platform seamlessly. This page guides you through choosing the right SDK based on your preferred programming language, platform compatibility, and desired capabilities.
+
+---
+
+## Overview of Official SDKs
+
+Magic’s SDKs are crafted to cover a broad spectrum of use cases, with primary support for languages widely adopted in enterprise and AI workflows.
+
+| SDK         | Language    | Supported Versions       | Key Capabilities                   | Integration Notes                   |
+|-------------|-------------|--------------------------|----------------------------------|-----------------------------------|
+| Magic PHP SDK   | PHP         | 8.1 and above            | Core APIs, Authentication, Workflow Automation, IM & Messaging, Knowledge APIs | PSR compatible, Hyperf integration available |
+| Magic TypeScript SDK | TypeScript  | Node 16+ & Browser      | Real-time messaging, AI workflows, SDK usage examples, async-friendly APIs | Designed for web and server contexts |
+| Magic Python SDK   | Python      | 3.7 and above            | AI integration, workflow automation, messaging APIs, error handling | Compatible with popular Python frameworks |
+
+### Community Contributions
+
+In addition to official SDKs, the community maintains unofficial clients for other languages and platforms. These can expand framework support but may vary in maintenance and completeness.
+
+---
+
+## Versioning Strategy and Compatibility
+
+Magic SDKs follow semantic versioning aligned with the overall platform releases. Minimum version requirements ensure compatibility with Magic’s APIs and features:
+
+- **Backward Compatibility:** SDKs maintain backward compatibility within major versions.
+- **Feature Alignment:** New SDK releases coincide with critical product feature launches.
+- **Platform Compatibility:** SDKs specify minimum runtime and dependency versions to guarantee stability.
+
+For example, the PHP SDK requires at least PHP 8.1 to leverage modern language features and performance improvements.
+
+---
+
+## Platform and Environment Support
+
+Each SDK supports a range of environments:
+
+- **PHP SDK:** Compatible with Linux, Windows, macOS; commonly integrated into Hyperf framework or traditional PHP apps.
+- **TypeScript SDK:** Runs on Node.js environments and browsers, optimized for real-time messaging and workflows.
+- **Python SDK:** Works across all major OS platforms, easily integrated with AI and data processing tools.
+
+When selecting an SDK, consider your deployment environment and tooling preferences to ensure a smooth development experience.
+
+---
+
+## Installation Methods
+
+### PHP SDK
+
+Install via Composer (PHP’s package manager):
+
+```bash
+composer require dtyq/easy-dingtalk -vvv
+```
+
+This command fetches the latest stable version, sets up autoloading, and prepares your project for immediate usage.
+
+### TypeScript SDK
+
+Install from npm:
+
+```bash
+npm install @magic/sdk
+```
+
+or with yarn:
+
+```bash
+yarn add @magic/sdk
+```
+
+### Python SDK
+
+Install via pip:
+
+```bash
+pip install magic-sdk
+```
+
+---
+
+## Choosing the Right SDK for Your Project
+
+Consider these factors to select the best SDK:
+
+- **Language & Framework:** Match the SDK to your preferred programming language and application stack.
+- **Use Case Complexity:** For simple API calls, lightweight SDKs suffice; for complex workflows, choose SDKs with comprehensive API coverage.
+- **Platform Compatibility:** Ensure the SDK supports your app environment, OS, and runtime versions.
+- **Community and Support:** Official SDKs provide tested APIs and documentation, whereas community libraries may require additional validation.
+
+---
+
+## Quick Start Examples
+
+### PHP SDK Basic Usage
+
+```php
+use Dtyq\EasyDingTalk\OpenDevFactory;
+
+$factory = new OpenDevFactory([
+    'app_key' => 'your_app_key',
+    'app_secret' => 'your_app_secret',
+]);
+
+// Retrieve an access token
+$accessToken = $factory->accessTokenEndpoint->getAccessToken();
+
+// Proceed to use other endpoints via the factory
+```
+
+### TypeScript SDK Example
+
+```typescript
+import { MagicClient } from '@magic/sdk';
+
+const client = new MagicClient({
+  apiKey: 'your_api_key',
+});
+
+async function sendMessage() {
+  const response = await client.messaging.sendMessage({
+    userId: 'user_id',
+    message: 'Hello, Magic!'
+  });
+  console.log(response);
+}
+sendMessage();
+```
+
+### Python SDK Example
+
+```python
+from magic_sdk import MagicClient
+
+client = MagicClient(api_key='your_api_key')
+
+response = client.messaging.send_message(user_id='user_id', message='Hello, Magic!')
+print(response)
+```
+
+---
+
+## SDK Support Summary
+
+| Feature Area           | PHP SDK        | TypeScript SDK | Python SDK     |
+|-----------------------|----------------|----------------|----------------|
+| Authentication        | ✔️             | ✔️             | ✔️             |
+| User & Group APIs      | ✔️             | ✔️             | ✔️             |
+| Messaging & Conversations | ✔️          | ✔️             | ✔️             |
+| Workflow Orchestration | ✔️             | ✔️             | ✔️             |
+| Knowledge Base APIs    | ✔️             | ✔️             | ✔️             |
+| Error Handling & Debug | ✔️             | ✔️             | ✔️             |
+
+---
+
+## Best Practices
+
+- Always keep your SDK updated to benefit from security patches and new features.
+- Verify runtime environment compatibility before upgrading SDK versions.
+- Use SDK-specific error handling patterns to gracefully manage API rate limits and errors.
+- Leverage available integration samples and guides to accelerate development.
+
+---
+
+## Troubleshooting Common SDK Issues
+
+- **Installation Failures:** Confirm your package manager is configured correctly and that dependency versions meet minimum requirements.
+- **Authentication Errors:** Double-check your API credentials and ensure they match the selected application environment.
+- **API Response Issues:** Review request payloads against API specifications; SDK logs can help diagnose problems.
+- **Compatibility Conflicts:** If unexpected errors occur after SDK upgrades, review changelogs and rollback if necessary.
+
+---
+
+## Next Steps
+
+To make the most out of your chosen SDK:
+
+- Explore the [Installation & Basic Setup](/sdks/getting-started-sdks/sdk-installation-setup) guide.
+- Follow [Quickstart Examples](/sdks/usage-patterns/quickstart-examples) for hands-on integrations.
+- Review [Authentication & Credential Management](/sdks/configuration-auth/authentication-methods) to secure your applications.
+- Consult [SDK Best Practices](/sdks/troubleshooting-bestpractices/sdk-best-practices) for performance and error handling.
+
+For detailed usage patterns and advanced integration scenarios, see the [Most Common Use Cases](/sdks/usage-patterns/most-common-use-cases) and [Advanced Examples](/sdks/usage-patterns/advanced-examples).
+
+---
+
+## Additional Resources
+
+- [Magic Product Matrix & Component Overview](/overview/architecture-glance/product-matrix) — Understand how SDKs fit into the broader platform.
+- [Integration Capabilities](/overview/architecture-glance/integration-points) — Discover integration points and extensions.
+- [Authentication & Authorization](/api-reference/auth-rate-limits/api-authentication) — Deep dive into token management.
+
+
+---
+
+Magic empowers your development with language-native SDKs that accelerate integration and ensure reliable, scalable, and flexible use of Magic’s enterprise-grade AI and workflow services.
+
+
+

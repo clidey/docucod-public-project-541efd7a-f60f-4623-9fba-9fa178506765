@@ -1,0 +1,114 @@
+---
+title: "Full Changelog"
+description: "A detailed, version-by-version log of changes in Magic. Users can browse release dates, feature launches, enhancements, and resolved issues, enabling thorough historical awareness for all supported versions."
+---
+
+# Full Changelog
+
+A comprehensive, version-by-version record of all changes made to Magic. This page serves as the authoritative source for tracking release dates, new features, enhancements, fixes, and resolved issues across all supported versions. By browsing through this log, users gain complete historical insight on Magic's evolution, enabling informed upgrade planning, troubleshooting, and leveraging new capabilities.
+
+---
+
+## Understanding the Changelog
+
+The Full Changelog documents each release in detail, focusing exclusively on user-visible changes. It provides insights into:
+
+- **Release Dates:** When each version became available.
+- **New Features:** Functional additions and key capabilities introduced.
+- **Improvements:** Enhancements to existing features that optimize user experience.
+- **Bug Fixes:** Issues resolved to increase stability and reliability.
+- **Deprecations and Breaking Changes:** Warnings for changes requiring user action or migration.
+
+This ensures users grasp not only what changed, but why it matters from their perspective.
+
+## Versioning and Release Cadence
+
+Magic follows the semantic versioning format `x.y.z` as detailed in the [Version Description](https://github.com/dtyq/magic/blob/main/docs/en/development/version/versions.md). Here's a quick refresher:
+
+- **x (Major):** Significant platform refactors or breaking API/UI changes.
+- **y (Minor):** Major feature iterations with possible backward-incompatible API/UI updates.
+- **z (Patch):** Bug fixes, security updates, and minor features with full backward compatibility.
+
+The platform adopts an agile weekly release cycle, publishing new versions every Monday (UTC+08:00), mostly patch (z) and feature iteration (y) releases.
+
+Users should refer to the corresponding upgrade guides for major (x) and minor (y) versions to ensure smooth transitions.
+
+## Recent Notable Releases
+
+### Version Highlights
+
+1. **Added Language Switching in README** (Commit: e3d2732)
+   - Dual-language support in the main documentation to improve accessibility.
+
+2. **Upstream Repository Syncs** (Commits: 5808dd9, 307d2be, a6138cb)
+   - Ensured feature parity by merging latest upstream changes.
+
+3. **Documentation Updates** (Commit: 70218f6)
+   - Improved clarity and coverage of project documentation.
+
+4. **Web Feature Enhancements**
+   - Added Web Worker for robust version checking.
+   - Implemented frontend notifications for new version availability.
+   - Auto-detection of updates prompts users to refresh.
+
+5. **Initial Repository Setup** (Commit: 306b2f66)
+   - Basic project scaffolding and README establishment.
+
+## How to Use This Changelog
+
+- **Tracking Release Impact:** Quickly identify which releases introduced critical features or fixes you depend on.
+- **Planning Upgrades:** Assess breaking changes or deprecations requiring adjustments before updating.
+- **Troubleshooting:** Correlate fixes or known issues with your deployment to guide debugging.
+- **Historical Reference:** Review Magic’s development trajectory and feature evolution.
+
+---
+
+## Additional Resources
+
+For effective use of the changelog and managing your Magic platform deployment, consult the following:
+
+- [Version Description and Upgrade Guidelines](https://github.com/dtyq/magic/blob/main/docs/en/development/version/versions.md): Semantics and rules behind version numbers, and advice for upgrading.
+- [Release Planning Overview](https://github.com/dtyq/magic/blob/main/docs/en/development/version/release-planning.md): Insight into support timelines and release scheduling.
+- [Breaking Changes & Upgrade Instructions](https://magic.com/changelog/breaking-changes-upgrades/breaking-changes): Details on backward-incompatible changes and migration steps.
+- [Installation Guide](https://magic.com/getting-started/prerequisites-installation/installation-guide): Instructions to deploy or update Magic.
+- [Troubleshooting Setup Issues](https://magic.com/getting-started/validation-troubleshooting/common-setup-issues): Common pitfalls and resolutions.
+
+## Best Practices
+
+- **Stay Updated:** Regularly check this changelog and subscribe to release announcements.
+- **Review Release Notes:** Prioritize reading release notes of versions before upgrading.
+- **Test in Staging:** Validate upgrades in test environments to detect issues early.
+- **Backup Before Upgrading:** Always backup relevant data and configurations.
+
+<Tip>
+Always align updates with your organization’s operational calendar to minimize disruption.
+</Tip>
+
+---
+
+## How This Page Fits in the Documentation Ecosystem
+
+The Full Changelog complements Magic’s core documentation by providing a historical ledger of changes, serving as a bridge between planning, deployment, and ongoing usage. It tightly integrates with:
+
+- **Release History Overview:** Summarizes key recent releases for quick insights.
+- **Breaking Changes Section:** Informs on critical adjustments to avoid downtime.
+- **Upgrade Guides:** Offers stepwise migration strategies.
+- **API References and SDK Change Logs:** Details specific interface and integration modifications.
+
+Together, these form a comprehensive support and reference system for users to maximize their Magic platform experience.
+
+---
+
+## Contributing and Feedback
+
+Community involvement in maintaining and improving the changelog is welcome. Users are encouraged to:
+
+- Submit detailed issue reports for undocumented changes.
+- Suggest clearer descriptions or additional context.
+- Engage with community forums or official channels to stay informed.
+
+Continued collaboration ensures the changelog remains a valuable and trustworthy resource.
+
+---
+
+*For the most up-to-date changelog and full release notes, visit the official Magic GitHub repository: [https://github.com/dtyq/magic](https://github.com/dtyq/magic)*

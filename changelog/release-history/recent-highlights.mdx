@@ -1,0 +1,136 @@
+---
+title: "Recent Feature Highlights"
+description: "Quickly discover the most impactful and celebrated changes from recent releases, including new product capabilities, integrations, and UI/UX improvements. This spotlight empowers users to leverage advancements without combing through every detail."
+---
+
+# Recent Feature Highlights
+
+Explore the most impactful improvements and celebrated additions from our recent product releases. This spotlight focuses on tangible user benefits and streamlined experiences, empowering you to harness the latest capabilities without needing to dive into every technical detail.
+
+---
+
+## 1. Enhanced Calendar Event Creation
+
+Creating and managing calendar events has been greatly simplified and enriched to support diverse scheduling needs:
+
+- **Flexible Date and Time Support:** Set single events or all-day schedules with precise timezone handling.
+- **Rich Event Details:** Add summaries, descriptions, locations, and support for rich text formatting to capture context clearly.
+- **Participant Management:** Easily include up to 500 attendees for collaborative scheduling.
+- **Custom Reminders and Recurrence:** Configure reminders and repeat rules to keep everyone on track.
+- **Online Meeting Integration:** Create events linked with online meetings seamlessly.
+
+### User Workflow
+
+To schedule an event, you simply:
+
+1. Identify the event organizer’s user ID.
+2. Define the calendar (defaulting to the user’s primary calendar).
+3. Enter event details such as title, time range, description, and participants.
+4. Optionally set recurrence, reminders, and meeting info.
+5. Submit the event creation request and receive a unique event ID confirming successful scheduling.
+
+This process ensures your team stays organized and informed effortlessly.
+
+#### Practical Example
+
+```php
+$param = new CreateEventParameter($accessToken);
+$param->setUserId('user-union-id');
+$param->setSummary('Team Sync Meeting');
+$param->setStart(new DateTime('2024-09-02 10:00:00', new DateTimeZone('Asia/Shanghai')));
+$param->setEnd(new DateTime('2024-09-02 11:00:00', new DateTimeZone('Asia/Shanghai')));
+$param->setIsAllDay(false);
+$result = $calendarEndpoint->createEvent($param);
+echo 'Event created with ID: ' . $result->getId();
+```
+
+
+> The above illustrates creating a one-hour meeting on a specific date with timezone consideration.
+
+
+---
+
+## 2. Streamlined SDK Integration with Calendar API
+
+Our SDK now better supports the calendar feature through:
+
+- **CalendarEndpoint API:** Provides clear, user-focused methods for event creation.
+- **Robust Parameter Validation:** Ensures required fields like user ID, event title, and start time are always provided before request.
+- **Intuitive Data Structures:** Encapsulates calendar event data in classes that map directly to API expectations.
+
+This allows developers to integrate calendar capabilities into their applications with minimal effort and maximum confidence.
+
+### Benefits
+
+- Clear error feedback if mandatory parameters are missing.
+- Automatic formatting of dates and times according to user settings.
+- Encapsulated handling of optional features like reminders and locations.
+
+---
+
+## 3. Improved User Feedback and Error Handling
+
+We have enhanced error handling and response validation so:
+
+- You receive explicit exceptions if responses from the server are malformed or incomplete.
+- The SDK validates all critical data before sending requests, preventing avoidable API failures.
+- Detailed error messages pinpoint exactly what parameter or response element needs correction.
+
+This ensures smoother development and faster troubleshooting.
+
+---
+
+## 4. Practical Enhancements in Testing
+
+The calendar feature includes comprehensive testing to guarantee reliability:
+
+- Test cases demonstrate creating events with various parameters.
+- Assertions verify that the returned data contains a valid event ID.
+
+This coverage delivers stability and continuous confidence in upgrades or integrations.
+
+---
+
+## 5. How This Fits into Your Workflow
+
+Leverage these new calendar features to:
+
+- Build scheduling modules in enterprise apps with full DingTalk calendar support.
+- Automate meeting invites and reminders through code.
+- Seamlessly integrate calendar data with chatbots or workflow automations in DingTalk or within Magic's extensible ecosystem.
+
+With this update, time management and collaboration become more efficient and less error-prone.
+
+---
+
+## Troubleshooting Tips
+
+- Ensure that `userId`, `summary`, and `start` fields are always set; omissions cause validation failures.
+- Use correct timezone settings to avoid event time discrepancies.
+- Verify the access token is current to prevent authentication errors.
+- Handle exceptions gracefully to provide meaningful user feedback.
+
+If issues persist, consult the SDK usage examples or the error handling guide.
+
+---
+
+## Next Steps
+
+- Review the [Easy DingTalk SDK Getting Started](https://github.com/dtyq/magic) for full integration patterns.
+- Explore related [ChatBot and Conversation APIs](../../api-reference/im-conv-messaging/send-messages) to build messaging workflows linked to calendar events.
+- Consult the [Workflow Automation Guide](../../guides/getting-started/workflow-orchestration) to incorporate calendar triggers in your flows.
+
+---
+
+## References & Further Reading
+
+- [DingTalk Create Event API Documentation](https://open.dingtalk.com/document/orgapp/create-event)
+- [Easy DingTalk Calendar Endpoint](./backend/easy-dingtalk/src/OpenDev/Endpoint/Calendar/CalendarEndpoint.php)
+- [CreateEventParameter Class Details](./backend/easy-dingtalk/src/OpenDev/Parameter/Calendar/CreateEventParameter.php)
+- [CreateEventResult and Validation](./backend/easy-dingtalk/src/OpenDev/Result/Calendar/CreateEventResult.php)
+
+---
+
+Harness these advances in calendar capabilities to transform how your teams schedule, coordinate, and collaborate, empowering productivity at every level.
+
+---

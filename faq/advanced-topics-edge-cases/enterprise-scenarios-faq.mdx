@@ -1,0 +1,155 @@
+---
+title: "Enterprise Deployment & Advanced Configuration"
+description: "Explains how to handle advanced requirements: multi-organization data separation, custom authentication, high-availability setups, and best practices for large-scale enterprise deployments."
+---
+
+# Enterprise Deployment & Advanced Configuration
+
+This page guides enterprises and IT administrators through advanced deployment scenarios of the Magic platform. It explains how to handle multi-organization data isolation, integrate custom authentication methods, establish high-availability setups, and implement best practices for scaling and securing Magic in large-scale environments.
+
+---
+
+## 1. Multi-Organization Data Separation
+
+Magic is designed to securely support multiple organizations within a single deployment while strictly isolating data and resources. This ensures each organization's dataset, users, workflows, and secrets remain private and compliant with enterprise policies.
+
+### Key Concepts
+- **Tenant Isolation:** Each organization operates in a logically isolated context, preventing cross-organization data visibility.
+- **Scoped Access Control:** Permissions and API access tokens are scoped per-organization, enforcing boundary protections.
+- **Organization-Aware APIs:** All interactions must include organization identifiers to ensure proper separation.
+
+### User Workflow for Multi-Org Usage
+1. **Register and Define Organizations:** Admins create organization entities representing their business units or tenant customers.
+2. **Assign Users to Organizations:** Users are scoped into organizations with roles and access permissions.
+3. **Configure Organization-Specific Resources:** Knowledge bases, AI agents, workflows, and messaging connections are segmented per organization.
+4. **Operate with Context:** API calls and UI sessions operate under the organization context, preventing data leaks.
+
+### Best Practices
+- Enforce strict authentication tokens tied to organizational scopes.
+- Use role-based access controls (RBAC) within organizations.
+- Regularly audit tenant boundaries to detect and prevent cross-tenant access.
+- Refer to the [Multi-Organization and Tenant Isolation guide](/security/authentication-and-access/multi-organization-and-tenant-isolation) for detailed implementation models.
+
+---
+
+## 2. Custom Authentication Integrations
+
+For enterprises with specialized identity management systems, Magic supports custom authentication adapters to integrate with existing SSO, OAuth providers, or API key management.
+
+### Common Use Cases
+- Integrating with corporate SAML or OAuth providers.
+- Using API keys or tokens issued by enterprise security gateways.
+- Leveraging Easy DingTalk SDK tokens for DingTalk enterprise account authentication.
+
+### Integration Approach
+- **Configure Authentication Endpoints:** Customize environment variables and config files to point to enterprise identity providers.
+- **Token Management:** Magic leverages caching and token rotation to maintain session security.
+- **SDK Support:** Use Magic SDKs with built-in support for common authentication schemes; extend SDKs for custom flows.
+
+### Troubleshooting Tips
+- Verify token scope and expiry periods match the organizational policy.
+- Ensure tokens include necessary claims to enforce tenant isolation.
+- Consult the [Authentication Methods guide](/security/authentication-and-access/authentication-methods) and the [SDK Authentication & Credential Management](/sdks/configuration-auth/authentication-methods) documentation.
+
+---
+
+## 3. High Availability and Scaling Strategies
+
+Enterprise demands require a deployment that is fault-tolerant, scalable, and manageable at large user volumes.
+
+### Deployment Patterns
+- **Horizontal Scaling:** Deploy multiple service instances behind load balancers to distribute workload.
+- **Stateless Services:** Ensure core services do not store ephemeral data locally to allow easy scaling.
+- **Stateful Components:** Use external databases, queues (e.g., RabbitMQ), and vector stores supporting clustering.
+
+### Recommended Practices
+- Use the [Scaling & High Availability guide](/deployment/scaling-monitoring-and-resilience/scaling-and-high-availability) for step-by-step instructions on multi-node deployments.
+- Monitor resource usage with centralized logging and metrics as explained in [Monitoring & Logging Overview](/deployment/scaling-monitoring-and-resilience/monitoring-and-logging-overview).
+- Enable autoscaling policies in cloud environments or use Kubernetes for container orchestration.
+
+### Workflow Resilience
+- Use retry and timeout configurations in workflows to handle service interruptions gracefully.
+- Employ caching layers to reduce load on backends.
+
+---
+
+## 4. Best Practices for Enterprise Deployments
+
+### Security Hardening
+- Manage secrets securely using encrypted environment variables and Docker/Kubernetes secrets ([Runtime Hardening & Secrets Management](/deployment/security-hardening-and-compliance/runtime-hardening-and-secrets-management)).
+- Enforce principle of least privilege in API keys and SDK credentials.
+- Restrict network exposures with firewall and reverse proxy configurations ([Network Exposure & Access Control](/deployment/security-hardening-and-compliance/network-exposure-and-access-control)).
+
+### Configuration Management
+- Organize `.env` files per environment and use version control to track changes ([Managing Configuration Across Environments](/guides/best-practices-optimization/system-config-management)).
+- Apply safe update strategies to avoid downtime.
+
+### Integration Considerations
+- Follow documented procedures for integrating with third-party messaging platforms and knowledge bases ([Third-Party Messaging Integration](/guides/advanced-customization-integration/third-party-messaging-integration)).
+- Test custom tools and LLM connectors in isolated staging before production rollout.
+
+---
+
+## 5. Troubleshooting Common Enterprise Issues
+
+<AccordionGroup title="Common Enterprise Deployment Questions">
+<Accordion title="How do I ensure organizations cannot access each other's data?">
+Use built-in tenant isolation features; always attach the organization context to user sessions and API requests to enforce strict boundaries. Audit access logs regularly.
+</Accordion>
+<Accordion title="Can I integrate corporate SSO with Magic login?">
+Yes, you can customize authentication layers and use token-based methods to integrate corporate SSO providers. Refer to the Authentication Methods and SDK Authentication guides.
+</Accordion>
+<Accordion title="What are best practices for scaling Magic at enterprise scale?">
+Deploy multiple service instances, externalize state management, monitor actively, and use container orchestration or cloud autoscaling features as detailed in the Scaling & High Availability guide.
+</Accordion>
+<Accordion title="How do I securely manage secrets in production?">
+Use encrypted environment variables and secret managers like Docker secrets or Vault. Avoid embedding secrets in code or public repositories. See Runtime Hardening & Secrets Management.
+</Accordion>
+<Accordion title="How do I monitor and troubleshoot performance at scale?">
+Enable centralized logging, metrics collection, and tracing as described in Monitoring & Logging Overview and Workflow Performance Tuning guides.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 6. Example: Configuring Multi-Org Access Token Retrieval
+
+Using the Magic Easy DingTalk SDK as an example, tokens are retrieved and cached per organization to securely manage access.
+
+```php
+// Select configuration for a specific organization or app
+$openDev = new OpenDevFactory();
+$openDev->accessTokenEndpoint->selectApp('organizationA');
+
+// Retrieve access token scoped to the organization
+$accessToken = $openDev->accessTokenEndpoint->get();
+
+// Use the token in subsequent API calls
+$userList = $openDev->departmentEndpoint->getSub(new GetSubParameter($accessToken));
+```
+
+This pattern ensures each organization uses its own credentials and tokens, maintaining strict separation.
+
+---
+
+## 7. Additional Resources & Next Steps
+
+- [Multi-Organization and Tenant Isolation](/security/authentication-and-access/multi-organization-and-tenant-isolation)
+- [Authentication Methods](/security/authentication-and-access/authentication-methods)
+- [Scaling & High Availability Deployment Guide](/deployment/scaling-monitoring-and-resilience/scaling-and-high-availability)
+- [Runtime Hardening & Secrets Management](/deployment/security-hardening-and-compliance/runtime-hardening-and-secrets-management)
+- [Monitoring & Logging Overview](/deployment/scaling-monitoring-and-resilience/monitoring-and-logging-overview)
+- [Third-Party Messaging Integration](/guides/advanced-customization-integration/third-party-messaging-integration)
+- [SDK Authentication & Credential Management](/sdks/configuration-auth/authentication-methods)
+
+Proceed to configure your deployment environment following the best practices outlined here. After securing multi-organizational segregation and integrating your authentication system, focus on scaling and monitoring to achieve reliable enterprise readiness.
+
+---
+
+<Check>
+Ensure you have configured your `.env` files and organizational settings before deploying services.
+</Check>
+
+<Info>
+For hands-on examples of token usage across organizations, review the Easy DingTalk SDK source code and tests included in the Magic GitHub repository at https://github.com/dtyq/magic.
+</Info>

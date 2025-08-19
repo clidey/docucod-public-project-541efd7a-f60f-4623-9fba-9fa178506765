@@ -1,0 +1,196 @@
+---
+title: "Upgrade & Migration Guides"
+description: "Step-by-step guidance for upgrading Magic to the next major, minor, or patch version—including environment updates, data migrations, and key post-upgrade actions. This page is crucial for operations, IT, and developer teams maintaining production deployments."
+---
+
+# Upgrade & Migration Guides
+
+This guide provides clear, actionable, step-by-step instructions to help operations, IT, and developer teams successfully upgrade the Magic platform across all version types—major, minor, and patch releases. It covers environment preparation, data migration requirements, and essential post-upgrade tasks to ensure smooth transitions and system stability in production deployments.
+
+---
+
+## 1. Understanding Magic Versioning
+
+Magic follows a semantic versioning scheme with the format `x.y.z`, where:
+
+- **x (Major version):**
+  - Represents large-scale architectural or core changes.
+  - Typically includes breaking changes affecting APIs or UI.
+  - Upgrades may require detailed migration steps and validation.
+
+- **y (Minor version):**
+  - Adds significant new features or iterations.
+  - May also introduce breaking API or UI changes, though often less disruptive than major versions.
+  - Requires careful upgrade with attention to version-specific upgrade guides.
+
+- **z (Patch version):**
+  - Focuses on bug fixes, security patches, and backward-compatible new features.
+  - Occasionally may include breaking fixes if they correct completely unusable bugs.
+  - Upgrades are generally low risk but still require validation.
+
+Understanding these distinctions helps plan upgrade strategies aligned with the scope and impact of each release.
+
+Refer to the [Version Rules and Guidelines](https://docs.magic.com/docs/en/development/version/versions.md) page for detailed version numbering definitions.
+
+---
+
+## 2. Preparing for an Upgrade
+
+**Essential Pre-Upgrade Checks:**
+
+- **Backup Your Environment:** Always create a full backup of your database, configuration files, and any custom extensions or plugins.
+- **Review Release Notes:** Consult the release notes for the target version to understand new features, fixes, and any breaking changes.
+- **Check Compatibility:** Ensure your current deployment environment meets the requirements for the new version, including OS, Docker, and dependencies.
+- **Read Upgrade Guides:** Follow the specific upgrade instructions tailored for major (`x`), minor (`y`), and patch (`z`) versions.
+
+**Environment Preparation:**
+
+- Update environment variables and configurations as required.
+- Prepare data migration tools and scripts if needed.
+- Schedule a maintenance window to avoid disruption.
+
+---
+
+## 3. Performing the Upgrade
+
+### 3.1 Major and Minor Version Upgrades (x.y)
+
+These upgrades often involve breaking API or UI changes and require extra caution:
+
+<Steps>
+<Step title="Review Version-Specific Upgrade Guide">
+  Identify the exact changes affecting your current environment by consulting the dedicated upgrade instructions for the version jump.
+</Step>
+<Step title="Backup and Snapshot">
+  Take a full system backup, including data and configuration snapshots.
+</Step>
+<Step title="Update Environment Variables">
+  Adjust any environment variables, service ports, or configuration parameters as specified by the new version requirements.
+</Step>
+<Step title="Run Data Migrations">
+  Execute database migrations and other data transformation scripts to align with new schemas and data formats.
+</Step>
+<Step title="Deploy New Version Binaries">
+  Pull the updated Docker images or install new binaries.
+</Step>
+<Step title="Restart Services and Monitor Logs">
+  Restart platform services and carefully monitor system logs and health checks for errors.
+</Step>
+<Step title="Validate Functionality and Performance">
+  Conduct smoke tests on critical user flows, integrations, and APIs.
+</Step>
+</Steps>
+
+**Tip:** Major upgrades may break backward compatibility; use a staging environment first to verify changes without risking production.
+
+### 3.2 Patch Version Upgrades (z)
+
+Patch updates focus mainly on fixes and backward-compatible improvements:
+
+- These can usually be rolled out with minimal system downtime.
+- Follow regular backup and deployment protocols.
+- Always validate that the patch fixes the targeted issues without side effects.
+
+---
+
+## 4. Key Data Migration Actions
+
+Data migrations are typically automated via platform migration scripts, but key points include:
+
+- **Schema Changes:**
+  - Example: Renaming database columns, such as `instruct` → `instructs` in the `magic_bot_versions` table.
+- **New Fields:**
+  - Adding new columns like `start_page` (boolean, default `false`) to enable new features.
+- **Index Optimization:**
+  - Adding composite indexes to improve query performance.
+- **Message Versioning:**
+  - Introducing new tables like `magic_chat_message_versions` for enhanced message history tracking.
+
+**Best Practice:** Do not modify any schema manually. Always apply migration scripts bundled with the release sequentially, observing any rollback strategies as defined.
+
+---
+
+## 5. Post-Upgrade Tasks
+
+To ensure a stable environment:
+
+- **Clear Cache and Restart Services:** Some configuration changes require cache invalidation.
+- **Rebuild Indexes:** For major schema changes, reindex databases or search stores.
+- **Verify Service Connectivity:** Check all integrations, webhook callbacks, and external API access.
+- **Monitor Logs:** Use system and application logs to observe error patterns or latency spikes.
+- **User Acceptance Testing (UAT):** Engage end users or QA teams to confirm feature integrity.
+
+---
+
+## 6. Troubleshooting Common Upgrade Issues
+
+- **Migration Failures:** Confirm migration scripts are run in correct order; check for database locks or permission issues.
+- **Service Startup Errors:** Review logs for missing configuration or incompatible environment variables.
+- **API or UI Breakages:** Validate that client-side caches are cleared; confirm compatibility of integrated SDK versions.
+- **Performance Degradation:** Check new indexes, query plans, and resource allocation.
+
+Refer to [Common Setup Issues](https://docs.magic.com/getting-started/validation-troubleshooting/common-setup-issues) for additional troubleshooting insights.
+
+---
+
+## 7. Rolling Back Upgrades
+
+In rare cases where the new version causes significant issues:
+
+- Follow the backup restore procedure with your previously stable snapshot.
+- Revert the database schema using down migrations when supported.
+- Re-deploy prior application images or binaries.
+- Notify stakeholders and schedule remediation.
+
+---
+
+## 8. Additional Resources & References
+
+- [Version Rules and Upgrade Planning](https://docs.magic.com/docs/en/development/version/versions.md)
+- [Installation Guide](https://docs.magic.com/getting-started/prerequisites-installation/installation-guide)
+- [System Requirements](https://docs.magic.com/getting-started/prerequisites-installation/system-requirements)
+- [Backup and Disaster Recovery](https://docs.magic.com/deployment/scaling-monitoring-and-resilience/backup-and-disaster-recovery)
+- [Common Setup Issues & Troubleshooting](https://docs.magic.com/getting-started/validation-troubleshooting/common-setup-issues)
+- [Migration Scripts Repository](https://github.com/dtyq/magic/tree/main/backend/magic-service/migrations)
+
+---
+
+## Example: Notable Migration Scripts in Recent Releases
+
+```php
+// Rename 'instruct' to 'instructs' in magic_bot_versions table
+Schema::table('magic_bot_versions', function (Blueprint $table) {
+    $table->renameColumn('instruct', 'instructs');
+});
+
+// Add 'start_page' boolean flag with default false
+Schema::table('magic_bot_versions', function (Blueprint $table) {
+    $table->boolean('start_page')->default(false)->comment('启动页开关');
+});
+
+// Add 'translate_config' JSON field to magic_chat_conversations table
+Schema::table('magic_chat_conversations', function (Blueprint $table) {
+    $table->json('translate_config')->nullable()->comment('翻译配置项');
+});
+
+// Create magic_chat_message_versions table for message history versions
+Schema::create('magic_chat_message_versions', function (Blueprint $table) {
+    $table->bigIncrements('version_id');
+    $table->string('magic_message_id', 64)->comment('magic_chat_message 表的 magic_message_id');
+    $table->longText('message_content')->comment('消息内容');
+    $table->timestamps();
+    $table->softDeletes();
+});
+```
+
+It’s critical to apply migration scripts exactly as provided and verify each step during upgrades.
+
+---
+
+## Summary
+
+Upgrading Magic is a critical process that requires careful planning, thorough preparation, and precise execution. This guide empowers your team to confidently navigate version changes—whether major, minor, or patch—by clarifying the versioning scheme, upgrade flows, migration details, and troubleshooting best practices. Armed with this knowledge, your production deployment will achieve smooth transitions and continued operational excellence.
+
+---
+
+For any questions or detailed upgrade walkthroughs, please contact Magic support or consult the full documentation portal.

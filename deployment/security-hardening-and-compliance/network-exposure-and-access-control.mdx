@@ -1,0 +1,231 @@
+---
+title: "Network Exposure & Access Control"
+description: "Explains secure exposure of API and web endpoints, setting up firewalls, reverse proxies, SSL/TLS, and multi-tenancy controls. Details on using RabbitMQ and database network security, as well as platform authentication methods and permissions."
+---
+
+# Network Exposure & Access Control
+
+Securely managing access to your Magic platform's API and web endpoints is critical to protect sensitive data, enforce tenant boundaries, and maintain operational integrity. This guide walks you through best practices and concrete steps to safely expose services, configure network controls, and implement robust access permissions across your deployment.
+
+---
+
+## 1. Secure Exposure of API and Web Endpoints
+
+When deploying Magic's backend APIs and web services, ensure that only authorized traffic can reach them. This involves:
+
+- **Firewall Configuration:**
+  - Restrict inbound traffic to only trusted IP ranges.
+  - Use stateful firewall rules to allow legitimate return traffic.
+  - Block all unnecessary ports, exposing only required HTTP/S endpoints.
+
+- **Reverse Proxy Setup:**
+  - Deploy a reverse proxy (e.g., Nginx, HAProxy, Traefik) in front of your APIs.
+  - Handle TLS termination with strong SSL/TLS protocols and ciphers.
+  - Enforce HTTP to HTTPS redirection for all web traffic.
+  - Implement rate limiting and connection throttling to prevent abuse.
+
+- **SSL/TLS Encryption:**
+  - Obtain valid certificates from a trusted CA.
+  - Enable TLS 1.2 or above for secure communications.
+  - Regularly renew and audit certificates.
+
+- **Multi-Tenancy Controls:**
+  - Use distinct API paths or subdomains per tenant to segregate traffic logically.
+  - Enforce tenant isolation via authorization mechanisms.
+
+### Example Reverse Proxy Configuration Snippet (Nginx)
+```nginx
+server {
+    listen 443 ssl;
+    server_name api.magicplatform.com;
+
+    ssl_certificate /etc/ssl/certs/magicplatform.crt;
+    ssl_certificate_key /etc/ssl/private/magicplatform.key;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    location /api/ {
+        proxy_pass http://magic-backend:8080/api/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+<Tip>
+Always enforce HTTPS and strong cipher suites to safeguard data in transit.
+</Tip>
+
+---
+
+## 2. Firewall and Network Security Configuration
+
+Proper firewall rules and network segmentation prevent unauthorized access and lateral movement within your infrastructure.
+
+- **Inbound Rules:**
+  - Permit inbound traffic only on ports necessary for operation (e.g., 443 for HTTPS).
+  - Limit source IP ranges to known client networks or partners.
+
+- **Outbound Rules:**
+  - Restrict outbound connections from servers to only required external services.
+
+- **Environment Segmentation:**
+  - Separate production, staging, and development networks.
+  - Use virtual LANs or cloud network policies to isolate components.
+
+- **RabbitMQ Network Security:**
+  - Ensure that RabbitMQ service ports are accessible only to Magic backend services.
+  - Enable RabbitMQ authentication and TLS-enabled connections.
+
+- **Database Network Access:**
+  - Limit database access to backend application servers.
+  - Avoid exposing database ports publicly.
+  - Use private networking or VPN tunnels between services and database.
+
+<Warning>
+Do not expose RabbitMQ or database ports directly to the internet. Always place them behind restrictive network controls.
+</Warning>
+
+---
+
+## 3. Platform Authentication and Authorization
+
+Magic implements strong authentication methods and permission models to control who can access API and web endpoints.
+
+- **Authentication Methods Supported:**
+  - API Keys passed via headers (`api-key`, `llm-access-token`)
+  - OAuth2 Bearer Tokens in Authorization headers.
+  - HTTP Basic Auth for legacy or integration compatibility.
+  - Token lookup from query parameters or POST bodies when necessary.
+
+- **Token Acquisition and Validation:**
+  - Tokens are issued and cached securely via OpenDev endpoints to support internal and third-party enterprise applications.
+  - Access tokens are validated on each request, rejecting invalid or expired credentials.
+
+- **IP Whitelisting:**
+  - Tokens can be restricted to specific IP address ranges for enhanced security.
+
+- **Multi-Tenancy Permissions:**
+  - Each token is scoped to specific organizations and roles.
+  - API calls validate tenant boundaries to prevent cross-organization data leaks.
+
+### Token Extracting Flow
+Magic attempts to retrieve authentication tokens in this order:
+
+1. Check request headers such as `api-key` or `llm-access-token`.
+2. Parse `Authorization` header for Bearer tokens.
+3. Extract Basic Auth username if present.
+4. Look for `api_key` in query parameters.
+5. Inspect the POST body for token fields.
+
+This flexible approach allows diverse client integrations while maintaining security.
+
+---
+
+## 4. Multi-Tenant Isolation and Permissions
+
+To serve multiple organizations securely on one platform instance, Magic enforces strict separation:
+
+- **Data Isolation:**
+  - APIs reject requests referencing resources outside authorized organizations.
+  - File operations and knowledge base access are scoped to the user's tenant.
+
+- **Permission Models:**
+  - User roles define API operation rights.
+  - Access tokens include metadata to restrict features and quotas.
+
+- **API Endpoint Structure:**
+  - Tenant-specific tokens or credentials control access.
+  - Some APIs may require additional organizational context parameters.
+
+- **Audit and Logging:**
+  - User actions and API calls are logged with tenant identifiers for traceability.
+
+<Tip>
+Review your token and permission policies regularly to ensure compliance with organizational security requirements.
+</Tip>
+
+---
+
+## 5. Practical Tips and Best Practices
+
+- Always place Magic API servers behind a reverse proxy for centralized TLS and rate limiting.
+- Prefer mutual TLS or IP whitelisting for machine-to-machine calls when possible.
+- Rotate API keys and secrets periodically; leverage cache expiration defaults (e.g., access token TTLs).
+- Monitor logs for unauthorized access attempts or anomalies.
+- Use separate keys and permissions for testing and production environments.
+- Validate and sanitize all inputs to API to reduce attack surface.
+
+---
+
+## 6. Troubleshooting Common Network and Access Issues
+
+If you experience access problems or security errors, check:
+
+- Are the firewall rules allowing the required inbound/outbound traffic?
+- Is the SSL certificate valid and correctly applied on the reverse proxy?
+- Is the token properly sent in request headers or query data?
+- Are IP whitelisting rules blocking your client IP?
+- Does the token support the requested organization or API scope?
+- Are backend caches in sync with token issuers?
+
+<Tip>
+Use tools like `curl -v`, `openssl s_client`, and API logging to diagnose network and token issues.
+</Tip>
+
+---
+
+## Appendix: Key Endpoint Authentication Excerpts
+
+The platform supports flexible token acquisition in these ways, as implemented internally:
+
+```php
+protected function getAccessToken(): string
+{
+    // Tries headers 'api-key', 'llm-access-token'
+    $token = $this->getTokenFromHeaders(['api-key', 'llm-access-token']);
+    if (!empty($token)) return $token;
+
+    // Checks Authorization Bearer token
+    $token = $this->getTokenFromBearerAuth();
+    if (!empty($token)) return $token;
+
+    // Checks HTTP Basic Auth
+    $token = $this->getTokenFromBasicAuth();
+    if (!empty($token)) return $token;
+
+    // Query param check
+    $apiKey = $this->request->query('api_key');
+    if (!empty($apiKey)) return $apiKey;
+
+    // POST body key check
+    $parsedBody = $this->request->getParsedBody();
+    if (is_array($parsedBody) && isset($parsedBody['api_key'])) {
+        return $parsedBody['api_key'];
+    }
+
+    // Fallback empty
+    return '';
+}
+```
+
+This method ensures comprehensive compatibility with various clients and standards.
+
+---
+
+## References & Further Reading
+
+- [Authentication & Authorization API Reference](/api-reference/auth-rate-limits/api-authentication)
+- [Multi-Organization and Tenant Isolation Guide](/security/authentication-and-access/multi-organization-and-tenant-isolation)
+- [Secure Deployment Best Practices](/guides/best-practices-optimization/secure-deployment)
+- [Runtime Hardening & Secrets Management](/deployment/security-hardening-and-compliance/runtime-hardening-and-secrets-management)
+- [Third-Party Messaging Integration Setup](/guides/advanced-customization-integration/third-party-messaging-integration)
+- [Easy DingTalk SDK GitHub Repository](https://github.com/dtyq/magic)
+
+
+---
+
+Maintaining strong network exposure controls and enforcing robust access permissions are foundational to securing your Magic deployment in multi-tenant enterprise scenarios. Use this guide as your baseline and adapt controls to your organizational policies and threat model.

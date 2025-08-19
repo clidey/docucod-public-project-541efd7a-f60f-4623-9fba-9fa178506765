@@ -1,0 +1,213 @@
+---
+title: "Troubleshooting Common Errors"
+description: "Explains strategies for diagnosing and fixing frequent runtime errors across Magic's modules, such as failed API calls, service startup issues, permission problems, or missing dependencies."
+---
+
+# Troubleshooting Common Errors
+
+This page guides you through diagnosing and resolving common runtime errors encountered across Magic's core modules, including failed API calls, service startup problems, permission denials, and missing dependencies. Whether you're running Magic locally or managing a large-scale deployment, this documentation equips you with practical strategies, examples, and best practices to efficiently restore functionality and continue delivering AI-powered workflows.
+
+---
+
+## 1. Understanding Common Error Scenarios
+
+Magic's modular architecture means errors can originate from various sources such as internal business logic, network communication failures, permission constraints, or external dependencies like third-party APIs. Recognizing the context around an error is the first step to successful troubleshooting.
+
+Common error categories include:
+
+- **API Call Failures**: Errors during requests to internal or external APIs (e.g., OpenAI proxy failures)
+- **Service Startup Issues**: Problems during service initialization, such as configuration errors or missing environment variables
+- **Permission and Authentication Problems**: Access denied errors due to invalid credentials, expired tokens, or insufficient roles
+- **Missing or Invalid Parameters**: Requests failing due to invalid data inputs or incorrect API usage
+- **Dependency and Integration Faults**: Failures in connecting or authenticating with platforms like DingTalk, WeCom, or cloud storage
+
+---
+
+## 2. Diagnosing Runtime Errors
+
+### Step-by-Step Diagnostic Workflow
+
+<Steps>
+<Step title="Observe the Error Message and Context">
+Collect all relevant error information including messages, codes, timestamps, and request IDs for accurate analysis.
+</Step>
+<Step title="Check Service Logs">
+Inspect logs for detailed stack traces and error reports. Magic uses structured logging for exception tracking; look for entries from handlers such as `BusinessExceptionHandler` or `OpenAIProxyExceptionHandler`.
+</Step>
+<Step title="Identify Exception Types">
+Understand the exception class involved (e.g., BusinessException, EventException) to narrow down the error origin and handling.
+</Step>
+<Step title="Review Configuration and Dependencies">
+Ensure environment variables and third-party credentials are correctly set, focusing on API keys, URLs, and permissions.
+</Step>
+<Step title="Reproduce the Error in a Test Environment">
+If possible, replicate the scenario with controlled inputs to observe consistent failure modes.
+</Step>
+<Step title="Consult Error Code Reference and Documentation">
+Use Magic’s error codes and exception mapping to find precise meanings and suggested remedies.
+</Step>
+<Step title="Apply Solutions and Verify Fixes">
+Follow remediation steps and confirm resolution through testing and monitoring.
+</Step>
+</Steps>
+
+<Tip>
+Always gather complete error details including previous exceptions and context. Magic's exception handling layers often encapsulate a root cause that is crucial for effective troubleshooting.
+</Tip>
+
+---
+
+## 3. Common Error Types and How to Fix Them
+
+### 3.1 API Call Failures
+
+**Symptoms:** Unexpected 4xx or 5xx HTTP responses, timeouts, or error messages referencing proxy or network issues.
+
+**Typical Causes:**
+- Invalid API token or expired credentials
+- Network connectivity issues
+- Rate limiting or quota exceeded
+- Misconfigured API endpoints
+
+**Resolution Steps:**
+- Verify API tokens and renew if expired.
+- Check network connectivity and firewall rules.
+- Inspect API limits in your provider dashboard.
+- Confirm API endpoint URLs in environment configurations.
+
+<Note>
+Magic’s `OpenAIProxyExceptionHandler` provides sanitized error messages removing sensitive URLs, ensuring logs are secure while preserving troubleshooting information.
+</Note>
+
+### 3.2 Service Startup Issues
+
+**Symptoms:** Services fail to launch or crash immediately after startup.
+
+**Typical Causes:**
+- Missing or incorrect environment variables
+- Port conflicts
+- Required dependencies or extensions not installed
+
+**Resolution Steps:**
+- Validate `.env` configuration with required keys and values.
+- Ensure no other process occupies required ports.
+- Confirm dependency installation per System Requirements.
+- Review startup logs for explicit errors and tracebacks.
+
+<Tip>
+Follow the [Installation Guide](/getting-started/prerequisites-installation/installation-guide) and [System Requirements](/getting-started/prerequisites-installation/system-requirements) closely.
+</Tip>
+
+### 3.3 Permission and Authentication Problems
+
+**Symptoms:** Access denied messages, HTTP 401/403 responses, or errors about unauthorized calls.
+
+**Typical Causes:**
+- Expired user session or API tokens
+- Incorrect roles or permissions assigned
+- Misconfigured authentication providers
+
+**Resolution Steps:**
+- Refresh login tokens or API keys via authentication flow.
+- Review user roles and access policies.
+- Check synchronization with external identity providers (e.g., DingTalk).
+
+<Note>
+Refer to the [Authentication Methods](/security/authentication-and-access/authentication-methods) and [Access Control](/security/authentication-and-access/access-control-and-authorization) guides for comprehensive security management.
+</Note>
+
+### 3.4 Missing or Invalid Parameters
+
+**Symptoms:** API calls returning errors stating invalid or missing parameters, often with specific field names.
+
+**Typical Causes:**
+- Incorrect request payload structure
+- Missing required parameters
+- Invalid parameter values (e.g., wrong data types or value ranges)
+
+**Resolution Steps:**
+- Verify request payload formats against API documentation.
+- Use validation error messages to identify missing fields.
+- Test calls with minimal valid data before expanding.
+
+<Tip>
+Magic validates key parameters strictly. Use the [Error Handling & Status Codes](/api-reference/errors-tools-sdks/error-handling-status-codes) page to understand error codes and resolve accordingly.
+</Tip>
+
+### 3.5 Dependency and Integration Faults
+
+**Symptoms:** Failure to connect or authenticate with third-party services such as DingTalk or cloud storage.
+
+**Typical Causes:**
+- Incorrect API credentials
+- Network restrictions blocking outbound connections
+- API version incompatibilities
+
+**Resolution Steps:**
+- Validate and rotate API keys and secrets.
+- Ensure firewall allows outbound traffic on required ports.
+- Check for version upgrade notes and adapt accordingly.
+
+<Note>
+Consult the [Third-Party Messaging Integration](/guides/advanced-customization-integration/third-party-messaging-integration) and [Storage Configuration](/deployment/advanced-environment-configuration/storage-and-file-driver-configuration) guides.
+</Note>
+
+---
+
+## 4. Handling Specific Exception Classes
+
+Magic’s runtime uses distinct exception classes and handlers to provide meaningful error responses and logs:
+
+| Exception Class                | Description                                               | Handling Behavior                                         |
+|-------------------------------|-----------------------------------------------------------|-----------------------------------------------------------|
+| `BusinessException`            | Represents business logic errors such as validation fail | Returns JSON with code and message, logs details           |
+| `EventException`               | Errors from event processing components                    | Logs detailed event info and responds gracefully           |
+| `OCRException`                | Specific OCR processing errors                             | Custom message handling, typically logged and propagated    |
+| `SystemException` (DingTalk)  | General system errors within Easy DingTalk integration    | Defaults to system error responses with logs               |
+| `InvalidParameterException`   | Input validation failures                                  | Returns clear error for invalid client parameters           |
+
+<Tip>
+For developers building custom plugins or tools, ensure exceptions thrown inherit properly to trigger expected handling flows.
+</Tip>
+
+---
+
+## 5. Troubleshooting Tips and Best Practices
+
+- **Enable Verbose Logging Temporarily:** Increase log verbosity in configuration to capture full stack traces when diagnosing complex issues.
+- **Use Request IDs:** Magic attaches unique request IDs in errors and logs to trace incidents through distributed components.
+- **Validate Environment Regularly:** Confirm environment variables and external credentials are intact to preempt runtime errors.
+- **Avoid Catch-All Exception Suppression:** Allow exceptions to propagate to centralized handlers where structured logging and response formatting occur.
+- **Maintain Dependencies Updated:** Keep Magic components and third-party SDKs in sync with supported versions as indicated in compatibility matrices.
+- **Test in Isolation:** Reproduce issues in minimal environments or sandbox setups before broad deployments.
+
+---
+
+## 6. Additional Resources
+
+- [API Error Handling & Status Codes](/api-reference/errors-tools-sdks/error-handling-status-codes)
+- [Getting Help & Support](/getting-started/validation-troubleshooting/resources-and-support)
+- [SDK Error Handling & Debugging](/sdks/troubleshooting-bestpractices/error-handling-debugging)
+- [Third-Party Messaging Integration](/guides/advanced-customization-integration/third-party-messaging-integration)
+- [Installation & Common Setup Issues](/getting-started/prerequisites-installation/installation-guide)
+
+---
+
+## 7. When to Contact Support
+
+If after following troubleshooting strategies issues persist:
+
+- Collect and prepare detailed logs including error messages, request IDs, environment configuration excerpts, and steps to reproduce.
+- Use official support channels as described in [Where Can I Get Help or Report Issues?](/faq/support-resources/official-support-channels).
+- Include context on deployment mode, SDK versions, and recent changes to speed diagnosis.
+
+<Check>
+Proactive logging and diagnostic preparation accelerate resolution and improve product stability.
+</Check>
+
+---
+
+By following this guidance on diagnosing and fixing runtime errors, you can maintain a robust and reliable Magic environment that empowers your AI workflows and integrations with confidence.
+
+
+---

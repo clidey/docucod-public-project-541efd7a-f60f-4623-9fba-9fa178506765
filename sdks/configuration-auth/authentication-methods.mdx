@@ -1,0 +1,251 @@
+---
+title: "Authentication & Credential Management"
+description: "In-depth guide to Magic's supported authentication schemes—API keys, OAuth, and organization-level tokens. Covers where to obtain credentials, how to securely inject them into SDK clients, and practical patterns for key rotation and multi-environment deployments."
+---
+
+# Authentication & Credential Management
+
+Welcome to the definitive guide on how Magic handles authentication and credential management within its SDKs and API ecosystem. This resource empowers you to securely integrate with Magic using the supported authentication schemes — API keys, OAuth tokens, and organization-level tokens — and provides clear, actionable best practices for maintaining safe, scalable, and flexible authentication setups.
+
+---
+
+## Table of Contents
+- [Introduction to Authentication in Magic](#introduction-to-authentication-in-magic)
+- [Types of Authentication Credentials](#types-of-authentication-credentials)
+  - [API Keys](#api-keys)
+  - [OAuth 2.0 Tokens](#oauth-20-tokens)
+  - [Organization-Level Tokens](#organization-level-tokens)
+- [Obtaining and Managing Credentials](#obtaining-and-managing-credentials)
+- [Injecting Credentials into SDK Clients](#injecting-credentials-into-sdk-clients)
+- [Best Practices for Security and Key Rotation](#best-practices-for-security-and-key-rotation)
+- [Handling Multiple Environments](#handling-multiple-environments)
+- [Troubleshooting Common Authentication Issues](#troubleshooting-common-authentication-issues)
+
+---
+
+## Introduction to Authentication in Magic
+
+Authentication is the foundation of secure access to Magic’s AI platform services. Whether you’re calling API endpoints, running SDK client commands, or integrating with enterprise messaging platforms via Magic, controlling access protects your data, workflows, and user environments.
+
+Magic supports multiple robust auth schemes to meet diverse enterprise security needs — including static API keys for service-to-service communication, OAuth 2.0 tokens for delegated user authorization, and organization-level tokens that enforce scoped access within multi-tenant deployments.
+
+This guide walks you through the full lifecycle of these credentials: where to obtain them, how to inject them safely into SDK clients, and patterns for proactively managing key rotation and environment diversity.
+
+---
+
+## Types of Authentication Credentials
+
+### API Keys
+
+API keys represent long-lived static credentials that provide direct access to Magic’s platform services. They are primarily used for automated scripted access, backend communication, and integrations with internal tooling.
+
+- **Where to get:** API keys are issued and managed through your administration portal or via API by authorized users.
+- **Usage:** Passed as headers or query parameters in calls to Magic’s API endpoints.
+- **Security:** Must be securely stored and not exposed in client-side applications.
+
+### OAuth 2.0 Tokens
+
+OAuth tokens enable delegated authorization, allowing end users to grant limited access to their resources without sharing credentials directly.
+
+- **Where to get:** Obtained by following Magic's OAuth 2.0 flow, including authorization code exchange.
+- **Usage:** Sent as Bearer tokens in the Authorization header for API requests.
+- **Scope:** Supports fine-grained permissions based on user identities and roles.
+
+### Organization-Level Tokens
+
+In multi-organization deployments, organization-level tokens provide scoped authentication that associates API calls with specific tenant contexts.
+
+- **Where to get:** Generated and rotated by organization administrators.
+- **Usage:** Includes organization identifiers alongside tokens to enforce multi-tenant isolation.
+- **Security:** Critical to prevent cross-tenant data access.
+
+---
+
+## Obtaining and Managing Credentials
+
+### API Keys
+
+1. **Generate your API key** from the Magic portal or authorized API endpoint.
+2. **Store the key securely**, using environment variables or secret management tools.
+3. **Limit the scope and permissions** of your API keys where possible.
+4. **Revoke and regenerate keys** periodically or if you suspect a compromise.
+
+### OAuth Tokens
+
+1. **Initiate OAuth authorization** by redirecting the user to the Magic OAuth endpoint.
+2. **After consent, exchange the authorization code** for an access token.
+3. **Securely store the token** for the session duration.
+4. **Refresh tokens as per OAuth protocol** to maintain session without re-authentication.
+
+### Organization Tokens
+
+1. **Request tokens via organization management APIs** or admin UI.
+2. **Associate tokens with the relevant organization scope.**
+3. **Distribute tokens to services interacting with that organization.**
+4. **Rotate tokens regularly** to mitigate exposure risk.
+
+---
+
+## Injecting Credentials into SDK Clients
+
+Magic’s SDKs across supported languages (PHP, TypeScript, Python) are built to accept authentication credentials seamlessly at client initialization or request time.
+
+### API Key Injection
+
+When initializing the client, provide your API key as a configuration parameter or set it in environment variables:
+
+```typescript
+const client = new MagicSDK({ apiKey: process.env.MAGIC_API_KEY });
+```
+
+Alternatively, include the API key in request headers manually:
+
+```python
+headers = {'Authorization': 'Bearer YOUR_API_KEY'}
+response = client.call_api(endpoint, headers=headers)
+```
+
+### OAuth Token Handling
+
+After completing OAuth flows, pass the acquired Bearer token when creating or authenticating clients:
+
+```php
+$client->setAccessToken($oauthAccessToken);
+```
+
+This token will be included automatically in Authorization headers.
+
+### Organization-Level Token Usage
+
+For multi-tenant API calls, embed the organization’s token or code alongside your API keys or OAuth tokens:
+
+```typescript
+const client = new MagicSDK({
+  apiKey: 'YOUR_API_KEY',
+  organizationCode: 'ORG_CODE'
+});
+```
+
+Ensure your API calls explicitly associate with the intended organization.
+
+---
+
+## Best Practices for Security and Key Rotation
+
+- **Never hardcode secrets** in source code or client-side bundles.
+- **Use secure secret management services or environment variables** to store keys and tokens.
+- **Apply the principle of least privilege**: restrict API key scopes and OAuth token permissions.
+- **Rotate keys and tokens periodically**, updating client configurations to use new credentials smoothly.
+- **Monitor usage** to detect unauthorized access or anomalies.
+- **Implement rate limiting and alerting** for suspicious authentication activity.
+
+---
+
+## Handling Multiple Environments
+
+Managing credentials across development, staging, and production environments can complicate authentication.
+
+- Maintain distinct API keys or tokens for each environment.
+- Leverage `.env` files or configuration management to segregate credentials safely.
+- Use environment-specific initialization in your SDK clients:
+
+```python
+# Load environment-specific keys
+api_key = os.getenv('MAGIC_API_KEY_' + ENVIRONMENT.upper())
+client = MagicSDK(api_key=api_key)
+```
+
+- Automate deployment scripts to inject correct credentials per environment.
+- Document your credential management strategy clearly for your team.
+
+---
+
+## Troubleshooting Common Authentication Issues
+
+### Missing Credentials or Tokens
+- Ensure the credential is included in API requests via headers or query params.
+- Verify environment variables are loaded correctly in runtime environments.
+
+### Invalid or Expired Tokens
+- Confirm the token’s validity and refresh or regenerate as needed.
+- Check for correct OAuth token lifecycles and refresh implementations.
+
+### Insufficient Permissions
+- Review the permissions granted to API keys or OAuth tokens.
+- Confirm organization scope matches when using multi-tenant tokens.
+
+### Multiple Bearer Prefixes in Headers
+- Magic’s SDKs handle multiple 'Bearer' prefixes (e.g., 'Bearer Bearer <token>') by stripping redundantly.
+- Verify your clients are passing clean authorization headers.
+
+### Error Responses
+- Check the API response error codes for authentication failures.
+- Use [Error Handling & Status Codes](/api-reference/errors-tools-sdks/error-handling-status-codes) guide for resolving specific issues.
+
+---
+
+## Code Examples: Extracting Tokens in Magic SDK APIs
+
+Here is a consolidated example (derived from Magic’s PHP SDK base) illustrating how tokens are extracted from various request sources, demonstrating the flexibility and fallback logic:
+
+```php
+protected function getAccessToken(): string
+{
+    // Check common token headers in order
+    $headers = ['api-key', 'llm-access-token'];
+    foreach ($headers as $header) {
+        if (!empty($this->request->getHeader($header))) {
+            return $this->request->getHeader($header)[0];
+        }
+    }
+
+    // Check Bearer token
+    if (!empty($this->request->getHeader('authorization'))) {
+        $authHeader = $this->request->getHeader('authorization')[0];
+        if (str_starts_with(strtolower($authHeader), 'bearer ')) {
+            return substr($authHeader, 7);
+        }
+    }
+
+    // Check HTTP Basic Auth
+    if (!empty($this->request->getHeader('php-auth-user'))) {
+        return $this->request->getHeader('php-auth-user')[0];
+    }
+
+    // Check API key as query parameter
+    $apiKey = $this->request->query('api_key');
+    if (!empty($apiKey)) {
+        return $apiKey;
+    }
+
+    // Check API key in request body
+    $body = $this->request->getParsedBody();
+    if (is_array($body) && isset($body['api_key'])) {
+        return $body['api_key'];
+    }
+
+    return '';
+}
+```
+
+This approach ensures maximum compatibility across client environments and the diverse ways API consumers may supply credentials.
+
+---
+
+## Further Resources
+
+- Authentication & Authorization API Reference: [/api-reference/auth-rate-limits/api-authentication](https://docs.magic.com/api-reference/auth-rate-limits/api-authentication)
+- SDK Usage & Code Samples: [/api-reference/errors-tools-sdks/sdk-usage-examples](https://docs.magic.com/api-reference/errors-tools-sdks/sdk-usage-examples)
+- Error Handling & Status Codes: [/api-reference/errors-tools-sdks/error-handling-status-codes](https://docs.magic.com/api-reference/errors-tools-sdks/error-handling-status-codes)
+- Best Practices Guide for Secure Deployment: [/guides/best-practices-optimization/secure-deployment](https://docs.magic.com/guides/best-practices-optimization/secure-deployment)
+- Environment Variables and Configuration Management: [/getting-started/configuration-initial-setup/environment-variables](https://docs.magic.com/getting-started/configuration-initial-setup/environment-variables)
+
+---
+
+## Summary
+
+Securing your integration with Magic’s platform means understanding and managing API keys, OAuth tokens, and organization-level authentication effectively. By following this guide, you will be able to safely obtain credentials, inject them into your SDK clients, handle multiple environment scenarios, and apply best practices for key rotation and troubleshooting.
+
+Always prioritize secret management and validate tokens dynamically to maintain secure, performant, and compliant implementations.
+
+---

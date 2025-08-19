@@ -1,0 +1,235 @@
+---
+title: "Scaling & High Availability"
+description: "Guides users through horizontal and vertical scaling strategies—setting up multiple service nodes, using load balancers, and managing distributed cache or state persistence. Addresses Docker Compose service scaling and best practices for cloud or bare-metal deployments."
+---
+
+# Scaling & High Availability
+
+This guide empowers you to effectively scale Magic’s platform services horizontally and vertically, ensuring high availability and robust performance for production workloads. You will learn strategies to deploy multiple service nodes, configure load balancers, maintain consistent cache or state persistence, and utilize Docker Compose for scalable local or cloud deployments.
+
+---
+
+## 1. Understanding Scaling in Magic
+
+Magic is designed with scalability and high availability in mind. To accommodate growing workloads and enterprise demands, you’ll implement two primary scaling strategies:
+
+- **Horizontal Scaling**: Adding more service nodes or instances to distribute workload.
+- **Vertical Scaling**: Increasing resources (CPU, memory) on a single service node.
+
+Both strategies involve considerations for state management, network routing, and system resilience to avoid downtime and bottlenecks.
+
+<Tip>
+Horizontal scaling is the recommended approach for most Magic deployments to achieve fault tolerance and load distribution.
+</Tip>
+
+---
+
+## 2. Preparing for Scaling
+
+Before extending your deployment, ensure the following prerequisites:
+
+- **Stateless Service Architecture**: Magic’s core services are stateless, supporting seamless horizontal scaling without session affinity.
+- **Shared State Management**: For features requiring state persistence (e.g., cache, distributed locks), configure shared solutions like Redis or compatible stores.
+- **Network & Security Setup**: Confirm network access, firewall rules, and security groups allow communication among nodes and load balancers.
+
+<Check>
+Review the [System Requirements & Preparation](https://docs.magic.com/deployment/getting-started-deployment/system-requirements-and-preparation) guide to verify infrastructure readiness.
+</Check>
+
+---
+
+## 3. Horizontal Scaling Strategies
+
+### 3.1 Deploy Multiple Service Nodes
+
+Deploy Magic service instances across multiple machines or containers. Each node runs identical service components configured consistently.
+
+- Ensure environment variables and configuration files are synchronized across instances.
+- Use container orchestration tools or cloud VM autoscaling to dynamically provision nodes.
+
+### 3.2 Load Balancer Configuration
+
+Place a load balancer (e.g., nginx, HAProxy, or cloud provider load balancer) in front of your service nodes to:
+
+- Distribute incoming requests evenly across nodes.
+- Detect unhealthy nodes and route traffic away from them.
+- Optionally enable SSL termination and HTTP routing.
+
+#### Example NGINX Load Balancer Snippet
+```nginx
+upstream magic_nodes {
+  server magic-node1.example.com:8080;
+  server magic-node2.example.com:8080;
+  server magic-node3.example.com:8080;
+}
+
+server {
+  listen 80;
+  location / {
+    proxy_pass http://magic_nodes;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+}
+```
+
+<Tip>
+Configure health checks on your load balancer to ensure traffic is only routed to responsive, healthy nodes.
+</Tip>
+
+### 3.3 Managing Distributed State
+
+Some Magic components rely on shared cache or persistent state:
+
+- Use distributed cache stores such as Redis or Memcached for session-like data or transient state.
+- Ensure all service nodes connect to the same cache cluster for consistency.
+- Avoid local in-memory caches that are isolated per node.
+
+---
+
+## 4. Vertical Scaling Guidelines
+
+If horizontal scaling is limited by infrastructure constraints, vertical scaling can be used:
+
+- Increase CPU, RAM, and disk resources on your existing Magic server to handle higher workload.
+- Monitor system resource utilization to avoid bottlenecks.
+- Combine vertical scaling with horizontal scaling when possible for optimal resilience.
+
+<Note>
+Vertical scaling is straightforward but can face limits based on hardware capacity and single points of failure.
+</Note>
+
+---
+
+## 5. Scaling with Docker Compose
+
+Magic supports containerized deployments via Docker Compose, facilitating easy scaling in local and bare-metal environments.
+
+### 5.1 Scaling Service Containers
+
+Use Docker Compose’s scaling features to run multiple instances of Magic services:
+
+```bash
+docker-compose up -d --scale magic-service=3
+```
+
+This command starts three replicas of `magic-service`, distributing load if combined with a load balancer.
+
+### 5.2 Compose File Considerations
+
+- Define services with ports and volumes appropriately to avoid conflicts.
+- Use environment variables for consistent configurations across replicas.
+- Enable shared cache services (e.g., Redis) as a separate service in your Compose file.
+
+### 5.3 Example Segment from `docker-compose.yml`
+```yaml
+services:
+  magic-service:
+    image: magic/latest
+    ports:
+      - "8080"
+    environment:
+      - MAGIC_ENV=production
+      - CACHE_HOST=redis
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+```
+
+<Tip>
+Pair Docker Compose scaling with a reverse proxy or load balancer configured outside the containers (or in a container) to handle request distribution.
+</Tip>
+
+---
+
+## 6. Best Practices for Cloud and Bare-Metal Deployments
+
+### 6.1 Cloud Platforms
+
+- Leverage cloud-native load balancers (e.g., AWS ELB, Azure Load Balancer) to distribute traffic.
+- Use managed Redis or caching services for high availability and resilience.
+- Automate scaling with cloud auto-scaling groups or Kubernetes clusters.
+
+### 6.2 Bare-Metal Deployments
+
+- Use dedicated hardware load balancers like HAProxy or NGINX.
+- Set up reliable shared cache services with redundancy to avoid single points of failure.
+- Regularly monitor hardware metrics to preemptively scale or upgrade resources.
+
+### 6.3 Security & Network Considerations
+
+- Ensure secure communication between load balancers and service nodes (TLS, network policies).
+- Restrict exposure of service nodes to trusted networks only.
+
+---
+
+## 7. Monitoring and Health Checks
+
+Consistent monitoring is critical to sustaining high availability:
+
+- Monitor node health, response times, memory and CPU usage.
+- Configure alerts for node failures or abnormal load patterns.
+- Regularly validate load balancer settings and cache connection health.
+
+See [Monitoring & Logging Overview](https://docs.magic.com/deployment/scaling-monitoring-and-resilience/monitoring-and-logging-overview) for detailed setup.
+
+---
+
+## 8. Troubleshooting Common Scaling Issues
+
+<AccordionGroup title="Common Scaling Troubleshooting">
+<Accordion title="Load Balancer Not Distributing Requests Properly">
+- Verify load balancer configuration and upstream nodes' health.
+- Check for sticky sessions if stateless operation is expected.
+- Confirm network connectivity between load balancer and nodes.
+</Accordion>
+<Accordion title="Cache Inconsistencies Across Nodes">
+- Ensure all nodes use the same cache endpoint and credentials.
+- Check for local caches that may cause stale data.
+- Restart cache cluster nodes and verify replication settings.
+</Accordion>
+<Accordion title="Docker Compose Scaling Conflicts">
+- Verify port conflicts among scaled containers.
+- Check environment variable consistency.
+- Use updated images and clear old container states.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 9. Summary Workflow
+
+<Steps>
+<Step title="Start with Single Node Deployment">
+Verify your Magic instance runs correctly with full features.
+</Step>
+<Step title="Set Up Shared State Services">
+Deploy Redis or equivalent cache service accessible by all nodes.
+</Step>
+<Step title="Deploy Multiple Instances">
+Run additional Magic service nodes with matching configs.
+</Step>
+<Step title="Configure Load Balancer">
+Deploy and set up load balancer to distribute traffic.
+</Step>
+<Step title="Test and Monitor">
+Verify load distribution, perform failover tests and monitor metrics.
+</Step>
+</Steps>
+
+---
+
+By following these comprehensive scaling and high availability strategies, you will ensure Magic delivers reliable, performant AI productivity at any scale.
+
+For detailed prerequisites, initial deployments, and environment configurations, see:
+
+- [System Requirements & Preparation](https://docs.magic.com/deployment/getting-started-deployment/system-requirements-and-preparation)
+- [Quick Deployment with Docker](https://docs.magic.com/deployment/getting-started-deployment/quick-deployment-with-docker)
+- [Configuring Environment Variables](https://docs.magic.com/deployment/advanced-environment-configuration/configuring-environment-variables)
+
+---

@@ -1,0 +1,251 @@
+---
+title: "Quickstart: From First Call to Hello World"
+description: "Concise, language-specific code samples showing the entire journey from SDK initialization to your first successful call—chatbot reply, file upload, or data orchestration. Designed for immediate copy-paste into your project, these examples eradicate any doubt about how to begin real development."
+---
+
+# Quickstart: From First Call to Hello World
+
+Welcome to the definitive quickstart guide designed to get you coding immediately with the Easy DingTalk SDK in PHP. This page offers concise, ready-to-use, language-specific code samples that demonstrate the entire journey—from initializing the SDK to making your very first successful API call, whether it's sending a chatbot reply, uploading files, or orchestrating data flows. Our clear examples eliminate guesswork, empowering you to integrate the Magic platform seamlessly into your project.
+
+---
+
+## 1. Installing the Easy DingTalk SDK
+
+Before diving into code, you'll need to install the Easy DingTalk SDK. It supports PHP 8.1+ and integrates smoothly with popular frameworks.
+
+```bash
+composer require dtyq/easy-dingtalk -vvv
+```
+
+This one command fetches the latest stable version directly from Packagist and prepares your environment.
+
+<Check>
+Confirm you have PHP 8.1 or higher installed before proceeding.
+</Check>
+
+---
+
+## 2. Initializing the SDK Client
+
+Initialization is straightforward and flexible. You provide your DingTalk application credentials, and the factory takes care of the rest.
+
+```php
+use Dtyq\EasyDingTalk\OpenDevFactory;
+
+// Application credentials
+$appKey = 'your_app_key';
+$appSecret = 'your_app_secret';
+
+// Instantiate the factory with your app credentials
+$factory = new OpenDevFactory([
+    'default' => [
+        'type' => 'open_dev',
+        'options' => [
+            'app_key' => $appKey,
+            'app_secret' => $appSecret,
+        ],
+    ],
+]);
+
+// Select the default app to start making calls
+$factoryInstance = $factory->getApplication('default');
+```
+
+### Practical Tip
+You can create multiple factory instances to manage different DingTalk applications or environments (e.g., staging vs production).
+
+---
+
+## 3. Authenticating and Obtaining Access Tokens
+
+The SDK automatically manages access tokens behind the scenes, caching tokens securely for reuse and refreshing them when they expire.
+
+Here's how to retrieve your current access token manually if you need it:
+
+```php
+$accessToken = $factoryInstance->accessTokenEndpoint->get();
+echo "Access Token: $accessToken\n";
+```
+
+This step is essential for making authenticated requests.
+
+---
+
+## 4. Sending Your First One-on-One Chat Message
+
+Engage directly with users by sending personalized messages through a chatbot. Here's an example that sends a markdown message to individual users.
+
+```php
+use Dtyq\EasyDingTalk\OpenDev\Parameter\ChatBot\SendOneOnOneChatMessagesParameter;
+
+// Create the parameter object
+$param = new SendOneOnOneChatMessagesParameter($accessToken);
+$param->setRobotCode('your_robot_code_here');
+$param->setUserIds(['user_id_1', 'user_id_2']); // Array of user IDs
+$param->setMsgKey('sampleMarkdown');
+
+// Compose markdown message content
+$msgContent = [
+    'title' => 'Greetings from Easy DingTalk SDK',
+    'text' => '# Hello World\nThis is your first one-on-one chat message using Easy DingTalk.',
+];
+$param->setMsgParam(json_encode($msgContent));
+
+// Send the message
+try {
+    $result = $factoryInstance->chatBotEndpoint->sendOneOnOneChatMessages($param);
+    echo "Message sent successfully. Process Key: " . $result->getProcessQueryKey() . "\n";
+} catch (\Exception $e) {
+    echo "Failed to send message: " . $e->getMessage() . "\n";
+}
+```
+
+<Note>
+Replace `'your_robot_code_here'` with the actual robot code from your DingTalk bot configuration.
+</Note>
+
+---
+
+## 5. Sending a Group Chat Message
+
+Expand any chatbot's reach by messaging entire groups with a simple API call.
+
+```php
+use Dtyq\EasyDingTalk\OpenDev\Parameter\ChatBot\SendGroupMessageParameter;
+
+$groupParam = new SendGroupMessageParameter($accessToken);
+$groupParam->setRobotCode('your_robot_code_here');
+$groupParam->setOpenConversationId('your_open_conversation_id');
+$groupParam->setMsgKey('sampleMarkdown');
+
+$groupMsgContent = [
+    'title' => 'Group Notification',
+    'text' => '# Hello Team\nThis is a group message via Easy DingTalk.',
+];
+$groupParam->setMsgParam(json_encode($groupMsgContent));
+
+try {
+    $groupResult = $factoryInstance->chatBotEndpoint->sendGroupMessage($groupParam);
+    echo "Group message sent successfully. Process Key: " . $groupResult->getProcessQueryKey() . "\n";
+} catch (\Exception $e) {
+    echo "Failed to send group message: " . $e->getMessage() . "\n";
+}
+```
+
+### How to Obtain `openConversationId`
+The conversation ID represents the group conversation identifier and can be obtained from the DingTalk platform or relevant API endpoints managing group chats.
+
+---
+
+## 6. Downloading a File Using the Bot
+
+If your chatbot interacts with files or attachments, downloading them is easy:
+
+```php
+use Dtyq\EasyDingTalk\OpenDev\Parameter\ChatBot\DownloadFileParameter;
+
+$downloadParam = new DownloadFileParameter($accessToken);
+$downloadParam->setRobotCode('your_robot_code_here');
+$downloadParam->setDownloadCode('download_code_from_message_attachment');
+
+try {
+    $downloadResult = $factoryInstance->chatBotEndpoint->downloadFile($downloadParam);
+    echo "File Download URL: " . $downloadResult->getDownloadUrl() . "\n";
+} catch (\Exception $e) {
+    echo "Failed to download file: " . $e->getMessage() . "\n";
+}
+```
+
+Use the `downloadUrl` to fetch the actual file content securely.
+
+---
+
+## 7. Example Full Workflow: From Initialization to Sending a Message
+
+Below is a compact, ready-to-run example demonstrating the minimal flow:
+
+```php
+<?php
+require 'vendor/autoload.php';
+
+use Dtyq\EasyDingTalk\OpenDevFactory;
+use Dtyq\EasyDingTalk\OpenDev\Parameter\ChatBot\SendOneOnOneChatMessagesParameter;
+
+// Step 1: Initialize factory
+$factory = new OpenDevFactory([
+    'default' => [
+        'type' => 'open_dev',
+        'options' => [
+            'app_key' => 'your_app_key',
+            'app_secret' => 'your_app_secret',
+        ],
+    ],
+]);
+
+// Step 2: Get the application instance
+$app = $factory->getApplication('default');
+
+// Step 3: Fetch access token internally managed
+$accessToken = $app->accessTokenEndpoint->get();
+
+// Step 4: Prepare message
+$param = new SendOneOnOneChatMessagesParameter($accessToken);
+$param->setRobotCode('your_robot_code');
+$param->setUserIds(['example_user_id']);
+$param->setMsgKey('sampleMarkdown');
+$param->setMsgParam(json_encode([
+    'title' => 'Quickstart Example',
+    'text' => 'Hello from Easy DingTalk SDK! 🎉'
+]));
+
+// Step 5: Send message
+try {
+    $result = $app->chatBotEndpoint->sendOneOnOneChatMessages($param);
+    echo "Successfully sent message! ProcessQueryKey: " . $result->getProcessQueryKey() . "\n";
+} catch (\Exception $e) {
+    echo "Error sending message: " . $e->getMessage() . "\n";
+}
+```
+
+---
+
+## 8. Best Practices and Troubleshooting
+
+<AccordionGroup title="Tips and Common Pitfalls">
+<Accordion title="Ensure Correct Credentials">
+Always verify your `app_key`, `app_secret`, and `robotCode` are correct and correspond to your registered DingTalk application and bot.
+</Accordion>
+<Accordion title="Handle Exceptions Gracefully">
+Wrap API calls in try-catch blocks to catch and act on errors, such as token expiration or invalid parameters.
+</Accordion>
+<Accordion title="Cache Tokens Appropriately">
+Leverage the SDK's built-in caching; avoid manually requesting tokens too frequently to prevent rate-limiting.
+</Accordion>
+<Accordion title="Valid User and Conversation IDs">
+Double-check user IDs and open conversation IDs to ensure they exist and the bot has permission to message them.
+</Accordion>
+<Accordion title="Response Data Handling">
+Inspect the returned objects like `ProcessQueryKey` to track message delivery status or for debugging purposes.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 9. Next Steps
+
+- Explore the full [SDK Usage & Code Samples](/api-reference/errors-tools-sdks/sdk-usage-examples) for more advanced routines.
+- Understand [Authentication & Credential Management](/sdks/configuration-auth/authentication-methods) to securely manage access.
+- Learn how to integrate with [Third-Party Messaging Platforms](/guides/advanced-customization-integration/third-party-messaging-integration) for broader reach.
+- Dive into [Workflow Automation with Magic Flow](/api-reference/workflow-automation/flow-crud) to extend your bot capabilities with complex workflows.
+
+---
+
+## 10. Additional Resources
+
+- Official GitHub Repository: [Easy DingTalk SDK](https://github.com/dtyq/magic)
+- Installation & Setup Guide: [SDK Installation & Setup](/sdks/getting-started-sdks/sdk-installation-setup)
+- Troubleshooting Guide: [Error Handling & Debugging](/sdks/troubleshooting-bestpractices/error-handling-debugging)
+
+---
+
+Empowered with this quickstart, you're ready to build intelligent DingTalk applications that enhance collaboration and automate messaging effortlessly. Happy coding!

@@ -1,0 +1,249 @@
+---
+title: "Quick Deployment with Docker"
+description: "Walks users through a zero-headache deployment of Magic using Docker and Docker Compose, step by step. Covers commands for foreground/background start, checking logs, stopping/starting services, and removing/redeploying containers. Helps users get the system running reliably with the minimum number of commands."
+---
+
+# Quick Deployment with Docker
+
+Deploying Magic quickly and reliably with Docker simplifies your setup and lets you get started with minimal overhead. This guide walks you through a zero-headache deployment process using Docker and Docker Compose, covering how to launch Magic services in the foreground or background, monitor logs, stop and start containers, and perform clean redeployments. Follow these clear steps to have Magic running effectively with the minimum commands.
+
+---
+
+## Prerequisites
+
+Before deploying Magic with Docker, ensure you have the following installed and configured on your host system:
+
+- **Docker Engine**: Version 20.10 or higher
+- **Docker Compose**: Version 1.29 or higher
+
+Confirm your installation by running:
+
+```bash
+docker --version
+docker-compose --version
+```
+
+If you are new to Docker, refer to official Docker installation guides to set up the environment for your operating system.
+
+<Tip>
+Having Docker and Docker Compose installed and verified ensures all containerized services used by Magic will run smoothly without environment conflicts.
+</Tip>
+
+---
+
+## Step 1: Clone the Magic Repository
+
+Start by cloning the Magic GitHub repository, which contains the Docker Compose files and relevant service definitions.
+
+```bash
+git clone https://github.com/dtyq/magic.git
+git checkout main
+cd magic
+```
+
+This gets the latest stable release and places you at the root directory where deployment commands should be run.
+
+---
+
+## Step 2: Starting Magic with Docker Compose
+
+### Foreground Mode
+
+To run Magic services and watch logs in real-time, start the containers in the foreground:
+
+```bash
+docker-compose up
+```
+
+This command will pull necessary container images (if not already cached), create network resources, and launch all containers defined in `docker-compose.yml`.
+
+Watch the console output until you see logs indicating that services have started successfully.
+
+### Background (Detached) Mode
+
+For production or longer-running environments, run Magic in detached mode so Docker runs containers in the background:
+
+```bash
+docker-compose up -d
+```
+
+You will receive immediate control of your terminal while Magic continues to run.
+
+<Tip>
+Using detached mode lets you continue terminal work uninterrupted while Magic runs. Use `docker-compose logs -f` to follow logs when needed.
+</Tip>
+
+---
+
+## Step 3: Managing the Running Containers
+
+### Checking Logs
+
+To view logs from all Magic containers:
+
+```bash
+docker-compose logs -f
+```
+
+Or specify a particular service:
+
+```bash
+docker-compose logs -f magic-service
+```
+
+### Stopping Services
+
+To gracefully stop all running Magic containers:
+
+```bash
+docker-compose down
+```
+
+This stops and removes all containers, networks, and default volumes created by `docker-compose up`.
+
+### Restarting Services
+
+Either stop and start again:
+
+```bash
+docker-compose down
+docker-compose up -d
+```
+
+Or restart in-place:
+
+```bash
+docker-compose restart
+```
+
+---
+
+## Step 4: Removing and Redeploying Containers
+
+If you want to clean the environment completely (removing containers, volumes, and networks) and redeploy fresh:
+
+```bash
+docker-compose down --volumes --remove-orphans
+```
+
+Then start again:
+
+```bash
+docker-compose up -d
+```
+
+This ensures no leftover data or configuration issues persist from a previous deployment.
+
+<Warning>
+Be cautious when using `--volumes` as it permanently deletes container volumes including databases and persistent storage.
+Make sure to backup important data before proceeding.
+</Warning>
+
+---
+
+## Step 5: Verifying Deployment Success
+
+After the containers are running:
+
+- Access the Magic web UI via `http://localhost:3000` (or configured port)
+- Confirm API endpoints respond
+- Monitor logs for error-free startup messages
+
+Consult the [Verifying and Accessing Your Deployment](/deployment/getting-started-deployment/verifying-and-accessing-services) guide for detailed validation steps.
+
+---
+
+## Practical Tips for Smooth Deployment
+
+- **Consistent Directory**: Always run Docker commands from the root directory containing the `docker-compose.yml` file.
+- **Port Conflicts**: Ensure ports defined in compose files (commonly 3000 for UI) are not occupied by other services.
+- **Environment Variables**: Customize `.env` files to override default configurations as needed.
+- **Image Updates**: Periodically pull the latest images with `docker-compose pull` before redeploying.
+
+---
+
+## Troubleshooting Common Issues
+
+<AccordionGroup title="Common Docker Deployment Issues and Resolutions">
+<Accordion title="Docker Compose Fails to Start Containers">
+- **Cause**: Port conflicts or missing images.
+- **Solution**: Run `docker-compose pull` to fetch images; check port availability with `netstat` or `ss`.
+</Accordion>
+<Accordion title="Cannot Access Web UI After Deployment">
+- **Cause**: Firewall rules or incorrect port mapping.
+- **Solution**: Verify Docker port mapping and open ports in firewall settings.
+</Accordion>
+<Accordion title="Persistent Volume Issues or Data Loss">
+- **Cause**: Incorrect volume mounting or accidental deletion.
+- **Solution**: Review volume mounts in compose file; avoid using `--volumes` without backup.
+</Accordion>
+<Accordion title="Logs Show Service Crashes or Failures">
+- **Cause**: Configuration errors or dependency service failures.
+- **Solution**: Inspect individual container logs; verify environment variables are set properly.
+</Accordion>
+</AccordionGroup>
+
+Refer also to the [Troubleshooting Common Setup Issues](/getting-started/validation-troubleshooting/common-setup-issues) guide for detailed diagnostics.
+
+---
+
+## Next Steps
+
+Once Magic is deployed and running:
+
+- Proceed to [Initial Configuration](/getting-started/configuration-initial-setup/initial-configuration) to set up environment-specific settings.
+- Explore [Creating Your First AI Agent](/guides/getting-started/first-ai-agent) to begin utilizing Magic’s AI capabilities.
+- Review [Scaling & High Availability](/deployment/scaling-monitoring-and-resilience/scaling-and-high-availability) to prepare for production load.
+
+---
+
+## Summary
+
+You have learned to deploy Magic locally using Docker and Docker Compose with commands for:
+
+- Starting services in foreground and background
+- Checking logs continuously
+- Stopping, restarting, and removing containers cleanly
+- Redeploying with volume removal for fresh start
+
+This lightweight deployment method empowers you to run Magic reliably with the simplest possible commands, perfect for development, testing, and evaluation.
+
+---
+
+For source code and detailed Docker configurations, visit Magic's official repository:
+
+[https://github.com/dtyq/magic](https://github.com/dtyq/magic)
+
+---
+
+### Example Commands Summary
+
+```bash
+# Clone repository
+ git clone https://github.com/dtyq/magic.git && cd magic
+
+# Start in foreground
+ docker-compose up
+
+# Start in detached mode
+ docker-compose up -d
+
+# View logs
+ docker-compose logs -f
+
+# Stop and remove containers
+ docker-compose down
+
+# Clean remove with volumes
+ docker-compose down --volumes --remove-orphans
+
+# Redeploy
+ docker-compose up -d
+
+# Restart services
+ docker-compose restart
+```
+
+---
+
+Happy Magic deployment!

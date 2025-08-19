@@ -1,0 +1,203 @@
+---
+title: "Verifying and Accessing Your Deployment"
+description: "Explains how to validate a successful deployment, with practical steps to check service status, access the web UI, API, and essential management consoles. Describes how to use sample accounts for the first login and basic troubleshooting for initial access and connectivity."
+---
+
+# Verifying and Accessing Your Deployment
+
+After completing your Magic platform deployment, this guide helps you confidently verify that your installation is successful and access the core services needed to start working immediately. We walk you through practical steps to check service status, connect to the web interface and API endpoints, use sample accounts for initial login, and troubleshoot common startup and connectivity issues.
+
+---
+
+## 1. Confirming Service Status
+
+Perform these checks to ensure that all core components of Magic are running and responsive.
+
+### 1.1 Verify Core Service Endpoints
+
+- **Health Check URLs:** Confirm that Magic services are listening on their expected ports and responding to HTTP requests.
+
+  - Web UI: `http://<your-server>:<port>/`
+  - API Endpoint: `http://<your-server>:<port>/api/health`
+
+Use tools like `curl`, Postman, or your browser to confirm HTTP 200 OK responses.
+
+```bash
+curl -I http://localhost:8080
+```
+
+### 1.2 Inspect Running Containers or Services
+
+- If you deployed via Docker, run:
+
+```bash
+docker ps
+```
+
+Verify that all Magic service containers are up and healthy.
+
+### 1.3 Check Message Queue Status
+
+- Magic uses RabbitMQ for messaging.
+- Use the RabbitMQ management console (if enabled) or CLI to check the queue status.
+
+```bash
+docker exec -it rabbitmq rabbitmqctl status
+```
+
+Look for running nodes with no critical warnings.
+
+## 2. Accessing the Web UI
+
+The Magic Web Interface is your central hub for managing workflows, AI agents, and collaboration.
+
+### 2.1 Open Your Browser
+
+Navigate to the URL where Magic is hosted, for example:
+
+```
+http://<your-server>:8080
+```
+
+### 2.2 Using Sample Accounts
+
+- Use the default sample credentials provided during installation to log in.
+
+  - Username: `admin`
+  - Password: `admin123` (or as configured)
+
+### 2.3 What to Expect Upon First Login
+
+- Dashboard overview
+- Access to Magic Flow, AI Agent management, and configuration panels
+
+<Tip>
+Change default passwords immediately after first login to secure your deployment.
+</Tip>
+
+## 3. API Access and Testing
+
+The Magic API allows programmatic interaction with workflows, messaging, and knowledge management.
+
+### 3.1 API Base URL
+
+Use the API base URL configured for your deployment, e.g.,
+
+```
+http://<your-server>:8080/api/
+```
+
+### 3.2 Using SDK or Direct API Calls
+
+- Authenticate with appropriate API keys or tokens as per your setup.
+- Perform a simple API call to confirm connectivity:
+
+```bash
+curl -X GET "http://<your-server>:8080/api/status" \
+  -H "Authorization: Bearer <your_token>"
+```
+
+A successful response indicates the API service is reachable and working.
+
+### 3.3 Authentication Information
+
+- Consult the [Authentication & Authorization](../../api-reference/auth-rate-limits/api-authentication) guide for detailed steps on obtaining and using API tokens.
+
+## 4. Management Consoles and Monitoring
+
+If you have set up monitoring and management tools, verify accessibility.
+
+### 4.1 RabbitMQ Management UI
+
+Accessible at:
+
+```
+http://<your-server>:15672
+```
+
+Default credentials are usually `guest` / `guest` unless changed.
+
+### 4.2 Logs and Metrics
+
+- Review logs for core services and containers to identify any issues.
+
+```bash
+docker logs <container_name>
+```
+
+- Check monitoring dashboards if configured (e.g. Prometheus, Grafana).
+
+## 5. Basic Troubleshooting
+
+If you encounter problems accessing services or logging in, follow these steps:
+
+### 5.1 Connectivity Issues
+
+- Confirm network settings allow inbound connections on required ports.
+- Ensure firewalls are not blocking access.
+
+### 5.2 Service Not Responding
+
+- Validate that all containers or services are running.
+- Restart failed containers or services using Docker commands or system manager.
+
+```bash
+docker restart <container_name>
+```
+
+### 5.3 Authentication Failures
+
+- Verify you are using correct default credentials.
+- Check configuration files to confirm authentication settings.
+- Reset passwords if necessary following the [Initial Configuration](../../getting-started/configuration-initial-setup/initial-configuration) guide.
+
+### 5.4 Error Logs
+
+- Inspect error logs for clues, focusing on recent entries.
+
+<Tip>
+Keep detailed notes of any error messages to assist support or community troubleshooting.
+</Tip>
+
+## 6. Next Steps After Verification
+
+- Proceed to configure your Magic environment by reviewing the [Environment Variables](../advanced-environment-configuration/configuring-environment-variables) page.
+- Begin creating your first AI agent with the [First AI Agent](../../guides/getting-started/first-ai-agent) walkthrough.
+- Explore workflow automation with [Building Visual AI Workflows](../../guides/getting-started/workflow-orchestration).
+
+---
+
+## Appendix: Quick Validation Checklist
+
+| Checkpoint                       | Method               | Expected Outcome               |
+|---------------------------------|----------------------|-------------------------------|
+| Service endpoint response       | `curl` or browser    | HTTP 200 OK or valid response |
+| Running containers              | `docker ps`          | All Magic containers running  |
+| Web UI access                  | Browser URL          | Login screen loads             |
+| API status call                | `curl` with token    | Valid status JSON response     |
+| RabbitMQ accessible            | Browser or CLI       | Management page or status OK   |
+
+---
+
+By following this guide, you ensure your Magic deployment is correctly set up and that you can access all vital services to begin leveraging the platform's capabilities immediately.
+
+
+---
+
+# Additional References
+
+- [Installation Guide](/getting-started/prerequisites-installation/installation-guide)
+- [First Start & Accessing Magic](/getting-started/configuration-initial-setup/first-start-and-login)
+- [Troubleshooting Common Setup Issues](/getting-started/validation-troubleshooting/common-setup-issues)
+- [Authentication & Authorization API Reference](/api-reference/auth-rate-limits/api-authentication)
+- [Scaling & High Availability](/deployment/scaling-monitoring-and-resilience/scaling-and-high-availability)
+- [Monitoring & Logging Overview](/deployment/scaling-monitoring-and-resilience/monitoring-and-logging-overview)
+
+
+---
+
+# Contact and Support
+
+For further assistance, consult the community forums or official support channels outlined in [Getting Help & Additional Resources](/getting-started/validation-troubleshooting/resources-and-support).
+
+---

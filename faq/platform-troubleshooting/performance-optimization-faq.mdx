@@ -1,0 +1,189 @@
+---
+title: "Performance & Scalability Tips"
+description: "Provides actionable tips for improving platform responsiveness and scaling, including configuration suggestions, container resource limits, and optimizing for high-concurrency scenarios."
+---
+
+# Performance & Scalability Tips
+
+This document provides practical and actionable guidance for enhancing the responsiveness and scaling capabilities of the Magic platform. It covers configuration recommendations, container resource management, and strategies for high-concurrency optimization. If you're aiming to maintain a smooth user experience and anticipate growth in load or data volume, this guide offers a structured approach to achieving scalable performance.
+
+---
+
+## 1. Understanding Performance Goals
+
+Performance improvements in Magic focus on reducing response latency, maximizing throughput, and maintaining stability under load. Scalability ensures your deployment can grow horizontally or vertically to accommodate increased concurrency and data volumes.
+
+### Key Objectives:
+
+- Optimize service responsiveness (low latency)
+- Efficient utilization of container and system resources
+- Support high concurrency scenarios reliably
+- Prevent bottlenecks in critical components
+
+---
+
+## 2. Container and Resource Configuration
+
+Magic components run in containerized environments like Docker. Properly setting resource limits and requests is critical to prevent resource contention and ensure predictable performance.
+
+### Recommended Settings:
+
+- **CPU and Memory Limits:** Define limits based on expected workload. For example, allocate sufficient CPU shares and memory to key services such as Super Magic, Magic Flow, and Magic IM.
+- **Timeout Settings:** Use API timeout defaults (e.g., 5 seconds in SDK client requests) to avoid resource exhaustion from hanging requests.
+- **Connection Pooling:** Enable connection reuse in HTTP clients to reduce latency on outbound requests.
+
+### Best Practices:
+
+- Avoid under-provisioning containers which can cause throttling.
+- Use monitoring tools to observe CPU and memory usage trends.
+- Adjust JVM or runtime parameters for services accordingly (if applicable).
+
+---
+
+## 3. Optimizing High-Concurrency Scenarios
+
+Magic is designed for multi-agent and high-volume AI workflows. To support scaling concurrency:
+
+### Workflow Execution:
+
+- Limit maximum simultaneous flows per user or organization.
+- Use asynchronous processing where possible to prevent blocking.
+- Cache intermediate results smartly to reduce repetitive computation.
+
+### API and Network Optimizations:
+
+- Implement rate limiting on APIs to protect backend stability.
+- Use efficient serialization formats and compress payloads for large responses.
+- Disable unnecessary redirects and enforce DNS resolution optimizations.
+
+### Redis and Caching:
+
+- Utilize Redis for ephemeral data caching, such as conversation state.
+- Batch lookups (e.g., Redis `mget`) to reduce round-trip time.
+- Use appropriate key expiry (e.g., 1 hour for conversation endpoint caching) to balance freshness and memory usage.
+
+---
+
+## 4. Detailed Example: Conversation Endpoint Caching
+
+To enhance conversation continuity and reduce redundant backend lookups, Magic caches conversation endpoint IDs using multi-layered hash keys sampled from message histories.
+
+### How It Works:
+
+- Multiple hashes of the message sequence are computed, each removing increasing counts of recent messages.
+- Redis `mget` is used to batch check all possible hashes at once.
+- The first found match corresponds to a remembered endpoint for conversation continuation.
+
+```php
+private function calculateMultipleMessagesHashes(array $messages, int $maxRemoveCount): array
+{
+    $messageCount = count($messages);
+    $hashes = [];
+    $cumulativeHashString = '';
+
+    if ($messageCount === 0 && $maxRemoveCount >= 0) {
+        $hashes[0] = hash('sha256', '');
+    }
+
+    foreach ($messages as $index => $message) {
+        if (!is_array($message)) {
+            continue;
+        }
+
+        $cumulativeHashString .= $this->convertToString($message['role'] ?? '');
+        $cumulativeHashString .= $this->convertToString($message['content'] ?? '');
+        $cumulativeHashString .= $this->convertToString($message['name'] ?? '');
+        $cumulativeHashString .= $this->convertToString($message['tool_call_id'] ?? '');
+
+        if (isset($message['tool_calls']) && is_array($message['tool_calls'])) {
+            foreach ($message['tool_calls'] as $toolCall) {
+                if (!is_array($toolCall)) {
+                    continue;
+                }
+                $cumulativeHashString .= $this->convertToString($toolCall['id'] ?? '');
+                $cumulativeHashString .= $this->convertToString($toolCall['type'] ?? '');
+                if (isset($toolCall['function']) && is_array($toolCall['function'])) {
+                    $cumulativeHashString .= $this->convertToString($toolCall['function']['name'] ?? '');
+                    $cumulativeHashString .= $this->convertToString($toolCall['function']['arguments'] ?? '');
+                }
+            }
+        }
+
+        $currentMessageCount = $index + 1;
+
+        if ($maxRemoveCount >= 0 && $currentMessageCount === $messageCount) {
+            $hashes[0] = hash('sha256', $cumulativeHashString);
+        }
+
+        for ($removeCount = 1; $removeCount <= $maxRemoveCount; ++$removeCount) {
+            $targetMessageCount = $messageCount - $removeCount;
+            if ($currentMessageCount === $targetMessageCount) {
+                $hashes[$removeCount] = hash('sha256', $cumulativeHashString);
+            }
+        }
+    }
+
+    return $hashes;
+}
+```
+
+This approach minimizes Redis queries and enables effective reuse of conversation context at scale.
+
+---
+
+## 5. Timeout and Retry Recommendations
+
+- Keep API timeout settings short (e.g., 5 seconds) to avoid resource locking.
+- Implement intelligent retries for transient failures, with exponential backoff.
+- Monitor logs to detect and analyze timeout or connection errors proactively.
+
+---
+
+## 6. Monitoring, Logging & Performance Analysis
+
+Regularly monitor your deployment using logs and metrics:
+
+- Enable detailed API request and response logging for critical paths.
+- Use container monitoring to identify resource bottlenecks.
+- Track high availability endpoint usage and failures for model gateway calls.
+- Analyze cache hit rates and Redis operation latencies.
+
+Leverage this data to iteratively refine configuration and improve scalability.
+
+---
+
+## 7. Troubleshooting Common Performance Issues
+
+### Symptoms & Causes
+
+- **Slow response times:** Often due to resource contention or external API bottlenecks.
+- **High CPU/memory usage:** Indicates under-provisioned containers or runaway workloads.
+- **API timeouts or dropped requests:** Network issues or improper timeout settings.
+- **Redis cache misses or latency spikes:** Misconfigured cache keys or overuse.
+
+### Solutions
+
+- Verify container resource limits and scale out horizontally as needed.
+- Use caching and batched requests to reduce redundant operations.
+- Adjust retry and timeout policies to balance resilience and load.
+- Profile end-to-end workflow execution to find bottlenecks.
+
+---
+
+## 8. Summary
+
+Improving performance and scalability in Magic involves a combination of prudent resource management, caching strategies, concurrency controls, and careful timeout configurations. By implementing recommended container settings, leveraging Redis caching effectively, and monitoring system behavior, you can support high-concurrency workloads with responsive AI-driven workflows.
+
+---
+
+## Related Documentation & Next Steps
+
+- [System Requirements and Preparation](https://docs.magic.com/deployment/getting-started-deployment/system-requirements-and-preparation)
+- [Scaling & High Availability](https://docs.magic.com/deployment/scaling-monitoring-and-resilience/scaling-and-high-availability)
+- [Workflow Performance Tuning](https://docs.magic.com/guides/best-practices-optimization/workflow-performance-tuning)
+- [Managing Configuration Across Environments](https://docs.magic.com/guides/best-practices-optimization/system-config-management)
+- [Monitoring & Logging Overview](https://docs.magic.com/deployment/scaling-monitoring-and-resilience/monitoring-and-logging-overview)
+
+For comprehensive scaling strategies, consult the [Scalability & Distributed Design](https://docs.magic.com/concepts/performance-scalability/scalability-foundations) and [Performance Optimization Strategies](https://docs.magic.com/concepts/performance-scalability/performance-optimizations) guides.
+
+---

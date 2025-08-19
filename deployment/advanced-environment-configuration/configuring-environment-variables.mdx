@@ -1,0 +1,208 @@
+---
+title: "Configuring Environment Variables"
+description: "Details all essential and optional environment variables controlling core system behavior, credentials, and service endpoints. Explains best practices for managing .env files, variable inheritance, and safe updates without downtime. Covers both Magic core and Super Magic overrides."
+---
+
+# Configuring Environment Variables
+
+This guide provides detailed information on essential and optional environment variables that control the core behavior, credentials, and service endpoints of the Magic platform. It explains how to effectively manage `.env` files, handle variable inheritance, and safely update environment configurations without service downtime. Both the base Magic core environment variables and overrides specific to Super Magic are covered.
+
+## Understanding Environment Variables in Magic
+
+Magic relies heavily on environment variables to control configuration across its components. These variables are typically stored in `.env` files in the root directory of your deployment. Proper configuration ensures seamless integration between services and external providers, and smooth operation of Magic's AI agents and workflow orchestration.
+
+### Types of Environment Variables
+
+Environment variables in Magic can be broadly categorized into:
+
+- **Core Magic Variables:** Control key services like database connections, caches, queues, API tokens, and application modes.
+- **Super Magic Overrides:** Advanced variables that let you customize AI model configurations, agent mode selection, and runtime behaviors.
+
+## Managing Your `.env` Files
+
+For ease of deployment and maintenance, Magic provides a default `.env.example` file, which you should copy as a starting point:
+
+```bash
+cp .env.example .env
+```
+
+Modify the `.env` file according to your environment’s details.
+
+### Best Practices for `.env` Management
+
+- **Version Control:** Keep a sanitized `.env.example` in source control without sensitive secrets.
+- **Local Overrides:** Use local `.env` files or environment injection on production servers to store secrets and sensitive keys.
+- **Variable Inheritance:** Leverage environment variable defaults with syntax like `${VAR:-default}` where supported.
+- **Safe Updates:** Avoid modifying `.env` directly on live systems without restarting services appropriately.
+
+## Key Environment Variable Categories
+
+### 1. Basic Service Configuration
+
+These variables set the version tags, repository URLs, and edition type.
+
+```bash
+MAGIC_SERVICE_TAG=latest
+MAGIC_WEB_TAG=latest
+MAGIC_EDITION=COMMUNITY  # Options: ENTERPRISE or COMMUNITY
+GIT_REPO_URL=git@github.com:dtyq
+```
+
+### 2. Database and Messaging Service Configurations
+
+Configure connections to your databases and messaging queues.
+
+- **MySQL:** User, password, database name, connection limits.
+- **Redis:** Host, port, password, database index.
+- **RabbitMQ:** Host, port, user, password, virtual host.
+
+Example MySQL:
+
+```bash
+MYSQL_USER=magic
+MYSQL_PASSWORD=magic123456
+DB_HOST=db
+DB_PORT=3306
+```
+
+### 3. Application Basic Settings
+
+Control application-related settings including environment, host, API tokens, and whitelists.
+
+```bash
+APP_NAME=magic_service
+APP_ENV=dev
+MAGIC_API_DEFAULT_ACCESS_TOKEN=
+SUPER_WHITELISTS={"privilege_send_message":["13800000000","13900000000"]}
+```
+
+### 4. Feature Switches
+
+Toggle features dynamically, such as enabling consumers, chat message handling, or watchdog services.
+
+```bash
+ENABLE_CONSUME=true
+ENABLE_CHAT_MESSAGE=true
+ENABLE_MAGIC_WATCHDOG=false
+```
+
+### 5. AI Model Configuration
+
+Configure keys, endpoints, and model selections for AI providers such as Azure OpenAI, Doubao, DeepSeek, and Super Magic’s own embedding services.
+
+Example:
+
+```bash
+AZURE_OPENAI_4O_GLOBAL_MODEL=gpt-4o-global
+AZURE_OPENAI_4O_GLOBAL_API_KEY=your_api_key
+DOUBAO_PRO_32K_ENABLED=false
+```
+
+### 6. External Service Configuration
+
+Configure proxy settings and API keys for services like Google Search or enterprise app IDs.
+
+```bash
+HTTP_PROXY=http://proxy.example.com
+GOOGLE_SEARCH_API_KEY=your_google_key
+```
+
+### 7. File Storage & Driver Configuration
+
+Select your file storage backend and configure credentials accordingly:
+
+- **Local:** Root directory and domains.
+- **Aliyun OSS:** Access keys, buckets, endpoints.
+- **Volc Engine TOS:** Region, access keys, bucket, etc.
+
+Example for local file storage:
+
+```bash
+FILE_DRIVER=local
+FILE_LOCAL_ROOT=/app/storage/files
+FILE_LOCAL_READ_HOST=https://files.example.com
+```
+
+### 8. Frontend and Web Application Variables
+
+Control ports and base URLs used by the web client and socket communications.
+
+```bash
+PORT=8080
+MAGIC_SOCKET_BASE_URL=ws://localhost:9502
+MAGIC_SERVICE_BASE_URL=http://localhost:9501
+```
+
+## Safely Updating Environment Variables
+
+To avoid downtime or misconfiguration when changing environment variables:
+
+1. **Prepare Changes:** Update your `.env` or environment variable injection configurations offline.
+2. **Validate:** Double-check for syntax errors and secret exposure.
+3. **Apply in Maintenance Window:** Restart services or containers gracefully.
+4. **Verify:** Monitor logs and system status post-restart to ensure variables are applied correctly.
+
+<Tip>
+Regularly rotate sensitive keys and use secret management tools or environment injection to protect credentials. Never commit secrets to your code repositories.
+</Tip>
+
+## Variable Inheritance and Overriding
+
+Magic supports flexible overrides via environment injection, allowing you to:
+
+- Define default values in `.env.example`
+- Override at runtime via environment variables set on the host or container orchestration platforms
+- Use JSON-encoded values for complex whitelists or scopes
+
+This supports multi-environment deployments with minimum duplication.
+
+## Special Super Magic Overrides
+
+Super Magic, the advanced multi-agent engine within Magic, introduces its own overrides for AI model selections and agent modes.
+
+For example:
+
+```bash
+ACTIVE_AGENT_MODE=apex   # Options: apex, efficient, flash
+MAIN_LLM=gpt-4.1
+```
+
+These can be defined in your `.env` file or injected at runtime to customize agent behavior without modifying application code.
+
+## Troubleshooting Common Environment Variable Issues
+
+<AccordionGroup title="Troubleshooting Tips">
+<Accordion title="Application Fails to Start After .env Changes">
+- Ensure no syntax errors in `.env` (e.g., unescaped spaces).
+- Restart the services completely to reload env vars.
+- Check logs for variable parsing errors.
+</Accordion>
+<Accordion title="Secrets Not Being Recognized">
+- Verify environment injection mechanism (e.g., Docker, systemd overrides).
+- Confirm variables aren't overridden unexpectedly.
+- Do not commit secrets in `.env.example`.
+</Accordion>
+<Accordion title="Connection Failures to Databases or Services">
+- Confirm hostname and port correctness.
+- Validate credentials and ACL permissions.
+- Ping or curl endpoints from deployment environment.
+</Accordion>
+</AccordionGroup>
+
+## Additional Resources
+
+- [File Driver Usage Guide](./file-driver.md) — Detailed file store configuration.
+- [Multi-Environment Deployment Strategies](./multi-environment-deployment-strategies.md) — Managing environment-specific overrides.
+- [Runtime Hardening & Secrets Management](../security-hardening-and-compliance/runtime-hardening-and-secrets-management.md) — Secure handling of sensitive data.
+
+---
+
+Start your deployment with a correctly configured `.env` file based on `.env.example`, verify settings for your environment, and leverage the best practices outlined above to ensure a resilient and secure Magic platform operation.
+
+For step-by-step quick deployment guidance, see [Quick Deployment with Docker](../getting-started-deployment/quick-deployment-with-docker.md).
+
+**Next Steps:**
+
+- Review [Initial Configuration](../../getting-started/configuration-initial-setup/initial-configuration.md) to align your environment variables with service configs.
+- Consult [Scaling & High Availability](../../scaling-monitoring-and-resilience/scaling-and-high-availability.md) when planning production environments.
+- Keep your `.env` and secrets management under version control discipline to maintain security and traceability.

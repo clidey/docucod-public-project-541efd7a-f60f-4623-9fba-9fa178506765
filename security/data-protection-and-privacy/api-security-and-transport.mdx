@@ -1,0 +1,145 @@
+---
+title: "API Security and Secure Transport"
+description: "Learn best practices for securing API endpoints—including HTTPS/TLS enforcement, token validation, IP whitelisting, and rate limiting to mitigate unauthorized access. See how to configure environment variables for secure operations."
+---
+
+# API Security and Secure Transport
+
+Ensure your Magic platform APIs are protected against unauthorized access and data interception through robust API security practices and secure transport configurations. This guide covers best practices to safeguard API endpoints including HTTPS enforcement, token validation, IP whitelisting, and rate limiting. It also details environment variable settings for secure operations.
+
+---
+
+## 1. Secure Communication with HTTPS/TLS
+
+### Why HTTPS Matters
+All API requests and responses should be transmitted over HTTPS to encrypt data in transit, preventing eavesdropping and man-in-the-middle attacks.
+
+### Enforcing TLS
+- Configure your web servers and API endpoints to support TLS 1.2 or higher.
+- Redirect all HTTP traffic to HTTPS.
+- Use valid, trusted server certificates.
+
+### Best Practices
+- Regularly update certificates before expiration.
+- Employ strong cipher suites and disable weak encryption algorithms.
+
+---
+
+## 2. API Authentication and Token Validation
+
+### Authentication Essentials
+Magic APIs mandate authentication via secure tokens: OAuth2.0 access tokens, API keys, or organization-level tokens.
+
+### Token Validation Flow
+1. Client requests a token via secure OAuth2 flows with client credentials.
+2. Tokens are securely cached and validated on each API request.
+3. Incoming tokens are verified for integrity and associated scopes.
+
+### Rotate and Protect Secrets
+- Protect client secrets and tokens as sensitive credentials.
+- Rotate API keys and OAuth keys regularly to reduce exposure risks.
+
+### Example: Access Token Retrieval
+```php
+// Retrieving access token using OpenDev SDK
+$accessToken = $openDev->accessTokenEndpoint->get();
+```
+
+---
+
+## 3. IP Whitelisting and Network Access Control
+
+Restrict API access to trusted IP ranges to reduce the risk of unauthorized calls.
+
+- Configure firewall rules to permit only known IP addresses or subnets.
+- Combine IP whitelisting with token authentication for layered defense.
+
+---
+
+## 4. Rate Limiting and Quota Enforcement
+
+To mitigate brute force and DoS attacks:
+
+- Implement rate limits per client or token.
+- Define quotas for usage on critical endpoints.
+- Return clear error responses when limits are exceeded.
+
+---
+
+## 5. Environment Variables for Secure Operations
+
+Configure all sensitive parameters through environment variables to avoid hard-coded secrets:
+
+| Variable Name                 | Description                                   | Examples / Notes                          |
+|------------------------------|-----------------------------------------------|------------------------------------------|
+| `MAGIC_APP_KEY`              | Application Key for API access                | Keep confidential, rotate periodically   |
+| `MAGIC_APP_SECRET`           | Application Secret paired with the app key   | Use secure vault or container secrets    |
+| `MAGIC_CALLBACK_TOKEN`       | Secret token for callback validation          | Verify incoming requests authenticity    |
+| `MAGIC_CALLBACK_AES_KEY`     | AES encryption key for payload security      | Enable secure webhook payload encryption |
+| `MAGIC_ALLOWED_IPS`          | Comma-separated list of whitelisted IPs      | Restrict API access by network             |
+| `MAGIC_TLS_CERT_PATH`        | Path to TLS certificate for HTTPS enforcement | Manage certificate renewals carefully     |
+
+<Tip>
+Always use encrypted storage for environment files in production environments. Consider using external secret management tools such as HashiCorp Vault or Kubernetes Secrets.
+</Tip>
+
+---
+
+## 6. Best Practices Summary
+
+- **Encrypt all API traffic** using HTTPS/TLS 1.2 or above.
+- **Use strong authentication tokens** and validate them on every request.
+- **Restrict API calls to trusted IP ranges** when possible.
+- **Implement rate limiting** to defend against abuse and denial of service.
+- **Manage secrets securely** using environment variables and avoid hardcoding them in code or config files.
+- **Regularly audit and rotate credentials** including API keys and tokens.
+
+---
+
+## 7. Troubleshooting Common API Security Issues
+
+<AccordionGroup title="Troubleshooting API Security">
+<Accordion title="Token Expiration or Invalid Token Errors">
+Tokens expire or become invalid if clocks are skewed or tokens are revoked. Verify system clocks and perform token refresh flows promptly.
+</Accordion>
+<Accordion title="HTTPS Configuration Errors">
+Check your server certificates and TLS settings if clients encounter secure connection failures. Use tools like SSL Labs tester to evaluate your TLS setup.
+</Accordion>
+<Accordion title="IP Access Denied"
+>Review your firewall and API gateway IP whitelisting configurations. Confirm client source IP is authorized.
+</Accordion>
+<Accordion title="Rate Limit Exceeded Responses">
+Diagnose client request patterns and adjust throttling policies. Inform users to slow down or implement exponential backoff.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 8. Further Security Resources
+
+- [Authentication Methods Guide](/security/authentication-and-access/authentication-methods)
+- [Access Control and Authorization Models](/security/authentication-and-access/access-control-and-authorization)
+- [Multi-Organization and Tenant Isolation](/security/authentication-and-access/multi-organization-and-tenant-isolation)
+- [Secure Deployment Best Practices](/guides/best-practices-optimization/secure-deployment)
+
+---
+
+## Appendix: Sample Environment Variable Setup
+
+```bash
+export MAGIC_APP_KEY='your_app_key_here'
+export MAGIC_APP_SECRET='your_app_secret_here'
+export MAGIC_CALLBACK_TOKEN='your_callback_token_here'
+export MAGIC_CALLBACK_AES_KEY='your_aes_key_here'
+export MAGIC_ALLOWED_IPS='192.168.1.0/24,203.0.113.5'
+export MAGIC_TLS_CERT_PATH='/etc/ssl/certs/magic_platform.pem'
+```
+
+Ensure these variables are loaded securely in your runtime environment and never logged or exposed publicly.
+
+---
+
+For comprehensive API usage and authentication examples, see the [Authentication & Authorization API Reference](/api-reference/auth-rate-limits/api-authentication) and [SDK Authentication Methods](/sdks/configuration-auth/authentication-methods).
+
+
+---

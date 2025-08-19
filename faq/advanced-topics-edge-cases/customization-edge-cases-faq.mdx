@@ -1,0 +1,236 @@
+---
+title: "Customizing & Extending the Platform"
+description: "Tips and answers about extending Magic with custom workflows, integrating new models, developing tool nodes or agents, and solving edge-case integration issues."
+---
+
+# Customizing & Extending the Platform
+
+Extend your Magic platform experience by creating custom workflows, integrating new AI models, developing tool nodes or agents, and addressing complex edge-case integration scenarios. This page provides valuable tips, practical guidance, and answers to the most common questions encountered when tailoring Magic to unique enterprise needs.
+
+---
+
+## 1. Getting Started with Custom Workflows
+
+### What are Custom Workflows?
+Custom workflows enable you to design AI-driven processes beyond the default templates. They allow you to automate complex tasks by chaining logic and interactions among AI agents, knowledge bases, and messaging platforms.
+
+### How do I create a custom workflow?
+- Use Magic Flow’s visual designer to drag and drop nodes.
+- Configure nodes with your required AI models, tools, or custom inputs.
+- Deploy and test workflows iteratively to validate behavior.
+
+<Tip>
+Start small with simple condition branches and incrementally add nodes to manage complexity gracefully.
+</Tip>
+
+### Can I reuse components across workflows?
+Yes, you can create reusable nodes or subflows (if supported) to modularize and organize your processes for maintainability.
+
+---
+
+## 2. Integrating New AI Models
+
+### How do I connect a custom or third-party LLM to Magic?
+- Securely manage API keys and endpoints using environment variables.
+- Configure the AI model integration within Magic’s SDK or workflow nodes.
+- Use the Custom LLM Integration guide for detailed setup steps.
+
+### What are common pitfalls when integrating new models?
+- Inconsistent API request or response formats.
+- Improper key or token management causing authentication failures.
+- Latency issues affecting workflow responsiveness.
+
+<Warning>
+Test integrations in isolated environments before production deployment to catch configuration or performance problems early.
+</Warning>
+
+---
+
+## 3. Developing Custom Tool Nodes and Plugins
+
+### What is a Tool Node?
+A Tool Node is a specialized workflow element that executes custom logic or integrates external services as part of your automation.
+
+### How do I build a custom Tool Node?
+1. Define your tool’s logic in code, ensuring clear input/output interfaces.
+2. Register the tool with Magic’s extension system.
+3. Add the tool node to your workflow palette for drag-and-drop usage.
+
+### How can custom plugins interact with the Magic event system?
+Plugins can listen for platform events (such as workflow triggers or messaging events) to automate reactions or notifications.
+
+<Steps>
+<Step title="Develop Your Tool Logic">
+Use language and frameworks compatible with your deployment environment.
+</Step>
+<Step title="Register the Tool">
+Follow platform-specific registration processes to make your tool discoverable.
+</Step>
+<Step title="Test and Deploy">
+Validate tool behavior within sample workflows before wider adoption.
+</Step>
+</Steps>
+
+### Best practices
+- Use meaningful node and parameter names.
+- Handle exceptions cleanly to avoid disrupting workflows.
+- Document tool functionality and usage examples.
+
+---
+
+## 4. Extending AI Agents
+
+### How do I customize AI agents?
+- Tailor system instructions and model prompts.
+- Add specific use cases or predefined Q&A pairs.
+- Deploy updated models via the AI agent configuration panel.
+
+### Can AI agents call my custom tools or APIs?
+Yes, through the event-driven extensibility system or workflow orchestration, agents can trigger custom nodes or external API calls.
+
+---
+
+## 5. Handling Edge-Case Integration Issues
+
+### What should I do if my custom extension fails intermittently?
+- Verify configuration parameters and authentication credentials.
+- Review logs for timeout, rate limiting, or permission errors.
+- Enable verbose logging during testing to gather diagnostic details.
+
+### How to debug complex failures?
+- Use step-by-step workflow execution monitoring to isolate failure points.
+- Identify whether failures are caused by input validation, external API responses, or internal exceptions.
+- Collaborate with platform support and reference SDK error handling documentation.
+
+### Common integration pitfalls
+- Missing or expired tokens causing unauthorized errors.
+- Invalid input parameters rejected by APIs (see InvalidParameterException usage).
+- Incorrect message formatting resulting in send failures.
+
+<AccordionGroup title="Common Error Scenarios & Diagnostics">
+<Accordion title="Invalid Parameter Errors">
+This error means some required parameters are incorrect or missing. Double-check inputs against API specifications and validate before requests.
+</Accordion>
+<Accordion title="Bad Request Responses">
+Indicates API rejection likely due to malformed data or authentication issues. Review request payloads and access tokens.
+</Accordion>
+<Accordion title="File Download Failures">
+Verify download codes and token validity. Network issues or permission denials may also cause failures.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 6. Practical Tips & Best Practices
+
+- Always manage sensitive credentials securely using Magic’s environment variable configuration.
+- Use SDKs for consistent API integration and error handling.
+- Implement retries with exponential backoff to handle transient failures.
+- Leverage the event-driven architecture for reactive and extensible workflows.
+- Regularly update custom components to stay compatible with platform upgrades.
+
+<Note>
+Consult the Custom Tools and Event-Driven Extensibility guides for deeper insights into advanced customization capabilities.
+</Note>
+
+---
+
+## 7. Resources and Next Steps
+
+For more detailed instructions and examples, refer to:
+
+- [Developing Custom Tools & Plugins](https://docs.magic.com/guides/advanced-customization-integration/custom-tools-plugins)
+- [Custom LLM Integration](https://docs.magic.com/guides/advanced-customization-integration/custom-llm-integration)
+- [Event-Driven Extensibility](https://docs.magic.com/guides/advanced-customization-integration/event-driven-extensibility)
+- [SDK Usage & Best Practices](https://docs.magic.com/sdks/troubleshooting-bestpractices/sdk-best-practices)
+- [Third-Party Messaging Integration](https://docs.magic.com/guides/advanced-customization-integration/third-party-messaging-integration)
+
+---
+
+## 8. Troubleshooting Common Issues
+
+### Issue: Workflow node fails validation/error
+- Check the node’s input parameters are correctly set.
+- Review error logs for exceptions like `InvalidParameterException`.
+- Ensure all required fields follow API or SDK rules.
+
+### Issue: Messages not sent from custom bots
+- Validate your robot access tokens and app credentials.
+- Confirm message payload formats comply with the platform's requirements.
+- Check API rate limits and throttling configurations.
+
+### Issue: Download file API returns error
+- Make sure `downloadCode` and `robotCode` are valid and not expired.
+- Verify network accessibility and endpoint reachability.
+- Check for permission or access control restrictions.
+
+### Debugging Steps
+<Steps>
+<Step title="Enable Detailed Logging">
+Activate verbose logs in your SDK client or workflow monitor.
+</Step>
+<Step title="Reproduce the Error with Sample Data">
+Use test inputs to isolate the problem scope.
+</Step>
+<Step title="Validate Tokens and Credentials">
+Confirm all tokens are fresh and correctly scoped.
+</Step>
+</Steps>
+
+---
+
+## 9. Example: Sending a One-on-One Chat Message Using SDK Endpoint
+
+```php
+use Dtyq\EasyDingTalk\OpenDev\Endpoint\ChatBot\ChatBotEndpoint;
+use Dtyq\EasyDingTalk\OpenDev\Parameter\ChatBot\SendOneOnOneChatMessagesParameter;
+
+$endpoint = new ChatBotEndpoint();
+
+$param = new SendOneOnOneChatMessagesParameter();
+$param->setAccessToken('your-access-token');
+$param->setRobotCode('your-robot-code');
+$param->setUserIds(['user-id-1']);
+$param->setMsgKey('text');
+$param->setMsgParam(['content' => 'Hello from custom workflow!']);
+
+try {
+    $result = $endpoint->sendOneOnOneChatMessages($param);
+    echo "Message sent: Process Query Key = ", $result->getProcessQueryKey();
+} catch (Exception $e) {
+    echo "Error sending message: ", $e->getMessage();
+}
+```
+
+---
+
+## 10. Example: Handling Parameter Validation Error
+
+```php
+use Dtyq\EasyDingTalk\Kernel\Exceptions\InvalidParameterException;
+
+try {
+    // Assume $param is missing required fields
+    $param->validate();
+} catch (InvalidParameterException $e) {
+    echo 'Parameter validation failed: ', $e->getMessage();
+    // Log or adjust parameters accordingly
+}
+```
+
+---
+
+## 11. Where to Get Help
+
+- Use the [Official Support Channels](https://docs.magic.com/faq/support-resources/official-support-channels) for technical help.
+- Engage with the community through [GitHub Discussions](https://github.com/dtyq/magic/discussions).
+- Review related FAQs on [Integration Debugging](https://docs.magic.com/faq/platform-troubleshooting/integration-debugging).
+
+---
+
+## 12. Summary
+
+Customizing and extending Magic empowers you to tailor AI workflows, agents, and integrations precisely to your business needs. By leveraging the platform’s extensibility, SDKs, and event-driven architecture, you create powerful automated processes and seamless external connectivity. Follow best practices, test thoroughly, and utilize available exemplary guides to maximize success.
+
+
+---
