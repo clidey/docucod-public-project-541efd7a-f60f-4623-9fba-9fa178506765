@@ -1,0 +1,169 @@
+---
+title: "How Do I Configure the Platform?"
+description: "Guides users through the essential first-time configuration steps, such as setting environment variables for LLM providers, editing .env files, and troubleshooting common setup errors."
+---
+
+# How Do I Configure the Platform?
+
+Configuring the platform correctly at the start ensures a smooth and efficient journey toward leveraging Magic's AI productivity capabilities. This guide provides a clear, step-by-step approach to first-time platform configuration, focusing on essential environment variables, working with LLM providers, editing `.env` files, and common troubleshooting strategies.
+
+---
+
+## 1. Getting Started With Configuration
+
+Before launching Magic or integrating with its SDKs, you must complete essential configuration steps that empower the platform to authenticate, interact with external AI services, and operate securely.
+
+### 1.1 Setting Up Environment Variables
+
+Environment variables are the backbone of Magic’s configuration, controlling access keys, endpoint selections, service options, and more.
+
+- Locate the `.env` configuration file in your deployment directory.
+- Set variables relevant to your deployment, such as:
+  - **LLM Provider Credentials:** Define API keys and secrets for the AI language models you want to connect.
+  - **Application Keys:** Input your application keys and secrets for platform authentication.
+  - **Service Endpoints:** Adjust URLs if you use custom or proxy endpoints.
+
+**Example snippet from `.env`:**
+```ini
+LLM_API_KEY=your-openai-key
+APP_KEY=your-app-key
+APP_SECRET=your-app-secret
+SERVICE_ENDPOINT=https://api.magic.com
+```
+
+<Tip>
+Keep sensitive information such as API keys and secrets out of version control.
+Use environment-specific `.env` files for development, testing, and production.
+</Tip>
+
+### 1.2 Configuring LLM Providers
+
+Magic supports connection to various AI language models. During initial setup:
+
+- Identify which LLM providers your workflows will utilize.
+- Ensure API keys and endpoint URLs for those providers are set in your environment variables.
+- Follow the provider-specific requirements for authentication and API access.
+
+<Project Setup Example>:
+- For OpenAI-compatible models, set `LLM_API_KEY` and optional `LLM_API_BASE_URL`.
+- For custom or third-party models, provide necessary credentials as documented in your platform settings.
+
+<Tip>
+Refer to the guide on [Custom LLM Integration](https://docs.magic.com/guides/advanced-customization-integration/custom-llm-integration) for details on advanced model configuration.
+</Tip>
+
+## 2. Editing and Verifying .env Files
+
+The `.env` file is central to configuring the Magic platform or its SDKs. Follow these best practices:
+
+- **Locate and duplicate:** Start by copying the provided `.env.example` if available.
+- **Edit relevant keys:** Enter your service keys, URLs, and options carefully.
+- **Validate formatting:** Maintain proper syntax with no added spaces or comments after values.
+- **Secure the file:** Limit access permissions to keep secrets safe.
+
+Example `.env` entry for Easy DingTalk SDK:
+```ini
+EASY_DINGTALK_APP_KEY=your_app_key_here
+EASY_DINGTALK_APP_SECRET=your_app_secret_here
+```
+
+After editing:
+- Restart your Magic platform services to apply changes.
+- Use test commands or SDK utilities to confirm connectivity and authentication.
+
+<Tip>
+Use incremental commits of `.env` changes in a private settings branch to track your configuration history without exposing secrets.
+</Tip>
+
+## 3. Troubleshooting Common Setup Issues
+
+Despite careful configuration, early issues may arise. This section addresses frequent problems and how to resolve them promptly.
+
+### 3.1 Missing or Invalid Keys
+
+**Symptoms:** Authentication failures, API errors reporting missing or invalid `app_key`, `app_secret`, or access tokens.
+
+**Solutions:**
+- Confirm all required environment variables are set.
+- Check for typos or missing characters in keys.
+- Ensure keys match those provided by your Magic platform admin or service provider.
+- Review logs for specific error messages on authorization failures.
+
+### 3.2 .env File Not Loaded
+
+**Symptoms:** Changes to `.env` have no effect after restarts.
+
+**Solutions:**
+- Verify the `.env` file resides in the correct directory expected by your deployment.
+- Confirm platform or SDK uses standard `.env` loading libraries.
+- Restart all services or development servers to clear stale caches.
+
+### 3.3 Invalid or Expired Access Tokens
+
+**Symptoms:** Errors during API calls indicate expired tokens.
+
+**Solutions:**
+- The platform automatically caches tokens; check cache expiration settings.
+- Restart services to refresh tokens if auto-refresh fails.
+- Validate your `app_key` and `app_secret` are correctly configured to enable token generation.
+
+### 3.4 Environment Variable Conflicts
+
+**Symptoms:** Unexpected behavior caused by multiple conflicting variable sources.
+
+**Solutions:**
+- Use a single source of truth for environment variables.
+- Avoid setting variables both in `.env` files and OS-level exports.
+- Document your environment setup clearly to prevent confusion.
+
+<Tip>
+Consult the [Common Setup Issues](https://docs.magic.com/getting-started/validation-troubleshooting/common-setup-issues) guide for extensive troubleshooting tips.
+</Tip>
+
+## 4. Step-by-Step Configuration Workflow
+
+Follow this workflow to configure your platform effectively:
+
+<Steps>
+<Step title="Edit Environment Variables">
+Update your `.env` file with appropriate LLM provider keys, application credentials, and service URLs.
+</Step>
+<Step title="Restart Services">
+After saving `.env`, restart the Magic platform services or your development server to load configuration.
+</Step>
+<Step title="Validate Settings">
+Run simple API or SDK calls (for example, ping or token retrieval) to verify your keys and settings are correct.
+</Step>
+<Step title="Test LLM Integration">
+Trigger an AI model call through Magic to confirm LLM connectivity and authentication.
+</Step>
+<Step title="Troubleshoot Errors">
+If any step fails, refer to troubleshooting tips, inspect logs, and ensure environment security and validity.
+</Step>
+</Steps>
+
+## 5. Practical Tips and Best Practices
+
+- **Secure credentials:** Never share your API keys openly; use secrets managers if possible.
+- **Environment segregation:** Use dedicated environments for development, staging, and production.
+- **Version control:** Exclude `.env` files from version control; document required variables separately.
+- **Automate validation:** Integrate checks in your deployment pipeline to flag missing or invalid config values.
+- **Cache management:** Understand token caching durations and refresh mechanisms.
+
+## 6. Related Topics and Next Steps
+
+- For detailed environment variable configuration, see [Configuring Environment Variables](https://docs.magic.com/deployment/advanced-environment-configuration/configuring-environment-variables).
+- To secure credentials and token management, review [SDK Authentication & Credential Management](https://docs.magic.com/sdks/configuration-auth/authentication-methods).
+- After setup, explore [Quickstart: From Zero to Magic Productivity](https://docs.magic.com/guides/getting-started/quickstart-workspace) to start building workflows.
+
+---
+
+If you encounter challenges during configuration, remember that effective troubleshooting starts with confirming your environment variables and keys, carefully following the step-by-step workflow above.
+
+By completing these essential setup tasks, you unlock the powerful automation and AI capabilities Magic offers, ensuring a solid foundation for your platform experience.
+
+---
+
+<Info>
+For advanced users, consider automating configuration and secret injection via orchestration tools like Docker Compose or Kubernetes while following platform best practices.
+</Info>
