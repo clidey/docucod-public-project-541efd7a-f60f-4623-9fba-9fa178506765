@@ -1,0 +1,154 @@
+---
+title: "Security Hardening and Updates"
+description: "Practical checklist for hardening Magic in production, including environment variable management, dependency checks, patching, and safe extension practices. Covers threat modeling for large-scale or multi-organization deployments."
+---
+
+# Security Hardening and Updates
+
+Ensure your Magic platform deployment remains secure, resilient, and compliant with this practical checklist and guidance. This page focuses specifically on hardening measures and update best practices for production environments, especially those handling large-scale or multi-organization workloads.
+
+---
+
+## 1. Environment Configuration and Secrets Management
+
+Securing environment variables and secrets is foundational for a hardened deployment.
+
+- **Use Encrypted Environment Variables:** Store sensitive keys such as API secrets, OAuth credentials, and database passwords in encrypted form using tools like Docker secrets, Kubernetes secrets, or Vault.
+- **Principle of Least Privilege:** Limit secret accessibility only to services that require them. Avoid embedding secrets directly in source code or logs.
+- **Separate Environments:** Maintain isolated config files for development, staging, and production. Never reuse production secrets in non-production environments.
+- **Rotate Secrets Regularly:** Schedule periodic changes of API keys, database credentials, and other secrets to reduce risk of leaks.
+
+<Tip>
+Incorporate automated tooling for secrets lifecycle management to prevent exposure through misconfigured environment files.
+</Tip>
+
+---
+
+## 2. Dependency and Patch Management
+
+Keeping platform and component dependencies current is critical to mitigate known vulnerabilities.
+
+- **Perform Regular Dependency Audits:** Use tools (e.g., Composer audit for PHP dependencies) to identify outdated packages and known CVEs.
+- **Apply Security Patches Promptly:** Stay informed of Magic platform releases and third-party dependency security updates, applying them in a timely manner.
+- **Track Vulnerabilities:** Monitor vulnerability databases and Magic’s changelogs to prioritize patches of components with CVEs.
+- **Test Before Production:** Validate patches in staging to confirm stability and compatibility before production rollout.
+
+<Warning>
+Delaying security patches exposes your deployment to exploitation and compliance failures. Establish patch management as an organizational priority.
+</Warning>
+
+---
+
+## 3. Threat Model Considerations for Production Deployments
+
+Understand realistic risks and adapt your deployment architecture accordingly.
+
+- **Multi-Organization Isolation:** Enforce strict tenant data separation to prevent cross-organization data leaks.
+- **External Integration Risks:** Secure API keys and callback handlers for third-party integrations (e.g., DingTalk, WeCom) to avoid unauthorized access.
+- **Network Exposure:** Restrict service access via firewalls, VPNs, and reverse proxies. Use TLS with strong cipher suites for all external endpoints.
+- **Runtime Hardening:** Use container and OS-level security features (e.g., user namespaces, seccomp, AppArmor) to limit process capabilities.
+
+<Note>
+This page complements detailed principles found in the Secure Deployment and Network Exposure guides. Review those to align infrastructure-level security with application hardening.
+</Note>
+
+---
+
+## 4. Safe Extension and Customization Practices
+
+Extensibility is a core strength of Magic, but must be handled cautiously in production.
+
+- **Code Review for Custom Tools and Plugins:** Validate all custom code and third-party plugins against secure coding guidelines.
+- **Use Feature Flags and Controlled Rollouts:** Deploy extensions behind toggles to minimize impact and enable swift rollback if needed.
+- **Strict Input Validation:** Ensure custom nodes and integrations sanitize inputs rigorously to prevent injection or SSRF attacks.
+- **Audit Logging:** Enable comprehensive logging of custom extension activity for traceability.
+
+<Tip>
+Follow Magic’s Event-Driven Extensibility and Custom Tools guides carefully to implement secure and maintainable extensions.
+</Tip>
+
+---
+
+## 5. Runtime Hardening and Monitoring
+
+Protecting the running system and detecting anomalies enhance overall security posture.
+
+- **Container Isolation:** Run Magic services in separate containers with minimal privileges.
+- **Resource Limits:** Enforce CPU, memory, and network limits to prevent denial-of-service via resource exhaustion.
+- **Logging and Audit Trails:** Centralize logs including security-relevant events. Enable audit logging middleware for authentication and sensitive operations.
+- **Intrusion Detection Systems (IDS):** Integrate IDS to monitor for suspicious activity or policy violations.
+
+<Check>
+Regularly review logs and monitor service health using recommended observability tools to detect and respond to incidents promptly.
+</Check>
+
+---
+
+## 6. Upgrade and Incident Response Best Practices
+
+Maintain resilience through efficient upgrade and issue-handling procedures.
+
+- **Scheduled Maintenance Windows:** Plan upgrades and patches during low-impact periods.
+- **Backup before Upgrade:** Always back up databases and critical configuration before applying updates.
+- **Incremental Rollouts:** Use progressive deployment strategies to limit risks.
+- **Incident Response Plan:** Establish documented playbooks for investigating and mitigating security events.
+- **Regular Drills:** Conduct simulated security incidents to test readiness.
+
+<Warning>
+Avoid updating without a rollback plan. Unanticipated failures can cause downtime affecting users and compliance.
+</Warning>
+
+---
+
+## 7. Additional Recommendations
+
+- **Documentation & Training:** Educate your operation team on security tools, processes, and Magic platform specific risks.
+- **Community Engagement:** Monitor security advisories from Magic’s GitHub repository and participate in community forums.
+- **Security Reporting:** Follow responsible disclosure protocols to report and handle discovered vulnerabilities.
+
+---
+
+## Related Documentation
+
+- [Secure Deployment and Isolation Practices](https://docs.magic.com/guides/best-practices-optimization/secure-deployment)
+- [Runtime Hardening and Secrets Management](https://docs.magic.com/deployment/security-hardening-and-compliance/runtime-hardening-and-secrets-management)
+- [Network Exposure and Access Control](https://docs.magic.com/deployment/security-hardening-and-compliance/network-exposure-and-access-control)
+- [Event-Driven Extensibility Guide](https://docs.magic.com/guides/advanced-customization-integration/event-driven-extensibility)
+- [Third-Party Messaging Integration](https://docs.magic.com/guides/advanced-customization-integration/third-party-messaging-integration)
+
+---
+
+## Summary
+
+This page outlines a practical production hardening checklist for Magic, emphasizing secure environment management, dependency patching, threat mitigation, safe extensibility, runtime security, and upgrade best practices. It prioritizes resilience for multi-tenant, large-scale deployments.
+
+---
+
+## Example Environment Variable Safety Snippet
+
+```bash
+# Use Docker secrets or Vault to inject these securely, never store plaintext in .env files
+MAGIC_API_KEY_FILE=/run/secrets/magic_api_key
+MAGIC_DB_PASSWORD_FILE=/run/secrets/db_password
+
+# In container startup scripts, read these files
+export MAGIC_API_KEY=$(cat $MAGIC_API_KEY_FILE)
+export MAGIC_DB_PASSWORD=$(cat $MAGIC_DB_PASSWORD_FILE)
+```
+
+---
+
+## Troubleshooting Tips
+
+- **Issue:** Secrets not loading properly in container
+  - Verify file paths and permissions of injected secret files
+  - Ensure environment variable references are correctly resolved
+
+- **Issue:** Security patch causing service failure
+  - Review detailed changelogs for breaking changes
+  - Test upgrade in staging and roll back if necessary
+
+- **Issue:** Excessive resource usage impacting stability
+  - Apply resource limits and investigate logs for runaway processes
+
+---
