@@ -1,0 +1,162 @@
+---
+title: "System Requirements & Installation Issues"
+description: "Answers common questions about hardware/software prerequisites, supported operating systems, Docker & Compose requirements, and resolving installation errors. It ensures new users can swiftly get up and running."
+---
+
+# System Requirements & Installation Issues FAQ
+
+This FAQ helps new users quickly verify system prerequisites, understand supported environments, and resolve common installation problems when deploying Magic. It ensures a smooth start by clarifying hardware/software needs, Docker and Docker Compose requirements, and guidance on overcoming typical setup errors.
+
+---
+
+## 1. What are the minimum system requirements to deploy Magic?
+
+Magic runs on a variety of Linux-based environments but requires key resources and software installed to function optimally.
+
+- **Operating Systems Supported:**
+  - Ubuntu 18.04 or later
+  - CentOS 7 or later
+  - Debian 10 or later
+- **Hardware Recommendations (for evaluation):**
+  - Minimum 4 CPU cores
+  - At least 8 GB RAM
+  - 50 GB free disk space (SSD recommended)
+- **Software Requirements:**
+  - Docker (version 20.10.0 or higher)
+  - Docker Compose (version 1.27 or higher)
+
+The specifications increase for production workloads depending on user concurrency and dataset size.
+
+
+## 2. Do I need to install Docker and Docker Compose before starting Magic?
+
+Yes. Magic uses Docker containers to package and deploy all core services efficiently. Ensure:
+
+- Docker daemon is running and configured for your OS.
+- Docker Compose is installed to orchestrate multi-container setups.
+
+This setup simplifies dependency management and provides isolated environments for each service.
+
+
+## 3. How do I verify if Docker and Docker Compose are properly installed?
+
+Run these commands in your terminal:
+
+```bash
+docker --version
+docker-compose --version
+```
+
+Both should return version numbers without error. If not found, install or update according to your OS guidelines.
+
+
+## 4. What should I do if I encounter port conflicts during installation?
+
+Magic’s default Docker containers use common ports such as 8080, 6379 (Redis), and 5432 (PostgreSQL).
+
+- Check which processes are using these ports using commands like `lsof -i :8080` or `netstat -tuln | grep <port>`.
+- Stop or reconfigure conflicting services.
+- Alternatively, modify the ports in your Docker Compose file before launching.
+
+
+## 5. What are typical installation errors and how can I fix them?
+
+### Common Issues and Solutions:
+
+| Problem                          | Root Cause                                            | Resolution                                                                                     |
+|---------------------------------|------------------------------------------------------|------------------------------------------------------------------------------------------------|
+| Docker daemon not running        | Docker not started or improper install               | Start Docker service (`sudo systemctl start docker`) and enable it at boot.                    |
+| Missing environment variables    | `.env` file incomplete or unconfigured variables      | Verify `.env` file contains required variables (database credentials, ports, keys).            |
+| Permission denied on Docker socket| User lacks permission to run Docker commands          | Add user to `docker` group: `sudo usermod -aG docker $USER`, then logout/login.                |
+| Container crash on start         | Resource limits or config errors                      | Check logs with `docker-compose logs`, examine errors, adjust configuration or resource usage.|
+| Incompatible Docker Compose version| Using older Docker Compose release                    | Upgrade using official docs to meet minimum required version.                                  |
+
+
+## 6. How can I troubleshoot container failures during startup?
+
+Use these steps:
+
+1. Run `docker ps -a` to list all containers and their statuses.
+2. Inspect logs for failed containers:
+
+   ```bash
+   docker logs <container_name_or_id>
+   ```
+
+3. Look for common error patterns like missing environment variables, connectivity issues, or resource allocation errors.
+4. Ensure dependencies like networking and volumes are correctly configured.
+5. Restart containers after fixing issues:
+
+   ```bash
+docker-compose up -d
+   ```
+
+
+## 7. Are there any compatibility considerations for different operating systems?
+
+While primarily tested on Linux distributions, Magic deployment via Docker works on macOS and Windows with Docker Desktop. Caveats:
+
+- Windows requires enabling WSL2 for stable Linux container support.
+- File system performance may vary on non-Linux hosts, affecting throughput.
+- Network configurations may need special attention on Windows firewalls or VPNs.
+
+
+## 8. Where can I find detailed installation instructions?
+
+Refer to the [Installation Guide](/getting-started/prerequisites-installation/installation-guide) for step-by-step setup, including cloning repositories, running with Docker Compose, and accessing the web interface.
+
+
+## 9. What if my Magic instance fails to start after following installation steps?
+
+Check the following systematically:
+
+- Verify Docker and Docker Compose versions.
+- Review container logs for specific error messages.
+- Confirm no port conflicts exist.
+- Validate environment variables and secrets are correctly set.
+- Ensure system resources meet minimum requirements.
+
+For unresolved issues, consult the [Troubleshooting Common Setup Issues](/getting-started/validation-troubleshooting/common-setup-issues) page.
+
+
+## 10. How do I get help if installation problems persist?
+
+Reach out through:
+
+- Official support channels listed in [Getting Help & Additional Resources](/getting-started/validation-troubleshooting/resources-and-support).
+- Community forums and discussion groups.
+- GitHub issues on the [Magic Repository](https://github.com/dtyq/magic).
+
+Providing detailed logs and environment information expedites support.
+
+
+---
+
+# Tips & Best Practices
+
+- Always keep Docker and Docker Compose updated to supported versions.
+- Use Linux-based environments for production deployments.
+- Carefully configure and secure environment variables before starting services.
+- Regularly monitor resource usage and container health after deployment.
+- Backup critical config files to prevent accidental data loss.
+
+
+# Summary
+
+This FAQ guides users through verifying system readiness, handling Docker prerequisites, resolving common installation errors, and accessing support resources. Following this guidance ensures users can swiftly deploy and run Magic without setup delays.
+
+---
+
+# Related Documentation
+
+- [System Requirements & Preparation](/deployment/getting-started-deployment/system-requirements-and-preparation)
+- [Installation Guide](/getting-started/prerequisites-installation/installation-guide)
+- [Troubleshooting Common Setup Issues](/getting-started/validation-troubleshooting/common-setup-issues)
+- [Quick Deployment with Docker](/deployment/getting-started-deployment/quick-deployment-with-docker)
+- [Getting Help & Additional Resources](/getting-started/validation-troubleshooting/resources-and-support)
+
+---
+
+# Next Steps
+
+After ensuring your environment meets system requirements and Magic is installed correctly, proceed to the [Initial Configuration](/getting-started/configuration-initial-setup/initial-configuration) page to customize your deployment for your organization's needs. Then follow the [First Start & Accessing Magic](/getting-started/configuration-initial-setup/first-start-and-login) guide to log in and start exploring core features.
