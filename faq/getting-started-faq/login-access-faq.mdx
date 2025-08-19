@@ -1,0 +1,168 @@
+---
+title: "Access & Login Problems"
+description: "Provides solutions for issues related to accessing web applications or APIs, default account credentials, permission errors, and initial password resets. Aimed at getting users logged in and started."
+---
+
+# Access & Login Problems FAQ
+
+This page provides practical solutions and guidance for common issues users face when accessing the Magic platform, including web applications and APIs. Whether you're stuck because of default credentials, permission errors, or password resets, this FAQ will help you get logged in and started smoothly.
+
+---
+
+## 1. Common Access Issues & Their Solutions
+
+### 1.1 Why can't I log into the web application?
+
+Several factors can prevent successful login:
+
+- Incorrect username or password.
+- Using outdated or default credentials without resetting the password.
+- User account does not have sufficient permissions.
+- System services are not fully started or accessible.
+
+**Solution:**
+- Ensure you use the correct username and password. Check if the default password has been reset.
+- If you are an admin, verify that the Magic platform services are running correctly.
+- Contact your system administrator to confirm your account permissions.
+
+### 1.2 How do I reset my initial password?
+
+The initial login usually requires the user to reset the default password for security.
+
+**Steps to reset:**
+1. Access the Magic platform login page.
+2. Use the default username (often specified in deployment documentation).
+3. When prompted, enter the default password.
+4. Follow on-screen instructions to change the password to a secure new one.
+
+If the reset process is unavailable or fails, consult your system administrator or refer to the Initial Configuration Guide.
+
+### 1.3 What should I do if I encounter permission errors after login?
+
+If you log in successfully but cannot access certain features or pages:
+
+- Your user role or permissions might be limited.
+- Some resources are organization or team scoped and require explicit access grants.
+
+**Action:**
+- Request the appropriate permissions from an administrator.
+- Verify your user role aligns with the required access level.
+- Administrators should audit user roles and permission assignments.
+
+---
+
+## 2. Accessing APIs: Authentication and Tokens
+
+### 2.1 How do I obtain an API access token?
+
+Access to Magic's APIs requires authentication tokens which validate your identity and permissions.
+
+**For internal enterprise applications:**
+- Use your AppKey and AppSecret in the API call to fetch an access token.
+- The token is typically cached for performance and reused until expiration.
+
+**For third-party applications:**
+- Obtain a corporate access token using suite credentials and authorization tickets.
+
+Refer to the [API Authentication & Authorization](https://docs.magic.com/api-reference/auth-rate-limits/api-authentication) guide for detailed instructions.
+
+### 2.2 Why does my API call return an ‘invalid token’ error?
+
+Common reasons include:
+- Use of expired or revoked tokens.
+- Not including the access token properly in request headers or query parameters.
+- Scope or permissions assigned to the token do not cover the invoked API.
+
+**How to fix:**
+- Refresh and obtain a new access token.
+- Follow correct API usage patterns including token placement.
+- Confirm that the token has necessary roles and privileges.
+
+### 2.3 How can I find user details by phone number or user ID through the API?
+
+Magic's Easy DingTalk SDK offers specific endpoints for these queries:
+
+- **By Mobile Number:** Use the `UserInfoByMobileApi` which accepts a mobile number and returns associated user details.
+- **By User ID:** Use the `UserInfoByUserIdApi` to query user details.
+
+Make sure your token has permission to access user directory information. See [User & Group Management APIs](https://docs.magic.com/api-reference/im-conv-messaging/user-and-group-lookup) for example request flows.
+
+---
+
+## 3. Troubleshooting Access Problems
+
+### 3.1 The web app shows “Access Denied” or similar error messages.
+
+- Verify if your login session is valid; expired sessions can cause access to be blocked.
+- Clear browser cache and cookies, then try logging in again.
+- Confirm that firewall or network policies do not block service endpoints.
+- Check platform logs for any authentication failures (refer to Monitoring & Logging docs).
+
+### 3.2 Default account credentials are missing or unknown.
+
+- Consult your deployment or installation documentation for default admin credentials.
+- If you do not have this information, contact your system administrator.
+- Consider resetting credentials securely by restarting services or running password reset scripts if provided.
+
+### 3.3 I cannot authenticate despite correct credentials.
+
+- Confirm that the Magic platform's authentication service and databases are running.
+- Check for recent updates or configuration changes that might have affected authentication.
+- Review related environment variables and configuration files for correctness.
+
+<Tip>
+Consistently monitor service health using the [Verifying and Accessing Your Deployment](https://docs.magic.com/deployment/getting-started-deployment/verifying-and-accessing-services) guide to avoid unexpected downtime.
+</Tip>
+
+---
+
+## 4. Best Practices for Smooth Access
+
+- Always reset default passwords immediately after first login for security.
+- Use role-based access control to assign permissions appropriately, minimizing permission errors.
+- Cache tokens securely and avoid unnecessary token requests to improve API access efficiency.
+- Keep your environment variables and configuration files accurate and up to date to prevent authentication failures.
+
+---
+
+## 5. Getting Help & Next Steps
+
+If you continue to face difficulties:
+
+- Consult the [Troubleshooting Common Setup Issues](https://docs.magic.com/getting-started/validation-troubleshooting/common-setup-issues) guide for more detailed diagnostics.
+- Reach out through official support channels as outlined in the [Getting Help & Additional Resources](https://docs.magic.com/getting-started/validation-troubleshooting/resources-and-support) documentation.
+- Engage with the community forums for peer assistance.
+
+For further security considerations, review the [Authentication Methods](https://docs.magic.com/security/authentication-and-access/authentication-methods) and [Access Control and Authorization Models](https://docs.magic.com/security/authentication-and-access/access-control-and-authorization) documentation.
+
+---
+
+## 6. Related Documentation Links
+
+- [Initial Configuration & First Login Guide](https://docs.magic.com/getting-started/configuration-initial-setup/first-start-and-login)
+- [API Authentication & Authorization](https://docs.magic.com/api-reference/auth-rate-limits/api-authentication)
+- [User, Department, and Group Management API Reference](https://docs.magic.com/api-reference/im-conv-messaging/user-and-group-lookup)
+- [System Requirements & Installation Issues FAQ](https://docs.magic.com/faq/getting-started-faq/requirements-installation-faq)
+- [Troubleshooting Common Setup Issues](https://docs.magic.com/getting-started/validation-troubleshooting/common-setup-issues)
+
+---
+
+## Summary
+This FAQ focuses specifically on resolving user access and login problems for Magic's web applications and APIs, offering practical solutions for initial password resets, permission errors, and API authentication challenges. It includes step-by-step guidance for token handling and user information retrieval to empower users and administrators to troubleshoot and resolve common obstacles efficiently.
+
+---
+
+<Callout>
+Ensure your access procedures are integrated with your organization's security and user management policies to maintain a secure and compliant environment.
+</Callout>
+
+---
+
+For developers and administrators who want to explore the underlying token mechanisms, user API endpoints, and error handling workflows, consult the following page in the codebase:
+
+- `backend/easy-dingtalk/src/OpenDev/Endpoint/User/UserEndpoint.php`
+- `backend/easy-dingtalk/src/OpenDev/Endpoint/Oauth2/AccessTokenEndpoint.php`
+
+These provide method-level interactions for user info queries and access token retrieval.
+
+---
