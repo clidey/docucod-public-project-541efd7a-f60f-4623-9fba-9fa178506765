@@ -1,0 +1,186 @@
+---
+title: "SSRF and External Service Security"
+description: "Get a deep dive into Magic’s strategies and utilities to defend against Server-Side Request Forgery (SSRF) and validate outbound connections made by flow nodes, plugins, and bots. Learn how to use configuration and code hooks to limit attack surface."
+---
+
+# SSRF and External Service Security
+
+Protecting your Magic AI workflows and integrations from Server-Side Request Forgery (SSRF) is critical to maintaining a secure platform. This guide provides an in-depth look at how Magic defends against SSRF attacks and how users can leverage these safeguards when configuring outbound requests from flow nodes, plugins, and AI agents.
+
+## Understanding SSRF and Its Risks
+
+SSRF occurs when an attacker tricks your server into sending requests to unintended or internal network resources by manipulating URLs or parameters. This could enable unauthorized access to sensitive internal metadata services, private IPs, or open ports.
+
+Since Magic workflows, plugins, and AI agents can make outbound HTTP requests (e.g., calling APIs, retrieving data), ensuring every outbound URL request is validated and restricted is paramount.
+
+## Magic's SSRF Defense Strategy
+
+Magic implements a layered SSRF defense embedded in its core service and flow expression execution frameworks. These mechanisms automatically validate and sanitize outbound URLs based on configurable rules:
+
+- **URL Pattern Validation:** Ensures URLs conform to standard, safe protocols (only `http` and `https` by default).
+- **IP Resolution and Whitelisting/Blacklisting:** Resolves hostnames to IP addresses and blocks requests to dangerous or internal IPs known to be vulnerable entry points (e.g., cloud metadata addresses).
+- **Blacklist Enforcement:** Blocks requests destined for reserved or potentially dangerous IPs and domains out of the box.
+- **Whitelist Override:** Allows trusted IPs or domains to bypass some restrictions when explicitly configured.
+- **Redirect Control:** By default, disallows outbound URLs that are HTTP redirects, preventing unseen request forwarding.
+- **Host-to-IP Replacement:** Optionally replaces hostname in URLs with the resolved IP to ensure direct destination targeting while adding `Host` headers for HTTP compliance.
+
+This defense runs during workflow execution or plugin operation, when URLs are processed for outbound API calls or data fetching.
+
+## How to Use SSRF Defense in Magic
+
+### Automatic Defense in Flow Nodes and Plugins
+
+All Magic flow expression APIs that make HTTP requests integrate with SSRF defense internally. Users defining URLs for API calls, webhooks, or document retrieval can rely on the platform to validate access automatically.
+
+### Programmatic SSRF Validation Utility
+
+For developers building custom plugins or advanced workflows, Magic exposes a convenient SSRF utility class in PHP to evaluate or sanitize URLs before use.
+
+Example usage in PHP:
+
+```php
+use App\Infrastructure\Util\SSRF\SSRFUtil;
+use App\Infrastructure\Util\SSRF\Exception\SSRFException;
+
+try {
+    $safeUrl = SSRFUtil::getSafeUrl('https://example.com/api/data', 
+        blackList: ['192.168.1.1'],
+        whiteList: ['trusted.example.com'],
+        allowProtocols: ['https'],
+        replaceIp: true,      // replace hostname with IP
+        allowRedirect: false // disallow redirects
+    );
+    // Proceed with calling $safeUrl securely
+} catch (SSRFException $e) {
+    // Handle invalid or dangerous URL input
+    echo 'URL rejected by SSRF defense: ' . $e->getMessage();
+}
+```
+
+You can also test if a URL is safe without throwing exceptions:
+
+```php
+$isSafe = SSRFUtil::isSafeUrl('http://internal-host/', blackList: ['internal-host']);
+if (!$isSafe) {
+    // Reject or log the URL
+}
+```
+
+### Configuring Blacklists and Whitelists
+
+Magic pre-configures blacklists including common cloud provider metadata endpoints:
+
+- `169.254.169.254` (Huawei Cloud)
+- `100.100.100.200` (Alibaba Cloud)
+- `100.96.0.96` (Volcano Cloud)
+
+Administrators can extend these blacklists or configure whitelists of trusted endpoints based on operational needs.
+
+### Key SSRF Defense Parameters
+
+| Parameter     | Description                                      | Default                    |
+|---------------|-------------------------------------------------|----------------------------|
+| `blackList`   | IPs or domains disallowed in outbound requests  | Includes known metadata IPs |
+| `whiteList`   | Trusted IPs/domains to bypass checks            | Empty                      |
+| `allowProtocols` | Allowed URL protocols (http/https)            | `['http', 'https']`        |
+| `replaceIp`   | Replace hostnames with IP in URLs                | `true`                     |
+| `allowRedirect`| Allow HTTP redirect URLs                         | `false`                    |
+
+## Practical User Scenarios
+
+### Scenario 1: Protecting Against Internal Metadata Exposure
+
+An improperly configured workflow attempts to fetch data from a URL parameter controlled by a user. Without SSRF defense, a malicious user could input `http://169.254.169.254/latest/meta-data/` to access cloud metadata APIs.
+
+Magic’s built-in blacklist blocks such requests, preventing information leaks and potential account compromise.
+
+### Scenario 2: Integrating External APIs Securely
+
+A custom plugin calls an external data source with dynamic URLs. By using `SSRFUtil::getSafeUrl` before making requests, the plugin ensures only allowed domains and valid protocols are used, thus preventing the plugin from accidentally or maliciously accessing internal network resources.
+
+## Troubleshooting Common SSRF Defense Issues
+
+<AccordionGroup title="Troubleshooting SSRF Defense">
+<Accordion title="Why is my legitimate URL blocked?">
+Check if the URL's IP or domain is included in the default or configured blacklists. Add trusted domains to the whitelist carefully to avoid accidental exposure of your internal network.
+</Accordion>
+<Accordion title="How do I handle URLs that return redirects?">
+By default, redirects are denied to prevent redirect-based SSRF. If you trust the destination, configure `allowRedirect: true` when using SSRF utilities. Use caution as redirects can mask malicious destinations.
+</Accordion>
+<Accordion title="Can I disable SSRF protection?">
+Disabling SSRF protection is strongly discouraged. If you must disable via advanced configuration, ensure alternative network-level controls are in place. Magic does not provide a simple toggle to disable SSRF defense as it is core to platform security.
+</Accordion>
+</AccordionGroup>
+
+## Best Practices for Securing External Service Calls
+
+- Always validate and sanitize URLs, especially if user input is involved.
+- Use Magic’s SSRF defense utilities in custom plugins and advanced workflows.
+- Maintain and update blacklists with known vulnerable or internal network addresses.
+- Apply least privilege principles by whitelisting only trusted external services.
+- Monitor logs for repeated SSRF defense triggers to detect potential abuse.
+
+## Summary
+
+Magic’s robust SSRF defense mechanisms safeguard your deployment by validating and restricting outbound HTTP requests generated by flows, plugins, and AI agents. Leveraging these built-in protections and configuration hooks ensures your data and internal services remain insulated from external threats.
+
+For developers extending Magic with custom integrations, use the SSRF utility classes to programmatically vet URLs before initiating network calls.
+
+---
+
+## Additional Security Layers
+
+- Use network-level firewall rules to further restrict outbound connections.
+- Combine SSRF defense with Magic’s authentication and access control policies.
+- Regularly audit custom plugins and workflows for potentially unsafe URL usage.
+
+## Related Documentation
+
+- [Authentication Methods](/security/authentication-and-access/authentication-methods)
+- [Access Control and Authorization Models](/security/authentication-and-access/access-control-and-authorization)
+- [API Security and Secure Transport](/security/data-protection-and-privacy/api-security-and-transport)
+- [Secure Deployment Best Practices](/guides/best-practices-optimization/secure-deployment)
+
+## Code Reference
+
+- SSRF Utility Source:
+  - `app/Infrastructure/Util/SSRF/SSRFUtil.php`
+  - `app/Infrastructure/Util/SSRF/SSRFDefense.php`
+  - `app/Infrastructure/Util/SSRF/SSRFDefenseOptions.php`
+
+Explore the [`SSRFUtil`](https://github.com/dtyq/magic/blob/main/backend/magic-service/app/Infrastructure/Util/SSRF/SSRFUtil.php) class for examples and advanced configuration.
+
+---
+
+By integrating Magic’s SSRF defenses thoughtfully, you empower your AI workflows to interact with external services securely, minimizing risk while unlocking productive automation capabilities.
+
+---
+
+<Steps>
+<Step title="Validate Your URLs">
+Use `SSRFUtil::isSafeUrl` to pre-check URLs in your workflows or plugins.
+</Step>
+<Step title="Sanitize URLs Before Usage">
+Pass URLs through `SSRFUtil::getSafeUrl` to obtain verified and potentially IP-replaced URLs.
+</Step>
+<Step title="Configure Blacklists and Whitelists">
+Customize security policies to match your environment and trusted service providers.
+</Step>
+<Step title="Monitor and Audit">
+Review logs for SSRF denials and refine security settings as needed.
+</Step>
+</Steps>
+
+<Tip>
+Leveraging Magic’s SSRF defense is essential for protecting internal infrastructure from inadvertent exposure via AI agents, flow nodes, and custom tools that interact with external HTTP services.
+</Tip>
+
+<Warning>
+Avoid disabling SSRF protections without strong compensating network controls. Doing so substantially increases the risk of unauthorized data access and system compromise.
+</Warning>
+
+<Info>
+For more advanced extensibility, consider how SSRF protection complements API authentication and organizational access control for a defense-in-depth security strategy.
+</Info>
+
+<Source url="https://github.com/dtyq/magic" paths={[{"path": "backend/magic-service/app/Infrastructure/Util/SSRF/SSRFUtil.php", "range": "1-120"},{"path": "backend/magic-service/app/Infrastructure/Util/SSRF/SSRFDefense.php", "range": "1-110"},{"path": "backend/magic-service/app/Infrastructure/Util/SSRF/SSRFDefenseOptions.php", "range": "1-60"}]} />
