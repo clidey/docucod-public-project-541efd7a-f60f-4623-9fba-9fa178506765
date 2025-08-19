@@ -1,0 +1,157 @@
+---
+title: "Data Encryption and Storage"
+description: "Discover Magic’s approach to encrypting sensitive data—including user credentials, tokens, messages, and attachments—and how secure storage options and file drivers are integrated for regulatory compliance (e.g., GDPR)."
+---
+
+# Data Encryption and Storage
+
+Magic prioritizes securing sensitive information by employing robust encryption methods and offering flexible, compliant storage options. This guide walks you through Magic's approach to encrypting critical data such as user credentials, tokens, messages, and attachments. It also explains how Magic integrates secure file storage drivers to meet regulatory requirements like GDPR.
+
+---
+
+## 1. Encryption Overview
+
+Magic ensures data confidentiality and integrity during transit and at rest by implementing standardized encryption mechanisms tailored to different data types.
+
+### 1.1 Encryption for Callback Messages
+
+When Magic processes callback events from platforms like DingTalk, it encrypts and decrypts messages using AES-256-CBC with PKCS7 padding. This protects sensitive payloads such as user messages or event notifications from unauthorized access.
+
+- **EncryptMsg Workflow:**
+  - The message is combined with a 16-byte random string, its length, and the suite key.
+  - The data is padded according to PKCS7 and encrypted using AES-256-CBC with an initialization vector (IV) derived from the AES key.
+  - A SHA1 signature is generated combining token, timestamp, nonce, and the encrypted payload.
+  - Encrypted message and signature are stored or transmitted securely.
+
+- **DecryptMsg Workflow:**
+  - The encrypted message and its signature are validated using the same SHA1 calculation to ensure authenticity.
+  - The ciphertext is decrypted using AES-256-CBC.
+  - PKCS7 padding is removed, and the suite key is verified before the original message is returned.
+
+> This encryption/decryption process ensures that callback data remains confidential and tamper-evident.
+
+### 1.2 Encryption in SDK Communication
+
+Magic’s SDKs handle access tokens and message contents with secure transport protocols and internal encryption signatures, ensuring authentication credentials and message payloads are protected against interception and misuse.
+
+## 2. Secure Storage Architecture
+
+To comply with data protection regulations like GDPR, Magic supports configurable secure storage backends and file drivers that safeguard user data, attachments, and logs.
+
+### 2.1 File Storage Options
+
+Magic integrates with multiple file storage drivers, enabling flexible, scalable, and compliant data storage:
+
+- **Local Filesystem:** Suitable for on-premises deployments with physical control over hardware.
+- **Alibaba Cloud OSS:** Cloud object storage offering durable, secure, and region-specific storage.
+- **ByteDance Cloud TOS:** High-performance cloud storage with fine-grained access controls.
+
+Each driver is configured through environment variables, with credentials and secrets stored securely using best practices.
+
+### 2.2 Encryption at Rest
+
+Sensitive files and attachments stored via these drivers should be encrypted at rest. Magic encourages employing storage provider capabilities for server-side encryption or layering client-side encryption where feasible.
+
+### 2.3 Regulatory Compliance
+
+- Magic’s data protection design supports:
+  - Controlled data residency according to chosen storage provider and configured regions.
+  - Data access auditing via platform logs.
+  - Secure file transmission over TLS.
+
+- These features align with compliance requirements such as GDPR's mandates to protect personal data and handle deletion requests.
+
+## 3. Practical User Workflows
+
+### 3.1 Handling Encrypted Callback Messages
+
+Users integrating Magic with DingTalk or other callback-based services will:
+
+1. Receive and validate signatures on incoming callback payloads.
+2. Decrypt payloads using configured AES keys and suite keys.
+3. Process messages securely within Magic.
+4. Encrypt responses before sending them back to the third-party platform.
+
+<Tip>
+Always safeguard AES keys and tokens by limiting environment variable visibility and rotating keys periodically to enhance security.
+</Tip>
+
+### 3.2 Downloading and Storing Attachments Securely
+
+To handle file attachments:
+
+1. Magic uses authenticated API calls with access tokens to download files from the messaging platform.
+2. Files are downloaded only after validating the request and permissions.
+3. Downloaded files can be stored using the configured secure storage driver.
+
+<Steps>
+<Step title="Set up DownloadFileParameter">
+Prepare download parameters including robot code and file download code.
+</Step>
+<Step title="Authenticate and Call API">
+Use Magic’s Easy DingTalk SDK to call DownloadFileApi with secure token headers.
+</Step>
+<Step title="Validate and Store File">
+Verify response success and securely save downloaded files, maintaining encrypted storage if needed.
+</Step>
+</Steps>
+
+## 4. Best Practices and Recommendations
+
+- **Key Management:** Use secrets management tools to keep encryption keys confidential and enforce key rotation policies.
+- **Signature Verification:** Always validate signatures on incoming webhook payloads to ensure data authenticity.
+- **Least Privilege:** Limit access tokens and API keys to minimum required scopes.
+- **Use HTTPS:** Ensure all API calls and file downloads occur over secure TLS connections.
+- **Audit Logs:** Enable detailed logging for access and operations involving encrypted data and sensitive storage.
+- **Compliance Checks:** Regularly review storage configurations against GDPR or other relevant standards.
+
+## 5. Common Issues & Troubleshooting
+
+<AccordionGroup title="Encryption & Decryption Issues">
+<Accordion title="Decryption Returns Empty String or Fails Verification">
+- Verify the AES key and suite key used match exactly the configured values.
+- Confirm signature matches before attempting decryption.
+- Check for correct padding and encoding in encrypted payload.
+</Accordion>
+<Accordion title="Signature Validation Fails">
+- Ensure timestamp and nonce are correctly passed.
+- Confirm token config is consistent between Magic and third-party platform.
+- Check for time synchronization issues causing timestamp mismatch.
+</Accordion>
+</AccordionGroup>
+
+<AccordionGroup title="File Download and Storage Problems">
+<Accordion title="Download Fails with '下载失败' or Similar Errors">
+- Validate the download code and robot code parameters.
+- Confirm the access token is valid and has necessary permissions.
+- Check network connectivity and firewall settings.
+</Accordion>
+<Accordion title="File Not Storing or Being Readable in Storage">
+- Verify storage driver configuration and credentials.
+- Ensure sufficient disk or storage quota.
+- Review file permission settings in the storage backend.
+</Accordion>
+</AccordionGroup>
+
+## 6. Technical References
+
+- Encryption source implementation:
+  - Encryption & decryption use AES-256-CBC with PKCS7 padding
+  - See `Prpcrypt.php` and `DingCallbackEndpoint.php` for encryption flow
+- File download API:
+  - Endpoint: `/v1.0/robot/messageFiles/download`
+  - Requires `x-acs-dingtalk-access-token` header
+- Configuration:
+  - AES Key and Token configured in `DingCallbackConfig`
+  - Secure storage driver configured via environment variables
+
+## 7. Additional Resources
+
+- [Easy DingTalk SDK GitHub Repository](https://github.com/dtyq/magic)
+- [Third-Party Messaging Integration Guide](/guides/advanced-customization-integration/third-party-messaging-integration)
+- [Secure Deployment Best Practices](/guides/best-practices-optimization/secure-deployment)
+- [Data Protection and Privacy Overview](/security/data-protection-and-privacy/data-encryption-and-storage)
+
+---
+
+By following this guide, you ensure Magic’s encryption and storage capabilities protect your sensitive data, maintain trust, and comply with industry regulations, enabling secure, scalable digital workflows and integrations.
