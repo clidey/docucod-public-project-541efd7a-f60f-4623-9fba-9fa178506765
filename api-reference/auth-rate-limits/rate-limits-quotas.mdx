@@ -1,0 +1,179 @@
+---
+title: "Rate Limits & Quotas"
+description: "Understand how request limits, quotas, and usage metrics are enforced across the Magic platform. Learn how to monitor your application’s consumption, manage spikes, and respond gracefully to throttling events using API best practices. This includes advice for both regular and premium endpoints."
+---
+
+# Rate Limits & Quotas
+
+## Introduction
+
+Understanding and respecting rate limits and quotas is critical when interacting with the Magic platform’s APIs. This page provides a comprehensive overview of how request limits are enforced, how you can monitor consumption, and how to handle throttling effectively to ensure reliable and efficient integration. Whether you are using regular API endpoints or premium features, mastering rate limits ensures your applications remain performant and compliant with platform policies.
+
+---
+
+## Why Rate Limits and Quotas Matter
+
+API rate limits protect Magic services from abuse, maintain system stability under load, and ensure fair resource usage across all users and applications. Quotas define the maximum data consumption or request volume allowed over a billing period or organizational policy window.
+
+By managing your usage within these constraints, you avoid costly throttling, service interruptions, and unexpected errors, ultimately delivering a seamless experience to your end users.
+
+---
+
+## How Magic Enforces Rate Limits
+
+Magic imposes several simultaneous rate limiting layers across different scopes:
+
+- **Per Organization**: Aggregate limits that apply to all requests from an organization account.
+- **Per User**: Limits restricting individual user’s request rates.
+- **Per Application**: For API integrations, apps have their distinct caps ensuring isolated consumption.
+
+These limits are measured over three time intervals:
+
+| Interval | Acronym | Description                 |
+|----------|---------|-----------------------------|
+| 1 Minute | RPM     | Requests Per Minute          |
+| 1 Hour   | RPH     | Requests Per Hour            |
+| 1 Day    | RPD     | Requests Per Day             |
+
+
+### Default Configurations
+
+The default limits configured (as per backend service settings) are:
+
+- Organization RPM: 1000 requests
+- User RPM: 100 requests
+- Application RPM: 100 requests
+- Organization Quota: 500,000 requests (default monthly or billing cycle quota)
+- User Quota: 1,000 requests
+
+These limits may be subject to upgrades or modifications, especially for premium endpoints.
+
+---
+
+## Understanding the Rate Limiter Behavior
+
+Magic’s rate limiter interface ensures enforcement without unnecessarily rejecting or blocking requests prematurely:
+
+- Requests with the method `initialize` bypass rate limiting, allowing uninterrupted setup and handshake operations.
+- Rate limiting is disabled in special cases like development or performance modes (for example, the `NoRateLimiter` implementation disables limits entirely).
+- When limits are exceeded, the system returns a clear error signaling rate limit exhaustion, enabling your client app to trigger back-off or retry logic.
+
+
+### Rate Limiter Implementation Highlights
+
+The abstract rate limiter defines the interface:
+
+- `check(clientId: string, request: MessageInterface)`: Throws an exception if limits are exceeded.
+- `getLimits()`: Returns the currently enforced limits with flags and values.
+
+A concrete class example disables limits entirely by setting all caps to PHP's max integer value and always allowing requests.
+
+---
+
+## Monitoring Usage and Quotas
+
+To prevent hitting limits unexpectedly, applications should:
+
+- Track your request counts and quota consumption relative to your defined limits.
+- Implement logging around API responses to catch HTTP 429 (Too Many Requests) or specific API error codes representing rate limit exhaustion.
+- Utilize any available management dashboards or API quota endpoints, if provided, to view live consumption metrics.
+
+---
+
+## Handling Throttling and Errors Gracefully
+
+When your application encounters throttling:
+
+- Respect the `Retry-After` HTTP header if present to determine when to resume requests.
+- Implement exponential backoff with jitter for retry attempts to avoid synchronized retries that cause bursts.
+- Design your workflows to be idempotent where possible, allowing safe retries without side effects.
+- Alert users or administrators proactively when persistent throttling occurs to investigate usage spikes or upgrade plans.
+
+
+### Common Rate Limit Error Format Example
+
+When throttled, the API typically responds with structured errors as follows:
+
+```json
+{
+  "code": 429,
+  "message": "请求频率超限"
+}
+```
+
+Key error codes related to quota or token restrictions may also appear:
+
+| Error Code                | Meaning                                       |
+|---------------------------|-----------------------------------------------|
+| `token.quota_not_enough`  | API token quota exceeded                       |
+| `organization.quota_not_enough` | Organization-level quota exceeded         |
+| `rate_limit`              | General rate limit exceeded                    |
+
+---
+
+## Tips and Best Practices
+
+- **Optimize Requests**: Batch operations where possible to reduce total request count.
+- **Cache Results**: Minimize repeat calls on the same data.
+- **Use Proper Authentication**: Ensure tokens and client identifiers are correct to have the correct limits applied.
+- **Monitor and Alert**: Use custom monitoring on response headers and error codes to catch limit warnings early.
+
+---
+
+## Example: Checking Current Rate Limits
+
+Here is an example illustrating how you might query the current rate limits via API (if supported) or programmatically inspect the configured limits:
+
+```php
+// Assume $rateLimiter is injected or instantiated
+$limits = $rateLimiter->getLimits();
+print_r($limits);
+// Output might be:
+// [
+//    'enabled' => true,
+//    'rpm' => 100,
+//    'rph' => 1000,
+//    'rpd' => 5000,
+// ]
+```
+
+---
+
+## Summary
+
+Managing rate limits and quotas on Magic’s platform is fundamental to building resilient, scalable integrations. By understanding your limits, carefully monitoring usage, and implementing robust retry mechanisms, you can ensure uninterrupted service and deliver superior experiences.
+
+
+---
+
+## Related Documentation
+
+- [Authentication & Authorization](/api-reference/auth-rate-limits/api-authentication) — Learn how to securely obtain and use tokens underpinning request limits.
+- [Error Handling & Status Codes](/api-reference/errors-tools-sdks/error-handling-status-codes) — Understand how Magic communicates rate limit breaches and other errors.
+- [Third-Party Messaging Integration](/guides/advanced-customization-integration/third-party-messaging-integration) — Get best practices related to message send limits in external platforms.
+
+---
+
+## Troubleshooting
+
+<AccordionGroup title="Common Rate Limit Issues and Solutions">
+<Accordion title="Frequent HTTP 429 Responses">
+If you frequently receive `429 Too Many Requests` responses:
+- Confirm if your usage patterns triggered spikes.
+- Check that your retry logic respects backoff signals.
+- Consider optimizing your request volume or applying for expanded quotas if available.
+</Accordion>
+<Accordion title="Quota Exhausted Error Codes">
+Errors like `token.quota_not_enough` or `organization.quota_not_enough` indicate your allocated monthly or daily quota has been fully consumed.
+- Review current usage statistics.
+- Plan quota refills or upgrades.
+- Limit non-essential or repetitive API calls.
+</Accordion>
+<Accordion title="Unexpected Rate Limit Disabling">
+In development or sandbox environments, rate limiting may be disabled (as with `NoRateLimiter`):
+- Ensure production environment is correctly configured.
+- Verify environment variables reflect intended limits.
+</Accordion>
+</AccordionGroup>
+
+---
