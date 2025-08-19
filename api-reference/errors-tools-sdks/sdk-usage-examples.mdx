@@ -1,0 +1,208 @@
+---
+title: "SDK Usage & Code Samples"
+description: "Illustrates how to use Magic-provided SDKs (PHP, TypeScript, Python) to call the main APIs, authenticate, and parse responses. Features quickstart code snippets and best practices for common workflows."
+---
+
+# SDK Usage & Code Samples
+
+This page demonstrates how to use Magic-provided SDKs—including PHP, TypeScript, and Python—to interact with core user-related APIs. You'll learn how to authenticate, make calls to fetch user information, and handle responses effectively. The page includes quickstart snippets that suit common workflows such as retrieving user info by code, user ID, or mobile number, along with best practices to maximize successful integrations.
+
+---
+
+## Introduction
+
+Developers integrating Magic’s API benefit greatly from our SDKs in PHP, TypeScript, and Python, which abstract away raw HTTP calls and authentication handling. This guide focuses on using these SDKs for user information queries, outlining clear steps from initialization to result parsing.
+
+By following these patterns, you can seamlessly incorporate user data queries into your applications, allowing for richer user profiles, authorization flows, and enterprise messaging integration.
+
+---
+
+## Supported User APIs via SDK
+
+Magic's SDKs support these primary user information retrieval endpoints:
+
+| API Endpoint                  | Description                                       | Typical Use Case                         |
+|------------------------------|-------------------------------------------------|----------------------------------------|
+| `getUserInfoByCode`           | Fetch user info using a login authorization code | Validate single sign-on (SSO) sessions |
+| `getUserInfoByUserId`         | Obtain detailed user profile by user ID          | Display profile details in UI           |
+| `getUserIdByMobile`           | Retrieve user ID by mobile phone number           | User lookup by phone, contact syncing   |
+| `getListByDeptId`             | List all users within a given department          | Organizational directory browsing       |
+| `getListAdmin`                | List all administrators of the enterprise app     | Permission and role management           |
+
+Each API is strongly typed in the SDK with parameter and result objects to enforce correctness and simplify application logic.
+
+---
+
+## Quickstart Examples
+
+Below are code snippets demonstrating typical ways to invoke user-related API calls with Magic’s PHP SDK. These examples highlight parameter instantiation, API calling, and response handling.
+
+### 1. Retrieve User Info by Login Code
+
+This is essential for validating a user after they complete a login flow using DingTalk’s SSO.
+
+```php
+use Dtyq\EasyDingTalk\OpenDev\Endpoint\User\UserEndpoint;
+use Dtyq\EasyDingTalk\OpenDev\Parameter\User\GetUserInfoByCodeParameter;
+
+// Initialize endpoint
+$userEndpoint = new UserEndpoint();
+
+// Prepare parameters
+$params = new GetUserInfoByCodeParameter();
+$params->setAccessToken('your-access-token');
+$params->setCode('authorization_code_received');
+
+// Call API
+try {
+    $userInfo = $userEndpoint->getUserInfoByCode($params);
+    echo 'User ID: ' . $userInfo->getUserid();
+} catch (Exception $e) {
+    // Handle authentication or validation errors
+    echo 'Error: ' . $e->getMessage();
+}
+```
+
+### 2. Fetch User Details by User ID
+
+Use this to display detailed profiles, including names and department info.
+
+```php
+use Dtyq\EasyDingTalk\OpenDev\Endpoint\User\UserEndpoint;
+use Dtyq\EasyDingTalk\OpenDev\Parameter\User\GetUserInfoByUserIdParameter;
+
+$userEndpoint = new UserEndpoint();
+
+$params = new GetUserInfoByUserIdParameter();
+$params->setAccessToken('your-access-token');
+$params->setUserId('userid_12345');
+
+try {
+    $userDetails = $userEndpoint->getUserInfoByUserId($params);
+    echo 'User Name: ' . $userDetails->getName();
+} catch (Exception $e) {
+    echo 'Failed to fetch user details: ' . $e->getMessage();
+}
+```
+
+### 3. Lookup User by Mobile Number
+
+This function is useful for syncing contacts or validating user presence.
+
+```php
+use Dtyq\EasyDingTalk\OpenDev\Endpoint\User\UserEndpoint;
+use Dtyq\EasyDingTalk\OpenDev\Parameter\User\GetUserInfoByMobileParameter;
+
+$userEndpoint = new UserEndpoint();
+
+$params = new GetUserInfoByMobileParameter();
+$params->setAccessToken('your-access-token');
+$params->setMobile('13800138000');
+
+try {
+    $userByMobile = $userEndpoint->getUserIdByMobile($params);
+    echo 'User ID for mobile: ' . $userByMobile->getUserid();
+} catch (Exception $e) {
+    echo 'Mobile lookup failed: ' . $e->getMessage();
+}
+```
+
+---
+
+## SDK Usage Best Practices
+
+- **Always validate inputs**: Ensure parameters like mobile number or authorization code are non-empty before API calls.
+- **Manage and refresh access tokens properly** to maintain smooth authentication.
+- **Catch exceptions gracefully** to handle API errors or parameter validation failures.
+- **Use typed parameter and result classes** to reduce mistakes and improve IDE assistance.
+- **Leverage pagination** when retrieving user lists for large departments by using cursor and size parameters on `getListByDeptId`.
+
+---
+
+## Authentication Essentials
+
+All user APIs require a valid `access_token`, a bearer token obtained through your app's authentication process. This token must be passed as a query parameter on each request.
+
+Ensure your token is kept secure and renewed before expiration to avoid authentication failures.
+
+Refer to the [Authentication & Authorization documentation](/api-reference/auth-rate-limits/api-authentication) for detailed workflows and token management.
+
+---
+
+## Response Handling & Parsing
+
+The SDK returns result objects with getter methods tailored for each API. For example, after calling `getUserInfoByCode()`, you receive a `UserByCodeResult` containing:
+
+- `getUserid()` — the unique user ID in the system
+
+Similarly, `getUserInfoByUserId()` returns a `UserResult` encapsulating comprehensive user detail fields.
+
+Use these typed results to directly access user data instead of raw arrays.
+
+---
+
+## Example: TypeScript & Python Usage
+
+While the PHP examples are primary, SDKs for TypeScript and Python follow very similar patterns:
+
+- Instantiate a client or user endpoint object
+- Set parameters explicitly
+- Call methods to retrieve user info
+- Handle promises or exceptions accordingly
+
+```typescript
+// TypeScript Quick Example
+const user = await sdk.user.getUserInfoByCode({ accessToken, code });
+console.log(user.userid);
+```
+
+```python
+# Python Quick Example
+user = sdk.user.get_user_info_by_code(access_token=token, code='codevalue')
+print(user.userid)
+```
+
+Refer to respective SDK language docs for installation, environment setup, and detailed usage.
+
+---
+
+## Troubleshooting Common Issues
+
+<AccordionGroup title="Troubleshooting User API Calls">
+<Accordion title="Invalid or Expired Access Token">
+Verify that your access token is valid and not expired. Obtain a new token if necessary and ensure it is correctly passed in the request query parameters.
+</Accordion>
+<Accordion title="Missing Required Parameters">
+Make sure all required parameters such as `code`, `userid`, or `mobile` are set before making calls. The SDK throws exceptions if parameters are empty.
+</Accordion>
+<Accordion title="Incorrect SDK Usage Patterns">
+Review your method calls to correspond exactly to parameter classes expected by the SDK. Check examples above for standard usage.
+</Accordion>
+<Accordion title="Network or API Endpoint Errors">
+Check network connectivity and the correctness of the API URL. SDK automatically handles base URIs but custom network configs might cause issues.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Additional Resources
+
+- [Authentication & Authorization](https://docs.magic.com/api-reference/auth-rate-limits/api-authentication) — Learn about token management.
+- [User and Group Management APIs](https://docs.magic.com/api-reference/im-conv-messaging/user-and-group-lookup) — Explore more endpoints.
+- [Send Messages & Conversations](https://docs.magic.com/api-reference/im-conv-messaging/send-messages) — Next steps after user lookups.
+
+---
+
+## Summary
+
+This page has guided you through practical use of the Magic SDKs to query user information, from login-authenticated lookups to department listings. By leveraging typed parameter and result classes, handling authentication carefully, and using the quickstart samples, you can integrate user data queries smoothly into your enterprise applications. For advanced usage, explore pagination, admin management, and error handling in the SDK documentation.
+
+---
+
+<Check>
+To integrate seamlessly, ensure you use valid access tokens, prepare all required parameters explicitly, and catch exceptions to maintain robust API interactions.
+</Check>
+
+<Info>
+SDKs are continuously improved. Always use the latest version for new features and fixes.
+</Info>
