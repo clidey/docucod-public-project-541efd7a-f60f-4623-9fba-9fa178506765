@@ -1,0 +1,349 @@
+---
+title: "Build & Manage Flows"
+description: "How to programmatically create, update, and describe workflow flows, including node structures, connections, settings, and visual metadata. Provides core input/output schema and request/response samples for common flow automation tasks."
+---
+
+# Build & Manage Flows API Reference
+
+This guide explains how to programmatically create, update, and describe workflow flows within Magic. It covers managing flow node structures, connections, settings, and visual metadata. You will find the core input/output schemas, practical request/response examples, and best practices for common flow automation tasks.
+
+---
+
+## Overview
+
+Workflows—also called Flows—are the heart of Magic’s automated orchestration. This API enables you to fully control flows via code, allowing dynamic and flexible automation tailored to your unique business logic. Whether you're building a new flow, modifying nodes, or retrieving flow details for visualization, these endpoints empower your integration.
+
+Flows consist of interconnected nodes representing steps, conditions, actions, or integrations. You define how data and execution progress through the flow graph, along with settings related to flow behavior and display.
+
+This API serves users who want full lifecycle management of flows, including creation, updating, inspecting, and deleting. It abstracts away internal storage and implementation so you can focus purely on your workflow design and execution needs.
+
+---
+
+## Key Concepts
+
+- **Flow**: A complete automated process composed of one or more interconnected nodes.
+- **Nodes**: Individual units or steps in a flow, such as actions, triggers, or conditions.
+- **Connections**: Links representing transitions between nodes.
+- **Visual Metadata**: Information governing how the flow and nodes appear in the UI.
+- **Settings**: Configuration parameters controlling flow behavior and node properties.
+
+---
+
+## Base URL & Authentication
+
+All flow APIs are available under the base URL:
+
+```
+https://api.magic.ai/v1/workflows
+```
+
+Authentication is performed via OAuth 2.0 Bearer tokens obtained from the Magic platform authentication service. Include the `Authorization: Bearer {access_token}` header in all requests.
+
+---
+
+## Creating a Flow
+
+Create a new flow by providing the fundamental properties, nodes, connections, and settings.
+
+### Endpoint
+
+```
+POST /flows
+```
+
+### Description
+
+Creates a new flow with specified nodes, edges, and configuration. Returns the flow ID and metadata.
+
+### Request Body Parameters
+
+| Parameter       | Type         | Required | Description                                  |
+|-----------------|--------------|----------|----------------------------------------------|
+| `name`          | string       | Yes      | Human-readable name of the flow               |
+| `description`   | string       | No       | Optional description of the flow              |
+| `nodes`         | array        | Yes      | List of nodes with their properties           |
+| `connections`   | array        | Yes      | List of edges defining how nodes connect      |
+| `settings`      | object       | No       | Flow-level configuration (e.g., triggers, retries) |
+
+### Node Object Structure
+
+| Field            | Type         | Required | Description                                        |
+|------------------|--------------|----------|----------------------------------------------------|
+| `id`             | string       | Yes      | Unique node identifier                              |
+| `type`           | string       | Yes      | Node type (e.g., `action`, `condition`, `input`)  |
+| `label`          | string       | No       | Display label                                       |
+| `config`         | object       | No       | Node-specific configuration/settings                |
+| `position`       | object       | No       | Visual position `{ x: number, y: number }`          |
+
+### Connection Object Structure
+
+| Field           | Type         | Required | Description                         |
+|-----------------|--------------|----------|-------------------------------------|
+| `sourceNodeId`  | string       | Yes      | ID of the starting node             |
+| `targetNodeId`  | string       | Yes      | ID of the destination node          |
+| `label`         | string       | No       | Optional edge label (e.g., condition)|
+
+### Example Request
+
+```json
+{
+  "name": "Invoice Approval Flow",
+  "description": "Automates invoice approval routing",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "start",
+      "label": "Start",
+      "position": { "x": 100, "y": 150 }
+    },
+    {
+      "id": "checkAmount",
+      "type": "condition",
+      "label": "Check Amount",
+      "config": { "threshold": 10000 },
+      "position": { "x": 300, "y": 150 }
+    }
+  ],
+  "connections": [
+    { "sourceNodeId": "start", "targetNodeId": "checkAmount" }
+  ],
+  "settings": {
+    "autoStart": true
+  }
+}
+```
+
+### Success Response
+
+```
+201 Created
+```
+
+```json
+{
+  "flowId": "flow_abcdef123456",
+  "createdAt": "2024-06-20T14:23:00Z",
+  "status": "active"
+}
+```
+
+### Errors
+
+- `400 Bad Request`: Missing required fields or invalid node references.
+- `401 Unauthorized`: Authentication token missing or invalid.
+
+---
+
+## Updating a Flow
+
+Modify existing flows to update nodes, connections, or settings.
+
+### Endpoint
+
+```
+PUT /flows/{flowId}
+```
+
+### Description
+
+Replaces the entire flow definition with a new structure.
+
+### Path Parameters
+
+| Parameter | Type   | Description         |
+|-----------|--------|---------------------|
+| `flowId`  | string | Identifier of target flow |
+
+### Request Body
+
+Same structure as flow creation.
+
+### Example Request
+
+```json
+{
+  "name": "Invoice Approval Flow v2",
+  "description": "Updated flow with new approval step",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "start",
+      "label": "Start",
+      "position": { "x": 100, "y": 150 }
+    },
+    {
+      "id": "checkAmount",
+      "type": "condition",
+      "label": "Check Amount",
+      "config": { "threshold": 15000 },
+      "position": { "x": 300, "y": 150 }
+    },
+    {
+      "id": "notifyFinance",
+      "type": "action",
+      "label": "Notify Finance",
+      "config": { "emailTemplate": "finance-alert" },
+      "position": { "x": 500, "y": 150 }
+    }
+  ],
+  "connections": [
+    { "sourceNodeId": "start", "targetNodeId": "checkAmount" },
+    { "sourceNodeId": "checkAmount", "targetNodeId": "notifyFinance" }
+  ],
+  "settings": { "autoStart": false }
+}
+```
+
+### Success Response
+
+```
+200 OK
+```
+
+```json
+{
+  "flowId": "flow_abcdef123456",
+  "updatedAt": "2024-06-22T09:45:00Z",
+  "status": "active"
+}
+```
+
+### Common Errors
+
+- `404 Not Found`: Flow with `flowId` does not exist.
+- `400 Bad Request`: Invalid flow structure.
+
+---
+
+## Retrieving a Flow
+
+Fetch the details of a specific flow, including all nodes and connections, to render or analyze.
+
+### Endpoint
+
+```
+GET /flows/{flowId}
+```
+
+### Response
+
+Returns the full flow definition matching the creation/update schema.
+
+### Example Successful Response
+
+```json
+{
+  "flowId": "flow_abcdef123456",
+  "name": "Invoice Approval Flow",
+  "description": "Automates invoice approval routing",
+  "nodes": [
+    { "id": "start", "type": "start", "label": "Start", "position": { "x": 100, "y": 150 } },
+    { "id": "checkAmount", "type": "condition", "label": "Check Amount", "config": { "threshold": 10000 }, "position": { "x": 300, "y": 150 } }
+  ],
+  "connections": [
+    { "sourceNodeId": "start", "targetNodeId": "checkAmount" }
+  ],
+  "settings": { "autoStart": true },
+  "createdAt": "2024-06-20T14:00:00Z",
+  "updatedAt": "2024-06-20T14:23:00Z",
+  "status": "active"
+}
+```
+
+### Errors
+
+- `404 Not Found`: No flow corresponding to the given ID.
+
+---
+
+## Deleting a Flow
+
+Remove a flow permanently from the system.
+
+### Endpoint
+
+```
+DELETE /flows/{flowId}
+```
+
+### Response
+
+```
+204 No Content
+```
+
+### Errors
+
+- `404 Not Found`: If the flow ID is invalid or does not exist.
+
+---
+
+## Managing Flow Nodes and Visual Metadata
+
+Nodes within flows can have rich configuration and metadata for visual editing:
+
+### Node Configuration
+- `config`: Node-specific parameters, such as action details, AI prompt templates, thresholds.
+- `position`: Coordinates for UI display, ensuring layout persistence.
+- `label`: User-friendly name for identification.
+
+### Best Practices
+- Always assign unique and meaningful node IDs.
+- Use visual coordinates to improve designer UX.
+- Validate your node configurations before submission to avoid runtime failures.
+
+---
+
+## Example: Programmatic Flow Creation in Practice
+
+This example shows a JSON payload and flow creation process to automate a simple approval step.
+
+```json
+{
+  "name": "Expense Approval",
+  "description": "Flow to approve expenses over $1000",
+  "nodes": [
+    { "id": "start", "type": "start", "label": "Start", "position": { "x": 100, "y": 50 } },
+    { "id": "checkAmount", "type": "condition", "label": "Amount Check", "config": { "threshold": 1000 }, "position": { "x": 300, "y": 50 } },
+    { "id": "managerApproval", "type": "action", "label": "Manager Approval", "position": { "x": 500, "y": 50 } }
+  ],
+  "connections": [
+    { "sourceNodeId": "start", "targetNodeId": "checkAmount" },
+    { "sourceNodeId": "checkAmount", "targetNodeId": "managerApproval" }
+  ],
+  "settings": {
+    "autoStart": true
+  }
+}
+```
+
+Use a POST request with the above JSON body to `/flows` to create this workflow. The returned flow ID can then be used to update, query, or delete this flow.
+
+---
+
+## Troubleshooting & Tips
+
+- **Invalid Node References**: Ensure all connection endpoints point to existing node IDs.
+- **Authentication Failed**: Check that your token is current and has necessary scopes.
+- **Large Flows**: For very complex flows, ensure payload sizes and request timeouts are handled appropriately.
+- **Schema Validation**: Validate all required fields like `nodes`, `connections`, and `name` to prevent 400 errors.
+
+---
+
+## Related Links & Next Steps
+
+- [Trigger & Monitor Flow Execution](https://magicdocs/api-reference/workflow-automation/flow-execution) for starting and tracking flows.
+- [Core Concepts](https://magicdocs/overview/key-concepts-and-terminology/core-concepts) to understand flow nodes and workflows deeper.
+- [Best Practices for Workflow Performance](https://magicdocs/guides/best-practices-optimization/workflow-performance-tuning) to optimize your flows at scale.
+
+Explore these to build robust, effective automation with the Magic platform.
+
+---
+
+## Contact & Support
+
+If you encounter errors not covered here or need integration assistance, consult the [Getting Help & Additional Resources](https://magicdocs/getting-started/validation-troubleshooting/resources-and-support) page or reach out via official community channels.
+
+---
+
+This API is a foundational tool for creating rich, dynamic AI-powered workflows. Leveraging it efficiently will unlock end-to-end automation and intelligence across your enterprise processes.
